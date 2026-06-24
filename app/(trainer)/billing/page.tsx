@@ -1,12 +1,14 @@
 import { Check } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { requireTrainer } from "@/lib/auth";
 import { SUBSCRIPTION_TIERS } from "@/lib/constants";
 import { getActiveListingCount } from "@/lib/queries/listings";
 import { getSubscriptionState } from "@/lib/subscription";
+import { createCheckoutSession, createPortalSession } from "@/lib/actions/billing";
 
 export const metadata = { title: "Billing" };
 
@@ -49,6 +51,14 @@ export default async function BillingPage() {
         </Badge>
       </Card>
 
+      {subscription.isActive ? (
+        <form action={createPortalSession}>
+          <Button type="submit" variant="outline">
+            Manage subscription
+          </Button>
+        </form>
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2">
         {(["basic", "pro"] as const).map((tierId) => {
           const tier = SUBSCRIPTION_TIERS[tierId];
@@ -81,15 +91,18 @@ export default async function BillingPage() {
                   </li>
                 ))}
               </ul>
+              {!isCurrent ? (
+                <form action={createCheckoutSession}>
+                  <input type="hidden" name="tier" value={tierId} />
+                  <Button type="submit" className="w-full">
+                    Subscribe to {tier.label}
+                  </Button>
+                </form>
+              ) : null}
             </Card>
           );
         })}
       </div>
-
-      <Card className="border-dashed bg-muted/40 p-5 text-sm text-muted-foreground">
-        Secure checkout and self-serve plan management (via Stripe) arrive in the
-        final build phase. Your plan status is reflected above in the meantime.
-      </Card>
     </div>
   );
 }
