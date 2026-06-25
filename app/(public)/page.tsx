@@ -195,17 +195,17 @@ export default async function HomePage() {
           </div>
 
           <div className="mx-auto mt-10 grid max-w-3xl gap-6 sm:grid-cols-2">
-            {PRICING.map((tier) => (
-              <Card
-                key={tier.id}
-                className={
-                  tier.highlighted
-                    ? "relative border-primary p-6 shadow-md ring-1 ring-primary/20"
-                    : "p-6"
-                }
-              >
+              {PRICING.map((tier) => (
+                <Card
+                  key={tier.id}
+                  className={
+                    tier.highlighted
+                      ? "relative flex h-full flex-col border-primary p-6 shadow-md ring-1 ring-primary/20"
+                      : "flex h-full flex-col p-6"
+                  }
+                >
                 {tier.highlighted ? (
-                  <Badge className="absolute -top-2.5 right-5 bg-primary text-primary-foreground">
+                  <Badge className="absolute top-3 right-5 bg-primary text-primary-foreground">
                     Most popular
                   </Badge>
                 ) : null}
@@ -232,13 +232,15 @@ export default async function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <ButtonLink
-                  variant={tier.highlighted ? "coral" : "outline"}
-                  className="mt-6 w-full"
-                  href="/signup"
-                >
-                  Start free trial
-                </ButtonLink>
+                <div className="mt-auto pt-6">
+                  <ButtonLink
+                    variant={tier.highlighted ? "coral" : "outline"}
+                    className="w-full"
+                    href="/signup"
+                  >
+                    Start free trial
+                  </ButtonLink>
+                </div>
               </Card>
             ))}
           </div>
