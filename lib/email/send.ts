@@ -7,6 +7,9 @@ import { WelcomeEmail } from "@/lib/email/templates/welcome";
 import { ListingSubmittedEmail } from "@/lib/email/templates/listing-submitted";
 import { ListingApprovedEmail } from "@/lib/email/templates/listing-approved";
 import { ListingRejectedEmail } from "@/lib/email/templates/listing-rejected";
+import { PaymentFailedEmail } from "@/lib/email/templates/payment-failed";
+import { AccountDeactivatedEmail } from "@/lib/email/templates/account-deactivated";
+import { RenewalReminderEmail } from "@/lib/email/templates/renewal-reminder";
 
 /** Looks up a user's login email by profile/user id via the service role. */
 export async function getUserEmail(userId: string): Promise<string | null> {
@@ -88,3 +91,53 @@ export async function sendListingRejectedEmail(
     }),
   });
 }
+
+export async function sendPaymentFailedEmail(
+  trainerId: string,
+  args: { name?: string | null },
+) {
+  const to = await getUserEmail(trainerId);
+  if (!to) return { ok: false, skipped: true };
+  return sendEmail({
+    to,
+    subject: "Action needed: payment failed",
+    react: PaymentFailedEmail({
+      name: args.name,
+      billingUrl: `${env.appUrl}/billing`,
+    }),
+  });
+}
+
+export async function sendAccountDeactivatedEmail(
+  trainerId: string,
+  args: { name?: string | null },
+) {
+  const to = await getUserEmail(trainerId);
+  if (!to) return { ok: false, skipped: true };
+  return sendEmail({
+    to,
+    subject: "Your listings have been deactivated",
+    react: AccountDeactivatedEmail({
+      name: args.name,
+      billingUrl: `${env.appUrl}/billing`,
+    }),
+  });
+}
+
+export async function sendRenewalReminderEmail(
+  trainerId: string,
+  args: { name?: string | null; renewalDate: string },
+) {
+  const to = await getUserEmail(trainerId);
+  if (!to) return { ok: false, skipped: true };
+  return sendEmail({
+    to,
+    subject: "Your subscription renews soon",
+    react: RenewalReminderEmail({
+      name: args.name,
+      renewalDate: args.renewalDate,
+      billingUrl: `${env.appUrl}/billing`,
+    }),
+  });
+}
+

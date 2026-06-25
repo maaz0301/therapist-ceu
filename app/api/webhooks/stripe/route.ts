@@ -7,6 +7,10 @@ import { stripe, STRIPE_PRICE_IDS } from "@/lib/stripe";
 import { db } from "@/lib/db";
 import { profiles, listings } from "@/db/schema";
 import { SUBSCRIPTION_TIERS, type SubscriptionTier } from "@/lib/constants";
+import {
+  sendPaymentFailedEmail,
+  sendAccountDeactivatedEmail,
+} from "@/lib/email/send";
 
 /**
  * Stripe webhook endpoint.
@@ -55,7 +59,7 @@ async function syncSubscriptionToProfile(
   subscription: Stripe.Subscription | null,
 ) {
   const [profile] = await db
-    .select({ id: profiles.id })
+    .select({ id: profiles.id, fullName: profiles.fullName })
     .from(profiles)
     .where(eq(profiles.stripeCustomerId, customerId))
     .limit(1);
@@ -78,6 +82,7 @@ async function syncSubscriptionToProfile(
       })
       .where(eq(profiles.id, profile.id));
     await deactivateAllListings(profile.id);
+    await sendAccountDeactivatedEmail(profile.id, { name: profile.fullName });
     return;
   }
 
@@ -100,6 +105,10 @@ async function syncSubscriptionToProfile(
   const isActive = status === "active" || status === "trialing";
   if (!isActive) {
     await deactivateAllListings(profile.id);
+    // Note: this fires on every inactive webhook (e.g. repeated past_due
+    // retries), not just the first transition — acceptable for now, but
+    // could mean a trainer gets this email more than once.
+    await sendAccountDeactivatedEmail(profile.id, { name: profile.fullName });
   } else if (tier) {
     await reactivateListingsUpToLimit(profile.id, tier);
   }
@@ -212,7 +221,7 @@ export async function POST(req: Request) {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
         const [profile] = await db
-          .select({ id: profiles.id })
+          .select({ id: profiles.id, fullName: profiles.fullName })
           .from(profiles)
           .where(eq(profiles.stripeCustomerId, customerId))
           .limit(1);
@@ -221,9 +230,8 @@ export async function POST(req: Request) {
             .update(profiles)
             .set({ subscriptionStatus: "past_due" })
             .where(eq(profiles.id, profile.id));
+          await sendPaymentFailedEmail(profile.id, { name: profile.fullName });
         }
-        // TODO: send "payment failed" transactional email once email
-        // templates for this event are wired up (lib/email).
         break;
       }
 

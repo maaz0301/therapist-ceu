@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
+import Image from "next/image";
 
 import { cn } from "@/lib/utils";
 
@@ -11,16 +11,15 @@ export function Logo({
   href?: string;
 }) {
   return (
-    <Link
-      href={href}
-      className={cn("inline-flex items-center gap-2 font-heading", className)}
-    >
-      <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-        <GraduationCap className="size-5" />
-      </span>
-      <span className="text-lg font-bold tracking-tight text-foreground">
-        Therapist<span className="text-coral">CEU</span>
-      </span>
+    <Link href={href} className={cn("inline-flex items-center", className)}>
+      <Image
+        src="/logo.png"
+        alt="TherapistCEU"
+        width={1080}
+        height={440}
+        priority
+        className="h-16 w-auto"
+      />
     </Link>
   );
 }
