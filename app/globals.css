@@ -55,9 +55,9 @@
 }
 
 /*
- * TherapistCEU.com brand palette — TherapyDen-inspired.
- * Bright, clean, friendly, professional. Teal primary + coral accent.
- * Swap these values for Megan's official brand doc when it arrives.
+ * TherapistCEU.com brand palette — matched to the approved logo
+ * (#384345 charcoal + #788f7d sage), sampled directly from the logo file.
+ * Confirm against an official brand doc if Megan provides one later.
  */
 :root {
   --background: #fbfaf8;
@@ -66,16 +66,16 @@
   --card-foreground: #1f2a2e;
   --popover: #ffffff;
   --popover-foreground: #1f2a2e;
-  --primary: #0e7c7b;
+  --primary: #384345;
   --primary-foreground: #ffffff;
-  --secondary: #e6f2f1;
-  --secondary-foreground: #0a4f4e;
+  --secondary: #eef1ee;
+  --secondary-foreground: #384345;
   --muted: #f2efea;
   --muted-foreground: #5b6b70;
-  --accent: #e6f2f1;
-  --accent-foreground: #0a4f4e;
+  --accent: #eef1ee;
+  --accent-foreground: #384345;
   --destructive: #e2483d;
-  --coral: #ff6b5e;
+  --coral: #788f7d;
   --coral-foreground: #ffffff;
   --success: #1f9d6b;
   --success-foreground: #ffffff;
@@ -83,61 +83,61 @@
   --warning-foreground: #ffffff;
   --border: #e7e3dd;
   --input: #e7e3dd;
-  --ring: #0e7c7b;
-  --chart-1: #0e7c7b;
-  --chart-2: #ff6b5e;
+  --ring: #384345;
+  --chart-1: #384345;
+  --chart-2: #788f7d;
   --chart-3: #e08a00;
-  --chart-4: #0a4f4e;
-  --chart-5: #5b6b70;
+  --chart-4: #5b6b70;
+  --chart-5: #9bb09f;
   --radius: 0.875rem;
   --sidebar: #ffffff;
   --sidebar-foreground: #1f2a2e;
-  --sidebar-primary: #0e7c7b;
+  --sidebar-primary: #384345;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e6f2f1;
-  --sidebar-accent-foreground: #0a4f4e;
+  --sidebar-accent: #eef1ee;
+  --sidebar-accent-foreground: #384345;
   --sidebar-border: #e7e3dd;
-  --sidebar-ring: #0e7c7b;
+  --sidebar-ring: #384345;
 }
 
 .dark {
-  --background: #0c1718;
+  --background: #0c1110;
   --foreground: #f1f5f4;
-  --card: #122122;
+  --card: #161e1f;
   --card-foreground: #f1f5f4;
-  --popover: #122122;
+  --popover: #161e1f;
   --popover-foreground: #f1f5f4;
-  --primary: #2bb3b1;
-  --primary-foreground: #06201f;
-  --secondary: #1b2e2e;
-  --secondary-foreground: #d7eceb;
-  --muted: #1b2a2a;
+  --primary: #97a3a5;
+  --primary-foreground: #161e1f;
+  --secondary: #232c2d;
+  --secondary-foreground: #d7e0e0;
+  --muted: #1f2728;
   --muted-foreground: #9bb0b0;
-  --accent: #1b2e2e;
-  --accent-foreground: #d7eceb;
+  --accent: #232c2d;
+  --accent-foreground: #d7e0e0;
   --destructive: #ff6b5e;
-  --coral: #ff7a6e;
-  --coral-foreground: #2a0b07;
+  --coral: #9bb09f;
+  --coral-foreground: #0c1110;
   --success: #34c98a;
   --success-foreground: #06201f;
   --warning: #f0a83a;
   --warning-foreground: #2a1a00;
   --border: #ffffff1a;
   --input: #ffffff26;
-  --ring: #2bb3b1;
-  --chart-1: #2bb3b1;
-  --chart-2: #ff7a6e;
+  --ring: #97a3a5;
+  --chart-1: #97a3a5;
+  --chart-2: #9bb09f;
   --chart-3: #f0a83a;
-  --chart-4: #5fd0ce;
+  --chart-4: #5a6b6d;
   --chart-5: #9bb0b0;
-  --sidebar: #122122;
+  --sidebar: #161e1f;
   --sidebar-foreground: #f1f5f4;
-  --sidebar-primary: #2bb3b1;
-  --sidebar-primary-foreground: #06201f;
-  --sidebar-accent: #1b2e2e;
-  --sidebar-accent-foreground: #d7eceb;
+  --sidebar-primary: #97a3a5;
+  --sidebar-primary-foreground: #161e1f;
+  --sidebar-accent: #232c2d;
+  --sidebar-accent-foreground: #d7e0e0;
   --sidebar-border: #ffffff1a;
-  --sidebar-ring: #2bb3b1;
+  --sidebar-ring: #97a3a5;
 }
 
 @layer base {
