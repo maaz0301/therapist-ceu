@@ -30,11 +30,13 @@ export function TrainerActions({
   accountStatus,
   subscriptionTier,
   subscriptionStatus,
+  stripeCustomerId,
 }: {
   profileId: string;
   accountStatus: "active" | "suspended";
   subscriptionTier: "basic" | "pro" | null;
   subscriptionStatus: string;
+  stripeCustomerId: string | null;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -130,11 +132,31 @@ export function TrainerActions({
           <DialogHeader>
             <DialogTitle>Manage subscription</DialogTitle>
             <DialogDescription>
-              Set the plan manually (until Stripe billing is connected in Phase
-              5). This controls how many listings the trainer can publish.
+              Billing is normally driven by Stripe. Changing these here
+              overrides that until the next Stripe webhook fires (e.g. their
+              next renewal or cancellation), so use this for edge cases like
+              comping an account — not as the everyday way to manage plans.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4">
+            {stripeCustomerId ? (
+              <div className="flex flex-col gap-1.5">
+                <Label>Stripe customer</Label>
+                <a
+                  href={`https://dashboard.stripe.com/test/customers/${stripeCustomerId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-sm text-primary underline-offset-2 hover:underline"
+                >
+                  {stripeCustomerId}
+                </a>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No Stripe customer linked yet — this trainer hasn&apos;t
+                completed checkout.
+              </p>
+            )}
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="tier">Plan tier</Label>
               <select

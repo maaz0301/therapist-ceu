@@ -74,6 +74,7 @@ export default async function AdminTrainersPage() {
                   accountStatus={t.accountStatus}
                   subscriptionTier={t.subscriptionTier}
                   subscriptionStatus={t.subscriptionStatus}
+                  stripeCustomerId={t.stripeCustomerId}
                 />
               </div>
             </Card>
