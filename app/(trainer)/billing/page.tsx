@@ -81,7 +81,7 @@ export default async function BillingPage({
       <div className="grid gap-4 sm:grid-cols-2">
         {(["basic", "pro"] as const).map((tierId) => {
           const tier = SUBSCRIPTION_TIERS[tierId];
-          const isCurrent = subscription.tier === tierId;
+          const isCurrent = subscription.isActive && subscription.tier === tierId;
           return (
             <Card
               key={tierId}
