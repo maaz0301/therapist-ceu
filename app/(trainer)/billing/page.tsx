@@ -17,13 +17,32 @@ const PLAN_FEATURES = {
   pro: ["Unlimited active listings", "Full analytics dashboard", "Priority placement (coming soon)"],
 };
 
-export default async function BillingPage() {
+export default async function BillingPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   const profile = await requireTrainer();
   const subscription = getSubscriptionState(profile);
   const activeCount = await getActiveListingCount(profile.id);
+  const sp = await searchParams;
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">
+      {sp.checkout === "success" ? (
+        <div className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">
+          <p className="font-medium">Payment successful!</p>
+          <p className="mt-0.5 text-primary/80">
+            Your subscription is being activated. It may take a moment for your
+            plan to update — refresh this page if it hasn&apos;t changed yet.
+          </p>
+        </div>
+      ) : sp.checkout === "canceled" ? (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          Checkout was canceled. You can try again whenever you&apos;re ready.
+        </div>
+      ) : null}
+
       <div>
         <h1 className="font-heading text-2xl font-bold text-foreground">
           Billing
@@ -51,7 +70,7 @@ export default async function BillingPage() {
         </Badge>
       </Card>
 
-      {subscription.isActive ? (
+      {profile.stripeCustomerId ? (
         <form action={createPortalSession}>
           <Button type="submit" variant="outline">
             Manage subscription
