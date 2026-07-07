@@ -8,20 +8,26 @@
  * Helper to ensure a URL string has a protocol, preventing 'Invalid URL' errors
  * during Vercel builds if e.g. VERCEL_URL is provided without https://
  */
-function withProtocol(url: string | undefined, fallback: string) {
+/**
+ * Helper to ensure a URL string has a protocol and no accidental quotes, 
+ * preventing 'Invalid URL' errors during Vercel builds.
+ */
+function parseUrlEnv(url: string | undefined, fallback: string) {
   if (!url) return fallback;
-  if (!url.startsWith("http://") && !url.startsWith("https://")) {
-    return `https://${url}`;
+  // Strip accidental quotes if user pasted them into Vercel
+  let cleanUrl = url.replace(/^["']|["']$/g, "").trim();
+  if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
+    return `https://${cleanUrl}`;
   }
-  return url;
+  return cleanUrl;
 }
 
 export const env = {
-  appUrl: withProtocol(process.env.NEXT_PUBLIC_APP_URL, "http://localhost:3000"),
+  appUrl: parseUrlEnv(process.env.NEXT_PUBLIC_APP_URL, "http://localhost:3000"),
   // Fallback to placeholder to prevent Next.js static generation from crashing
   // when @supabase/ssr does new URL() during the build step.
-  supabaseUrl: withProtocol(process.env.NEXT_PUBLIC_SUPABASE_URL, "https://placeholder.supabase.co"),
-  supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder",
+  supabaseUrl: parseUrlEnv(process.env.NEXT_PUBLIC_SUPABASE_URL, "https://placeholder.supabase.co"),
+  supabaseAnonKey: (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder").replace(/^["']|["']$/g, "").trim(),
 };
 
 export function assertSupabaseEnv() {

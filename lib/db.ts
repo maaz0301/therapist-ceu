@@ -8,7 +8,7 @@ import * as schema from "@/db/schema";
  * This connection runs with elevated privileges and BYPASSES RLS — only use
  * it from server code that has already verified the caller's permissions.
  */
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL?.replace(/^["']|["']$/g, "").trim();
 
 if (!connectionString) {
   throw new Error("Missing DATABASE_URL environment variable.");
