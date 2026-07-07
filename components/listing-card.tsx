@@ -36,17 +36,19 @@ export function ListingCard({
   return (
     <Card
       className={cn(
-        "group relative flex h-full flex-col gap-4 p-5 transition-all hover:-translate-y-0.5 hover:shadow-md",
+        "group relative flex h-full flex-col gap-4 p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/30 overflow-hidden",
         className,
       )}
     >
+      <div className="absolute top-0 right-0 h-2 w-full bg-gradient-to-l from-coral/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      
       <div className="flex flex-wrap items-center gap-2">
         <FormatBadge format={listing.format} />
         {listing.hasCeu ? <CeuBadge ceCount={listing.ceCount} /> : null}
       </div>
 
       <div className="space-y-1.5">
-        <h3 className="text-base leading-snug font-semibold text-foreground">
+        <h3 className="text-base leading-snug font-semibold text-foreground transition-colors group-hover:text-primary">
           <Link
             href={`/listings/${listing.slug}`}
             className="after:absolute after:inset-0"

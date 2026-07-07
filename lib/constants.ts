@@ -12,8 +12,8 @@ export const LISTING_FORMATS = [
 ] as const;
 export type ListingFormat = (typeof LISTING_FORMATS)[number];
 
-export const CEU_FILTER_OPTIONS = ["Either", "Yes", "No"] as const;
-export type CeuFilterOption = (typeof CEU_FILTER_OPTIONS)[number];
+export const CEU_PROVIDERS = ["APA", "NBCC", "ACE/NASW"] as const;
+export type CeuProvider = (typeof CEU_PROVIDERS)[number];
 
 export const PRICE_RANGES = [
   { id: "free", label: "Free", min: 0, max: 0 },

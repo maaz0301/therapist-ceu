@@ -61,11 +61,11 @@ export function ActiveFilterChips({
       onRemove: () => update({ priceId: null }),
     });
   }
-  if (filters.ceu !== "either") {
+  for (const p of filters.providers) {
     chips.push({
-      key: "ceu",
-      label: `CE: ${filters.ceu === "yes" ? "Yes" : "No"}`,
-      onRemove: () => update({ ceu: "either" }),
+      key: `provider-${p}`,
+      label: p,
+      onRemove: () => update({ providers: filters.providers.filter((x) => x !== p) }),
     });
   }
   for (const code of filters.states) {

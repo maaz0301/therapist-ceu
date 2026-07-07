@@ -65,8 +65,8 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_50%_0%,var(--secondary)_0%,transparent_70%)]" />
+      <section className="relative overflow-hidden bg-gradient-to-b from-coral/5 via-background to-background">
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,var(--coral)_0%,transparent_70%)] opacity-20" />
         <div className="mx-auto w-full max-w-6xl px-4 pt-20 pb-16 text-center sm:px-6 sm:pt-28">
           <Badge className="mx-auto bg-secondary text-secondary-foreground">
             <Sparkles data-icon="inline-start" />
@@ -74,7 +74,7 @@ export default async function HomePage() {
           </Badge>
           <h1 className="mx-auto mt-5 max-w-3xl text-4xl leading-[1.1] font-bold text-foreground sm:text-5xl">
             Find the right CEU training,{" "}
-            <span className="text-primary">without the endless search.</span>
+            <span className="bg-gradient-to-r from-primary to-coral bg-clip-text text-transparent">without the endless search.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground">
             One clean, searchable directory of CEU and professional trainings —

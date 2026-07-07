@@ -45,8 +45,25 @@ function buildWhere(filters: DirectoryFilters): SQL | undefined {
     conditions.push(inArray(listings.format, filters.formats));
   }
 
-  if (filters.ceu === "yes") conditions.push(eq(listings.hasCeu, true));
-  else if (filters.ceu === "no") conditions.push(eq(listings.hasCeu, false));
+  if (filters.providers.length > 0) {
+    const providerConds: SQL[] = [];
+    for (const p of filters.providers) {
+      if (p === "ACE/NASW") {
+        providerConds.push(
+          ilike(listings.accreditingBody, "%ACE%"),
+          ilike(listings.accreditingBody, "%NASW%"),
+          ilike(listings.accreditingBody, "%ASWB%")
+        );
+      } else {
+        providerConds.push(ilike(listings.accreditingBody, `%${p}%`));
+      }
+    }
+    const providerOr = or(...providerConds);
+    if (providerOr) {
+      // Must have CEUs AND match one of the selected providers
+      conditions.push(and(eq(listings.hasCeu, true), providerOr)!);
+    }
+  }
 
   if (filters.priceId) {
     const range = PRICE_RANGES.find((r) => r.id === filters.priceId);
@@ -236,7 +253,7 @@ export async function getFeaturedListings(
     states: [],
     formats: [],
     priceId: null,
-    ceu: "either",
+    providers: [],
     tagIds: [],
     page: 1,
   });

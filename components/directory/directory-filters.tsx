@@ -14,14 +14,13 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
-  CEU_FILTER_OPTIONS,
+  CEU_PROVIDERS,
   LISTING_FORMATS,
   PRICE_RANGES,
   US_STATES,
 } from "@/lib/constants";
 import {
   hasActiveFilters,
-  type CeuFilter,
   type DirectoryFilters,
 } from "@/lib/directory-params";
 import type { GroupedTags } from "@/lib/queries/tags";
@@ -85,26 +84,17 @@ function FilterPanel({
 
       <div className="space-y-2">
         <SectionTitle>CE credits</SectionTitle>
-        <div className="inline-flex rounded-lg border border-border p-0.5">
-          {CEU_FILTER_OPTIONS.map((opt) => {
-            const value = opt.toLowerCase() as CeuFilter;
-            const active = filters.ceu === value;
-            return (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => update({ ceu: value })}
-                className={cn(
-                  "rounded-md px-3 py-1 text-sm transition-colors",
-                  active
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {opt}
-              </button>
-            );
-          })}
+        <div className="space-y-1.5">
+          {CEU_PROVIDERS.map((provider) => (
+            <CheckRow
+              key={provider}
+              label={provider}
+              checked={filters.providers.includes(provider)}
+              onChange={() =>
+                update({ providers: toggle(filters.providers, provider) })
+              }
+            />
+          ))}
         </div>
       </div>
 

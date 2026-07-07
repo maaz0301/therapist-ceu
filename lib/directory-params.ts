@@ -1,5 +1,6 @@
 import {
   LISTING_FORMATS,
+  CEU_PROVIDERS,
   PRICE_RANGES,
   type ListingFormat,
   type PriceRangeId,
@@ -7,20 +8,19 @@ import {
 
 export const DIRECTORY_PAGE_SIZE = 12;
 
-export type CeuFilter = "yes" | "no" | "either";
-
 export type DirectoryFilters = {
   q: string;
   states: string[];
   formats: ListingFormat[];
   priceId: PriceRangeId | null;
-  ceu: CeuFilter;
+  providers: string[];
   tagIds: string[];
   page: number;
 };
 
 const VALID_FORMATS = new Set<string>(LISTING_FORMATS);
 const VALID_PRICE_IDS = new Set<string>(PRICE_RANGES.map((p) => p.id));
+const VALID_PROVIDERS = new Set<string>(CEU_PROVIDERS);
 
 function readParam(
   value: string | string[] | undefined,
@@ -49,9 +49,9 @@ export function parseDirectoryFilters(
     priceRaw && VALID_PRICE_IDS.has(priceRaw)
       ? (priceRaw as PriceRangeId)
       : null;
-  const ceuRaw = readParam(sp.ceu);
-  const ceu: CeuFilter =
-    ceuRaw === "yes" || ceuRaw === "no" ? ceuRaw : "either";
+  const providers = readList(sp.providers).filter((p) =>
+    VALID_PROVIDERS.has(p),
+  );
   const pageRaw = Number(readParam(sp.page));
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? Math.floor(pageRaw) : 1;
 
@@ -60,7 +60,7 @@ export function parseDirectoryFilters(
     states: readList(sp.states),
     formats,
     priceId,
-    ceu,
+    providers,
     tagIds: readList(sp.tags),
     page,
   };
@@ -73,7 +73,7 @@ export function filtersToQueryString(filters: DirectoryFilters): string {
   if (filters.states.length) params.set("states", filters.states.join(","));
   if (filters.formats.length) params.set("formats", filters.formats.join(","));
   if (filters.priceId) params.set("price", filters.priceId);
-  if (filters.ceu !== "either") params.set("ceu", filters.ceu);
+  if (filters.providers.length) params.set("providers", filters.providers.join(","));
   if (filters.tagIds.length) params.set("tags", filters.tagIds.join(","));
   if (filters.page > 1) params.set("page", String(filters.page));
   return params.toString();
@@ -85,7 +85,7 @@ export function hasActiveFilters(filters: DirectoryFilters): boolean {
       filters.states.length ||
       filters.formats.length ||
       filters.priceId ||
-      filters.ceu !== "either" ||
+      filters.providers.length ||
       filters.tagIds.length,
   );
 }
@@ -95,7 +95,7 @@ export const EMPTY_FILTERS: DirectoryFilters = {
   states: [],
   formats: [],
   priceId: null,
-  ceu: "either",
+  providers: [],
   tagIds: [],
   page: 1,
 };

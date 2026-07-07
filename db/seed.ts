@@ -18,7 +18,7 @@ import * as schema from "@/db/schema";
  *   marcus@therapistceu.test  — trainer (Basic)
  *   aisha@therapistceu.test   — trainer (Pro)
  */
-config({ path: ".env.local" });
+config({ path: ".env" });
 
 const DEMO_PASSWORD = "Password123!";
 
