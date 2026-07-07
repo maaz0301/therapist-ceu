@@ -60,29 +60,29 @@
  * Confirm against an official brand doc if Megan provides one later.
  */
 :root {
-  --background: #fbfaf8;
-  --foreground: #1f2a2e;
+  --background: #F8F9F3; /* Very pale tint for readability */
+  --foreground: #3C1B43; /* Midnight Violet */
   --card: #ffffff;
-  --card-foreground: #1f2a2e;
+  --card-foreground: #3C1B43; /* Midnight Violet */
   --popover: #ffffff;
-  --popover-foreground: #1f2a2e;
-  --primary: #384345;
+  --popover-foreground: #3C1B43; /* Midnight Violet */
+  --primary: #3C1B43; /* Midnight Violet */
   --primary-foreground: #ffffff;
-  --secondary: #eef1ee;
-  --secondary-foreground: #384345;
-  --muted: #f2efea;
-  --muted-foreground: #5b6b70;
-  --accent: #eef1ee;
-  --accent-foreground: #384345;
-  --destructive: #e2483d;
-  --coral: #788f7d;
+  --secondary: #501537; /* Crimson Violet */
+  --secondary-foreground: #ffffff;
+  --muted: #D4E79E; /* Lime Cream */
+  --muted-foreground: #3C1B43; /* Midnight Violet */
+  --accent: #B8C480; /* Muted Olive */
+  --accent-foreground: #3C1B43; /* Midnight Violet */
+  --destructive: #922D50; /* Vintage Berry */
+  --coral: #922D50; /* Vintage Berry */
   --coral-foreground: #ffffff;
-  --success: #1f9d6b;
-  --success-foreground: #ffffff;
-  --warning: #e08a00;
-  --warning-foreground: #ffffff;
-  --border: #e7e3dd;
-  --input: #e7e3dd;
+  --success: #B8C480; /* Muted Olive */
+  --success-foreground: #3C1B43;
+  --warning: #D4E79E; /* Lime Cream */
+  --warning-foreground: #3C1B43;
+  --border: #D4E79E; /* Lime Cream */
+  --input: #D4E79E; /* Lime Cream */
   --ring: #384345;
   --chart-1: #384345;
   --chart-2: #788f7d;

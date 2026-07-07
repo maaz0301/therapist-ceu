@@ -9,19 +9,19 @@ const FORMAT_STYLES: Record<
   { className: string; Icon: typeof Monitor }
 > = {
   "Live Virtual": {
-    className: "bg-secondary text-secondary-foreground",
+    className: "bg-primary text-primary-foreground hover:bg-primary/90",
     Icon: Monitor,
   },
   "In-Person": {
-    className: "bg-coral/12 text-coral",
+    className: "bg-coral text-coral-foreground hover:bg-coral/90",
     Icon: MapPin,
   },
   "Self-Paced": {
-    className: "bg-warning/12 text-warning",
+    className: "bg-warning text-warning-foreground hover:bg-warning/90",
     Icon: PlayCircle,
   },
   Hybrid: {
-    className: "bg-muted text-muted-foreground",
+    className: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
     Icon: Layers,
   },
 };

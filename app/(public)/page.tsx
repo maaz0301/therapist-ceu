@@ -65,11 +65,12 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-coral/5 via-background to-background">
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,var(--coral)_0%,transparent_70%)] opacity-20" />
+      <section className="relative overflow-hidden bg-background">
+        <div className="pointer-events-none absolute -top-40 -left-20 -z-10 h-96 w-96 rounded-full bg-secondary/40 blur-[100px]" />
+        <div className="pointer-events-none absolute -top-40 -right-20 -z-10 h-[500px] w-[500px] rounded-full bg-coral/20 blur-[120px]" />
         <div className="mx-auto w-full max-w-6xl px-4 pt-20 pb-16 text-center sm:px-6 sm:pt-28">
-          <Badge className="mx-auto bg-secondary text-secondary-foreground">
-            <Sparkles data-icon="inline-start" />
+          <Badge className="mx-auto bg-coral/10 text-coral border border-coral/20 hover:bg-coral/20 transition-colors">
+            <Sparkles className="size-3.5 mr-1" />
             For licensed mental health therapists
           </Badge>
           <h1 className="mx-auto mt-5 max-w-3xl text-4xl leading-[1.1] font-bold text-foreground sm:text-5xl">
@@ -84,7 +85,7 @@ export default async function HomePage() {
 
           <form
             action="/directory"
-            className="mx-auto mt-8 flex w-full max-w-xl items-center gap-2 rounded-2xl border border-border bg-card p-2 shadow-sm"
+            className="mx-auto mt-8 flex w-full max-w-xl items-center gap-2 rounded-2xl border border-border bg-card p-2 shadow-lg shadow-coral/10"
           >
             <div className="flex flex-1 items-center gap-2 pl-3">
               <Search className="size-5 shrink-0 text-muted-foreground" />

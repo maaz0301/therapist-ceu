@@ -12,7 +12,7 @@ export function CeuBadge({
   className?: string;
 }) {
   return (
-    <Badge className={cn("bg-success/12 text-success", className)}>
+    <Badge className={cn("bg-success text-success-foreground hover:bg-success/90", className)}>
       <GraduationCap data-icon="inline-start" />
       {ceCount ? `${ceCount} CE${ceCount === 1 ? "" : "s"}` : "CEU"}
     </Badge>

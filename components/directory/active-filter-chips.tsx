@@ -91,10 +91,10 @@ export function ActiveFilterChips({
           key={chip.key}
           type="button"
           onClick={chip.onRemove}
-          className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1 text-sm text-foreground transition-colors hover:bg-muted"
+          className="inline-flex items-center gap-1 rounded-full border border-coral/20 bg-coral/10 px-3 py-1 text-sm font-medium text-coral transition-colors hover:bg-coral/20 hover:border-coral/30"
         >
           {chip.label}
-          <X className="size-3 text-muted-foreground" />
+          <X className="size-3.5 opacity-70" />
         </button>
       ))}
       <Button

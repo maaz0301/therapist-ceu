@@ -107,7 +107,7 @@ function FilterPanel({
               name="price"
               checked={filters.priceId === null}
               onChange={() => update({ priceId: null })}
-              className="accent-primary"
+              className="accent-coral"
             />
             Any price
           </label>
@@ -121,7 +121,7 @@ function FilterPanel({
                 name="price"
                 checked={filters.priceId === range.id}
                 onChange={() => update({ priceId: range.id })}
-                className="accent-primary"
+                className="accent-coral"
               />
               {range.label}
             </label>

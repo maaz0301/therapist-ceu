@@ -30,7 +30,7 @@ export function DashboardShell({
 }) {
   return (
     <div className="flex min-h-full flex-1">
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-sidebar md:flex">
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-sidebar md:sticky md:top-0 md:flex md:h-screen">
         <div className="flex h-16 items-center border-b border-border px-5">
           <Logo />
         </div>
