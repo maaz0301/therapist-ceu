@@ -45,7 +45,7 @@ export function DashboardShell({
               key={item.href}
               variant="ghost"
               size="sm"
-              className="justify-start"
+              className="justify-start hover:bg-primary/10 hover:text-primary"
               href={item.href}
             >
               <item.icon data-icon="inline-start" />
@@ -67,7 +67,7 @@ export function DashboardShell({
           <ButtonLink
             variant="ghost"
             size="sm"
-            className="w-full justify-start text-muted-foreground"
+            className="w-full justify-start text-muted-foreground hover:bg-primary/10 hover:text-primary"
             href="/"
           >
             Back to site
@@ -77,7 +77,7 @@ export function DashboardShell({
               type="submit"
               variant="ghost"
               size="sm"
-              className="w-full justify-start text-muted-foreground"
+              className="w-full justify-start text-muted-foreground hover:bg-primary/10 hover:text-primary"
             >
               <LogOut data-icon="inline-start" />
               Log out
