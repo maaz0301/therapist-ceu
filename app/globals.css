@@ -57,8 +57,8 @@
 /*
  * TherapistCEU.com brand palette — Cohesive 3-color theme:
  * Main Dark: Slate (#0F172A)
- * Main Light: Emerald Green (#059669) - matches logo
- * Accent: Vibrant Coral (#FF6F61)
+ * Main Light: Bright Emerald Green (#10B981) - no grey tint
+ * Accent: Vibrant Rose/Coral (#F43F5E)
  */
 :root {
   --background: #FFFFFF;
@@ -67,7 +67,7 @@
   --card-foreground: #0F172A;
   --popover: #FFFFFF;
   --popover-foreground: #0F172A;
-  --primary: #059669;
+  --primary: #10B981;
   --primary-foreground: #FFFFFF;
   --secondary: #F8FAFC;
   --secondary-foreground: #0F172A;
@@ -76,29 +76,29 @@
   --accent: #F8FAFC;
   --accent-foreground: #0F172A;
   --destructive: #EF4444;
-  --coral: #FF6F61;
+  --coral: #F43F5E;
   --coral-foreground: #FFFFFF;
-  --success: #059669;
+  --success: #10B981;
   --success-foreground: #FFFFFF;
   --warning: #F59E0B;
   --warning-foreground: #FFFFFF;
   --border: #E2E8F0;
   --input: #E2E8F0;
-  --ring: #059669;
-  --chart-1: #059669;
-  --chart-2: #FF6F61;
+  --ring: #10B981;
+  --chart-1: #10B981;
+  --chart-2: #F43F5E;
   --chart-3: #0F172A;
-  --chart-4: #059669;
-  --chart-5: #FF6F61;
+  --chart-4: #10B981;
+  --chart-5: #F43F5E;
   --radius: 0.875rem;
   --sidebar: #F8FAFC;
   --sidebar-foreground: #0F172A;
-  --sidebar-primary: #059669;
+  --sidebar-primary: #10B981;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #E2E8F0;
   --sidebar-accent-foreground: #0F172A;
   --sidebar-border: #E2E8F0;
-  --sidebar-ring: #059669;
+  --sidebar-ring: #10B981;
 }
 
 .dark {
@@ -108,7 +108,7 @@
   --card-foreground: #F8FAFC;
   --popover: #1E293B;
   --popover-foreground: #F8FAFC;
-  --primary: #059669;
+  --primary: #10B981;
   --primary-foreground: #FFFFFF;
   --secondary: #1E293B;
   --secondary-foreground: #F8FAFC;
@@ -117,28 +117,28 @@
   --accent: #1E293B;
   --accent-foreground: #F8FAFC;
   --destructive: #EF4444;
-  --coral: #FF6F61;
+  --coral: #F43F5E;
   --coral-foreground: #FFFFFF;
-  --success: #059669;
+  --success: #10B981;
   --success-foreground: #FFFFFF;
   --warning: #F59E0B;
   --warning-foreground: #FFFFFF;
   --border: #334155;
   --input: #334155;
-  --ring: #059669;
-  --chart-1: #059669;
-  --chart-2: #FF6F61;
+  --ring: #10B981;
+  --chart-1: #10B981;
+  --chart-2: #F43F5E;
   --chart-3: #F8FAFC;
-  --chart-4: #059669;
-  --chart-5: #FF6F61;
+  --chart-4: #10B981;
+  --chart-5: #F43F5E;
   --sidebar: #0F172A;
   --sidebar-foreground: #F8FAFC;
-  --sidebar-primary: #059669;
+  --sidebar-primary: #10B981;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #1E293B;
   --sidebar-accent-foreground: #F8FAFC;
   --sidebar-border: #334155;
-  --sidebar-ring: #059669;
+  --sidebar-ring: #10B981;
 }
 
 @layer base {
