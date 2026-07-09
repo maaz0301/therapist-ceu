@@ -43,7 +43,7 @@ export const listingStatus = pgEnum("listing_status", [
 export const listingFormat = pgEnum("listing_format", [
   "Live Virtual",
   "In-Person",
-  "Self-Paced",
+  "On-Demand",
   "Hybrid",
 ]);
 

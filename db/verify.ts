@@ -10,7 +10,7 @@ import * as schema from "@/db/schema";
  * Phase 1 smoke test: confirms seed data exists (via the elevated Drizzle
  * connection) and that RLS restricts an anonymous Supabase client correctly.
  */
-config({ path: ".env.local" });
+config({ path: ".env" });
 
 async function main() {
   const client = postgres(process.env.DATABASE_URL!, { prepare: false });

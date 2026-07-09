@@ -47,6 +47,7 @@ function buildWhere(filters: DirectoryFilters): SQL | undefined {
 
   if (filters.providers.length > 0) {
     const providerConds: SQL[] = [];
+    let hasNonCeu = false;
     for (const p of filters.providers) {
       if (p === "ACE/NASW") {
         providerConds.push(
@@ -54,27 +55,38 @@ function buildWhere(filters: DirectoryFilters): SQL | undefined {
           ilike(listings.accreditingBody, "%NASW%"),
           ilike(listings.accreditingBody, "%ASWB%")
         );
+      } else if (p === "State Board Approved") {
+        providerConds.push(ilike(listings.accreditingBody, "%State Board%"));
+      } else if (p === "Non-CE") {
+        hasNonCeu = true;
       } else {
         providerConds.push(ilike(listings.accreditingBody, `%${p}%`));
       }
     }
-    const providerOr = or(...providerConds);
-    if (providerOr) {
-      // Must have CEUs AND match one of the selected providers
-      conditions.push(and(eq(listings.hasCeu, true), providerOr)!);
+
+    const providerOrConditions: SQL[] = [];
+    if (providerConds.length > 0) {
+      const providerOr = or(...providerConds);
+      if (providerOr) {
+        providerOrConditions.push(and(eq(listings.hasCeu, true), providerOr)!);
+      }
+    }
+    if (hasNonCeu) {
+      providerOrConditions.push(eq(listings.hasCeu, false));
+    }
+
+    const finalOr = or(...providerOrConditions);
+    if (finalOr) {
+      conditions.push(finalOr);
     }
   }
 
   if (filters.priceId) {
     const range = PRICE_RANGES.find((r) => r.id === filters.priceId);
     if (range) {
-      if (range.id === "free") {
-        conditions.push(sql`${listings.price} = 0`);
-      } else {
-        conditions.push(sql`${listings.price} >= ${range.min}`);
-        if (range.max !== null) {
-          conditions.push(sql`${listings.price} <= ${range.max}`);
-        }
+      conditions.push(sql`${listings.price} >= ${range.min}`);
+      if (range.max !== null) {
+        conditions.push(sql`${listings.price} <= ${range.max}`);
       }
     }
   }

@@ -97,7 +97,7 @@ type SeedListing = {
   description: string;
   presenterNames: string;
   credentials: string;
-  format: "Live Virtual" | "In-Person" | "Self-Paced" | "Hybrid";
+  format: "Live Virtual" | "In-Person" | "On-Demand" | "Hybrid";
   isOnline: boolean;
   states: string[];
   startDate: string | null;
@@ -147,7 +147,7 @@ const LISTINGS: SeedListing[] = [
       "Stay compliant and confident. This workshop covers documentation, dual relationships, mandated reporting, and telehealth regulations with real-world case studies.",
     presenterNames: "Marcus Rivera",
     credentials: "LMFT",
-    format: "Self-Paced",
+    format: "On-Demand",
     isOnline: true,
     states: [],
     startDate: null,
@@ -253,7 +253,7 @@ const LISTINGS: SeedListing[] = [
       "A free primer on delivering effective and ethical telehealth: platform selection, privacy, engagement strategies, and managing clinical emergencies remotely.",
     presenterNames: "Marcus Rivera",
     credentials: "LMFT",
-    format: "Self-Paced",
+    format: "On-Demand",
     isOnline: true,
     states: [],
     startDate: null,

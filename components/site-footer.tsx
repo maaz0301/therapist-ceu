@@ -8,7 +8,7 @@ const FOOTER_SECTIONS = [
     links: [
       { href: "/directory", label: "Browse trainings" },
       { href: "/directory?ceu=Yes", label: "CEU trainings" },
-      { href: "/directory?format=Self-Paced", label: "Self-paced" },
+      { href: "/directory?format=On-Demand", label: "On-demand" },
     ],
   },
   {

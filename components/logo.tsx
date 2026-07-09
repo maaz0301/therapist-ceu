@@ -19,6 +19,7 @@ export function Logo({
         height={440}
         priority
         className="h-16 w-auto"
+        style={{ filter: "brightness(1.25) saturate(1.4)" }}
       />
     </Link>
   );

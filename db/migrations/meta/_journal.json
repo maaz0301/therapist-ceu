@@ -8,6 +8,13 @@
       "when": 1781993257799,
       "tag": "0000_familiar_sandman",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783624501869,
+      "tag": "0001_stiff_wind_dancer",
+      "breakpoints": true
     }
   ]
 }

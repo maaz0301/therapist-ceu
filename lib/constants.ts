@@ -7,20 +7,19 @@
 export const LISTING_FORMATS = [
   "Live Virtual",
   "In-Person",
-  "Self-Paced",
+  "On-Demand",
   "Hybrid",
 ] as const;
 export type ListingFormat = (typeof LISTING_FORMATS)[number];
 
-export const CEU_PROVIDERS = ["APA", "NBCC", "ACE/NASW"] as const;
+export const CEU_PROVIDERS = ["APA", "NBCC", "ACE/NASW", "State Board Approved", "Non-CE"] as const;
 export type CeuProvider = (typeof CEU_PROVIDERS)[number];
 
 export const PRICE_RANGES = [
-  { id: "free", label: "Free", min: 0, max: 0 },
-  { id: "under-50", label: "Under $50", min: 0.01, max: 50 },
-  { id: "50-100", label: "$50–$100", min: 50, max: 100 },
-  { id: "100-200", label: "$100–$200", min: 100, max: 200 },
-  { id: "200-plus", label: "$200+", min: 200, max: null },
+  { id: "under-100", label: "Under $100", min: 0, max: 100 },
+  { id: "100-250", label: "$100–$250", min: 100, max: 250 },
+  { id: "250-500", label: "$250–$500", min: 250, max: 500 },
+  { id: "500-plus", label: "$500+", min: 500, max: null },
 ] as const;
 export type PriceRangeId = (typeof PRICE_RANGES)[number]["id"];
 

@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { ListingCard } from "@/components/listing-card";
 import { getFeaturedListings } from "@/lib/queries/directory";
 import { SUBSCRIPTION_TIERS } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 const HOW_IT_WORKS = [
   {
@@ -22,18 +23,21 @@ const HOW_IT_WORKS = [
     title: "Search by what matters",
     description:
       "Filter by topic, format, state, price, and CEU accreditation to find trainings that fit your license — in seconds.",
+    colorClass: "bg-primary/8 text-primary border border-primary/15",
   },
   {
     icon: ListChecks,
     title: "Compare at a glance",
     description:
       "Clean listing cards show format, CE credits, price, and dates so you can compare options without the guesswork.",
+    colorClass: "bg-coral/8 text-coral border border-coral/15",
   },
   {
     icon: CalendarCheck,
     title: "Register directly",
     description:
       "Click straight through to the trainer's registration page. No account, no fees, no middleman.",
+    colorClass: "bg-accent/15 text-foreground border border-accent/25",
   },
 ];
 
@@ -127,8 +131,8 @@ export default async function HomePage() {
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {HOW_IT_WORKS.map((step) => (
               <Card key={step.title} className="p-6">
-                <div className="flex size-11 items-center justify-center rounded-xl bg-secondary text-primary">
-                  <step.icon className="size-5" />
+                <div className={cn("flex size-12 items-center justify-center rounded-2xl shadow-sm", step.colorClass)}>
+                  <step.icon className="size-6" />
                 </div>
                 <h3 className="mt-4 text-lg font-semibold text-foreground">
                   {step.title}

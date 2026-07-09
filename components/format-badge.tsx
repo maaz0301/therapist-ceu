@@ -16,7 +16,7 @@ const FORMAT_STYLES: Record<
     className: "bg-coral text-coral-foreground hover:bg-coral/90",
     Icon: MapPin,
   },
-  "Self-Paced": {
+  "On-Demand": {
     className: "bg-warning text-warning-foreground hover:bg-warning/90",
     Icon: PlayCircle,
   },

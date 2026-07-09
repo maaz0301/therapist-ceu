@@ -24,14 +24,14 @@ export const SAMPLE_LISTINGS: ListingCardData[] = [
     title: "Child-Centered Play Therapy Foundations",
     trainerName: "Marcus Bell",
     credentials: "LPC, RPT",
-    format: "Self-Paced",
+    format: "On-Demand",
     hasCeu: true,
     ceCount: 6,
     price: 129,
     location: "Online",
     schedule: "On Demand",
     excerpt:
-      "Self-paced certificate course covering the core skills and theory of child-centered play therapy.",
+      "On-demand certificate course covering the core skills and theory of child-centered play therapy.",
   },
   {
     slug: "private-practice-launch",

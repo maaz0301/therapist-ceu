@@ -55,89 +55,90 @@
 }
 
 /*
- * TherapistCEU.com brand palette — matched to the approved logo
- * (#384345 charcoal + #788f7d sage), sampled directly from the logo file.
- * Confirm against an official brand doc if Megan provides one later.
+ * TherapistCEU.com brand palette — Cohesive 3-color theme:
+ * Main Dark: Slate (#0F172A)
+ * Main Light: Emerald Green (#059669) - matches logo
+ * Accent: Vibrant Coral (#FF6F61)
  */
 :root {
-  --background: #F8F9F3; /* Very pale tint for readability */
-  --foreground: #3C1B43; /* Midnight Violet */
-  --card: #ffffff;
-  --card-foreground: #3C1B43; /* Midnight Violet */
-  --popover: #ffffff;
-  --popover-foreground: #3C1B43; /* Midnight Violet */
-  --primary: #3C1B43; /* Midnight Violet */
-  --primary-foreground: #ffffff;
-  --secondary: #501537; /* Crimson Violet */
-  --secondary-foreground: #ffffff;
-  --muted: #D4E79E; /* Lime Cream */
-  --muted-foreground: #3C1B43; /* Midnight Violet */
-  --accent: #B8C480; /* Muted Olive */
-  --accent-foreground: #3C1B43; /* Midnight Violet */
-  --destructive: #922D50; /* Vintage Berry */
-  --coral: #922D50; /* Vintage Berry */
-  --coral-foreground: #ffffff;
-  --success: #B8C480; /* Muted Olive */
-  --success-foreground: #3C1B43;
-  --warning: #D4E79E; /* Lime Cream */
-  --warning-foreground: #3C1B43;
-  --border: #D4E79E; /* Lime Cream */
-  --input: #D4E79E; /* Lime Cream */
-  --ring: #384345;
-  --chart-1: #384345;
-  --chart-2: #788f7d;
-  --chart-3: #e08a00;
-  --chart-4: #5b6b70;
-  --chart-5: #9bb09f;
+  --background: #FFFFFF;
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
+  --primary: #059669;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F8FAFC;
+  --secondary-foreground: #0F172A;
+  --muted: #F8FAFC;
+  --muted-foreground: #64748B;
+  --accent: #F8FAFC;
+  --accent-foreground: #0F172A;
+  --destructive: #EF4444;
+  --coral: #FF6F61;
+  --coral-foreground: #FFFFFF;
+  --success: #059669;
+  --success-foreground: #FFFFFF;
+  --warning: #F59E0B;
+  --warning-foreground: #FFFFFF;
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #059669;
+  --chart-1: #059669;
+  --chart-2: #FF6F61;
+  --chart-3: #0F172A;
+  --chart-4: #059669;
+  --chart-5: #FF6F61;
   --radius: 0.875rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #1f2a2e;
-  --sidebar-primary: #384345;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #eef1ee;
-  --sidebar-accent-foreground: #384345;
-  --sidebar-border: #e7e3dd;
-  --sidebar-ring: #384345;
+  --sidebar: #F8FAFC;
+  --sidebar-foreground: #0F172A;
+  --sidebar-primary: #059669;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #E2E8F0;
+  --sidebar-accent-foreground: #0F172A;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #059669;
 }
 
 .dark {
-  --background: #0c1110;
-  --foreground: #f1f5f4;
-  --card: #161e1f;
-  --card-foreground: #f1f5f4;
-  --popover: #161e1f;
-  --popover-foreground: #f1f5f4;
-  --primary: #97a3a5;
-  --primary-foreground: #161e1f;
-  --secondary: #232c2d;
-  --secondary-foreground: #d7e0e0;
-  --muted: #1f2728;
-  --muted-foreground: #9bb0b0;
-  --accent: #232c2d;
-  --accent-foreground: #d7e0e0;
-  --destructive: #ff6b5e;
-  --coral: #9bb09f;
-  --coral-foreground: #0c1110;
-  --success: #34c98a;
-  --success-foreground: #06201f;
-  --warning: #f0a83a;
-  --warning-foreground: #2a1a00;
-  --border: #ffffff1a;
-  --input: #ffffff26;
-  --ring: #97a3a5;
-  --chart-1: #97a3a5;
-  --chart-2: #9bb09f;
-  --chart-3: #f0a83a;
-  --chart-4: #5a6b6d;
-  --chart-5: #9bb0b0;
-  --sidebar: #161e1f;
-  --sidebar-foreground: #f1f5f4;
-  --sidebar-primary: #97a3a5;
-  --sidebar-primary-foreground: #161e1f;
-  --sidebar-accent: #232c2d;
-  --sidebar-accent-foreground: #d7e0e0;
-  --sidebar-border: #ffffff1a;
-  --sidebar-ring: #97a3a5;
+  --background: #0F172A;
+  --foreground: #F8FAFC;
+  --card: #1E293B;
+  --card-foreground: #F8FAFC;
+  --popover: #1E293B;
+  --popover-foreground: #F8FAFC;
+  --primary: #059669;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1E293B;
+  --secondary-foreground: #F8FAFC;
+  --muted: #1E293B;
+  --muted-foreground: #94A3B8;
+  --accent: #1E293B;
+  --accent-foreground: #F8FAFC;
+  --destructive: #EF4444;
+  --coral: #FF6F61;
+  --coral-foreground: #FFFFFF;
+  --success: #059669;
+  --success-foreground: #FFFFFF;
+  --warning: #F59E0B;
+  --warning-foreground: #FFFFFF;
+  --border: #334155;
+  --input: #334155;
+  --ring: #059669;
+  --chart-1: #059669;
+  --chart-2: #FF6F61;
+  --chart-3: #F8FAFC;
+  --chart-4: #059669;
+  --chart-5: #FF6F61;
+  --sidebar: #0F172A;
+  --sidebar-foreground: #F8FAFC;
+  --sidebar-primary: #059669;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #1E293B;
+  --sidebar-accent-foreground: #F8FAFC;
+  --sidebar-border: #334155;
+  --sidebar-ring: #059669;
 }
 
 @layer base {
