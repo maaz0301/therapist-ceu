@@ -1,21 +1,51 @@
-import type { LucideIcon } from "lucide-react";
-import { LogOut } from "lucide-react";
+import {
+  LogOut,
+  LayoutDashboard,
+  ListChecks,
+  BarChart3,
+  CreditCard,
+  ClipboardCheck,
+  Users,
+  Tags,
+} from "lucide-react";
 
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { signOutAction } from "@/lib/actions/auth";
+import { DashboardMobileNav } from "@/components/dashboard-mobile-nav";
 
 export type DashboardNavItem = {
   href: string;
   label: string;
-  icon: LucideIcon;
+  iconName: string;
 };
 
 export type DashboardAccount = {
   name: string;
   email: string;
 };
+
+export function getDashboardIcon(iconName: string) {
+  switch (iconName) {
+    case "dashboard":
+      return LayoutDashboard;
+    case "listings":
+      return ListChecks;
+    case "analytics":
+      return BarChart3;
+    case "billing":
+      return CreditCard;
+    case "admin-listings":
+      return ClipboardCheck;
+    case "trainers":
+      return Users;
+    case "tags":
+      return Tags;
+    default:
+      return LayoutDashboard;
+  }
+}
 
 export function DashboardShell({
   areaLabel,
@@ -30,7 +60,7 @@ export function DashboardShell({
 }) {
   return (
     <div className="flex min-h-full flex-1">
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-sidebar md:sticky md:top-0 md:flex md:h-screen">
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-sidebar md:fixed md:inset-y-0 md:left-0 md:z-20 md:flex">
         <div className="flex h-16 items-center border-b border-border px-5">
           <Logo />
         </div>
@@ -40,18 +70,21 @@ export function DashboardShell({
           </span>
         </div>
         <nav className="flex flex-1 flex-col gap-1 px-3">
-          {navItems.map((item) => (
-            <ButtonLink
-              key={item.href}
-              variant="ghost"
-              size="sm"
-              className="justify-start hover:bg-primary/10 hover:text-primary"
-              href={item.href}
-            >
-              <item.icon data-icon="inline-start" />
-              {item.label}
-            </ButtonLink>
-          ))}
+          {navItems.map((item) => {
+            const Icon = getDashboardIcon(item.iconName);
+            return (
+              <ButtonLink
+                key={item.href}
+                variant="ghost"
+                size="sm"
+                className="justify-start hover:bg-primary/10 hover:text-primary"
+                href={item.href}
+              >
+                <Icon data-icon="inline-start" />
+                {item.label}
+              </ButtonLink>
+            );
+          })}
         </nav>
         <div className="flex flex-col gap-1 border-t border-border p-3">
           {account ? (
@@ -86,11 +119,18 @@ export function DashboardShell({
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col md:pl-60">
         <header className="flex h-16 items-center justify-between border-b border-border bg-background px-4 sm:px-6">
-          <span className="font-heading text-sm font-semibold text-foreground md:hidden">
-            {areaLabel}
-          </span>
+          <div className="flex items-center md:hidden">
+            <DashboardMobileNav
+              areaLabel={areaLabel}
+              navItems={navItems}
+              account={account}
+            />
+            <span className="font-heading text-sm font-semibold text-foreground">
+              {areaLabel}
+            </span>
+          </div>
           <div className="md:hidden">
             <Logo />
           </div>

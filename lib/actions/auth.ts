@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { profiles } from "@/db/schema";
@@ -18,7 +18,11 @@ export type AuthActionState = {
 const emailSchema = z.string().trim().email("Enter a valid email address.");
 const passwordSchema = z
   .string()
-  .min(8, "Password must be at least 8 characters.");
+  .min(8, "Password must be at least 8 characters.")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter.")
+  .regex(/[a-z]/, "Password must contain at least one lowercase letter.")
+  .regex(/\d/, "Password must contain at least one digit.")
+  .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character.");
 
 /** Where a profile should land after authenticating. */
 async function destinationFor(userId: string): Promise<string> {
@@ -74,6 +78,16 @@ export async function signUpAction(
   }
 
   const { fullName, email, password } = parsed.data;
+
+  // Check if email already exists in auth.users
+  const existingUser = await db.execute<{ id: string }>(
+    sql`SELECT id FROM auth.users WHERE email = ${email} LIMIT 1`
+  );
+
+  if (existingUser.length > 0) {
+    return { error: "An account with this email address already exists." };
+  }
+
   const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase.auth.signUp({

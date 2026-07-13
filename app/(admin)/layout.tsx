@@ -1,12 +1,10 @@
-import { ClipboardCheck, Users, Tags } from "lucide-react";
-
 import { DashboardShell, type DashboardNavItem } from "@/components/dashboard-shell";
 import { requireAdmin } from "@/lib/auth";
 
 const ADMIN_NAV: DashboardNavItem[] = [
-  { href: "/admin", label: "Listings", icon: ClipboardCheck },
-  { href: "/admin/trainers", label: "Trainers", icon: Users },
-  { href: "/admin/tags", label: "Tags", icon: Tags },
+  { href: "/admin", label: "Listings", iconName: "admin-listings" },
+  { href: "/admin/trainers", label: "Trainers", iconName: "trainers" },
+  { href: "/admin/tags", label: "Tags", iconName: "tags" },
 ];
 
 export default async function AdminLayout({
