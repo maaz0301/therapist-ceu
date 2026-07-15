@@ -2,9 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
+import { z } from "zod";
 
 import { listings, listingTags, profiles, tags } from "@/db/schema";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { env } from "@/lib/env";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import {
@@ -284,6 +287,62 @@ export async function setSubscription(
       subscriptionStatus: status as SubscriptionStatusValue,
     })
     .where(eq(profiles.id, profileId));
+
+  revalidatePath("/admin/trainers");
+  return { ok: true };
+}
+
+export async function inviteTrainer(
+  fullName: string,
+  email: string,
+  tier: "basic" | "pro" | "none",
+  status: "none" | "trialing" | "active" | "past_due" | "canceled" | "unpaid",
+): Promise<ActionResult> {
+  await requireAdmin();
+
+  const inviteSchema = z.object({
+    fullName: z.string().trim().min(2, "Enter trainer's full name."),
+    email: z.string().trim().email("Enter a valid email address."),
+    tier: z.enum(["basic", "pro", "none"]),
+    status: z.enum(["none", "trialing", "active", "past_due", "canceled", "unpaid"]),
+  });
+
+  const parsed = inviteSchema.safeParse({ fullName, email, tier, status });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+  }
+
+  const { fullName: cleanName, email: cleanEmail, tier: selectedTier, status: selectedStatus } = parsed.data;
+
+  // Check if email already exists in auth.users
+  const existingUser = await db.execute<{ id: string }>(
+    sql`SELECT id FROM auth.users WHERE email = ${cleanEmail} LIMIT 1`
+  );
+
+  if (existingUser.length > 0) {
+    return { error: "An account with this email address already exists." };
+  }
+
+  const supabaseAdmin = createSupabaseAdminClient();
+  const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(cleanEmail, {
+    redirectTo: `${env.appUrl}/auth/callback?next=/dashboard`,
+    data: { full_name: cleanName },
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  if (data.user) {
+    await db
+      .update(profiles)
+      .set({
+        fullName: cleanName,
+        subscriptionTier: selectedTier === "none" ? null : selectedTier,
+        subscriptionStatus: selectedStatus,
+      })
+      .where(eq(profiles.id, data.user.id));
+  }
 
   revalidatePath("/admin/trainers");
   return { ok: true };

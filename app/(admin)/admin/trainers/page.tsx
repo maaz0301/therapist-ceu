@@ -1,6 +1,7 @@
 import { Users } from "lucide-react";
 
 import { TrainerActions } from "@/components/admin/trainer-actions";
+import { InviteTrainerButton } from "@/components/admin/invite-trainer-button";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -20,13 +21,16 @@ export default async function AdminTrainersPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6">
-      <div>
-        <h1 className="font-heading text-2xl font-bold text-foreground">
-          Trainers
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Manage trainer accounts and subscription plans.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-2xl font-bold text-foreground">
+            Trainers
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage trainer accounts and subscription plans.
+          </p>
+        </div>
+        <InviteTrainerButton />
       </div>
 
       {trainers.length === 0 ? (
