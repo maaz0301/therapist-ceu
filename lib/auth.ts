@@ -49,7 +49,11 @@ export async function requireProfile(): Promise<Profile> {
 
 /** Trainer area: any authenticated profile (admins included) may enter. */
 export async function requireTrainer(): Promise<Profile> {
-  return requireProfile();
+  const profile = await requireProfile();
+  if (profile.accountStatus === "suspended" && profile.role !== "admin") {
+    redirect("/suspended");
+  }
+  return profile;
 }
 
 /** Admin area: must be role=admin, otherwise bounce to the trainer dashboard. */

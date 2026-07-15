@@ -2,10 +2,11 @@
 
 import { Menu, LogOut } from "lucide-react";
 import { Logo } from "@/components/logo";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Sheet, SheetTrigger, SheetContent, SheetHeader } from "@/components/ui/sheet";
 import { signOutAction } from "@/lib/actions/auth";
+import { cn } from "@/lib/utils";
 import {
   getDashboardIcon,
   type DashboardNavItem,
@@ -23,7 +24,13 @@ export function DashboardMobileNav({
 }) {
   return (
     <Sheet>
-      <SheetTrigger render={<Button variant="ghost" size="icon" className="md:hidden mr-2" aria-label="Open navigation menu" />}>
+      <SheetTrigger
+        className={cn(
+          buttonVariants({ variant: "ghost", size: "icon" }),
+          "md:hidden mr-2"
+        )}
+        aria-label="Open navigation menu"
+      >
         <Menu className="size-5" />
       </SheetTrigger>
       <SheetContent side="left" className="w-60 p-0 flex flex-col h-full bg-sidebar border-r border-border">

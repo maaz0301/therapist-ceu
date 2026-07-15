@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { eq } from "drizzle-orm";
 
-import { analyticsEvents, listings } from "@/db/schema";
+import { analyticsEvents, listings, profiles } from "@/db/schema";
 import { db } from "@/lib/db";
 
 /**
@@ -21,12 +21,14 @@ export async function GET(
       status: listings.status,
       active: listings.active,
       slug: listings.slug,
+      trainerAccountStatus: profiles.accountStatus,
     })
     .from(listings)
+    .innerJoin(profiles, eq(profiles.id, listings.trainerId))
     .where(eq(listings.id, id))
     .limit(1);
 
-  if (!listing) {
+  if (!listing || listing.trainerAccountStatus === "suspended") {
     return NextResponse.redirect(new URL("/directory", _request.url));
   }
 

@@ -20,6 +20,19 @@ as $$
   );
 $$;
 
+create or replace function public.is_trainer_active(trainer_id uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = trainer_id and account_status = 'active'
+  );
+$$;
+
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
@@ -94,7 +107,11 @@ create policy profiles_update on public.profiles
 
 drop policy if exists listings_public_read on public.listings;
 create policy listings_public_read on public.listings
-  for select using (status = 'approved' and active = true);
+  for select using (
+    status = 'approved'
+    and active = true
+    and public.is_trainer_active(trainer_id)
+  );
 
 drop policy if exists listings_owner_read on public.listings;
 create policy listings_owner_read on public.listings

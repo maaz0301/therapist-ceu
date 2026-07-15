@@ -73,7 +73,7 @@ export function TrainerActions({
         <Button
           size="sm"
           variant="outline"
-          className="text-destructive"
+          className="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive"
           disabled={isPending}
           onClick={() => setSuspendOpen(true)}
         >

@@ -15,7 +15,7 @@
 function parseUrlEnv(url: string | undefined, fallback: string) {
   if (!url) return fallback;
   // Strip accidental quotes if user pasted them into Vercel
-  let cleanUrl = url.replace(/^["']|["']$/g, "").trim();
+  const cleanUrl = url.replace(/^["']|["']$/g, "").trim();
   if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
     return `https://${cleanUrl}`;
   }

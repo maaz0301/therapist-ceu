@@ -71,9 +71,9 @@
   --primary-foreground: #FFFFFF;
   --secondary: #F8FAFC;
   --secondary-foreground: #0F172A;
-  --muted: #F8FAFC;
+  --muted: #F1F5F9;
   --muted-foreground: #64748B;
-  --accent: #F8FAFC;
+  --accent: #F1F5F9;
   --accent-foreground: #0F172A;
   --destructive: #EF4444;
   --coral: #F43F5E;
@@ -155,5 +155,9 @@
   }
   h1, h2, h3, h4 {
     @apply font-heading font-semibold tracking-tight text-balance;
+  }
+  button,
+  [role="button"] {
+    cursor: pointer;
   }
 }

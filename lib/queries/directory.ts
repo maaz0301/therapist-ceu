@@ -39,6 +39,7 @@ function buildWhere(filters: DirectoryFilters): SQL | undefined {
   const conditions: SQL[] = [
     eq(listings.status, "approved"),
     eq(listings.active, true),
+    eq(profiles.accountStatus, "active"),
   ];
 
   if (filters.formats.length > 0) {
@@ -196,6 +197,7 @@ export async function searchListings(
   const [{ total }] = await db
     .select({ total: count() })
     .from(listings)
+    .innerJoin(profiles, eq(profiles.id, listings.trainerId))
     .where(where);
 
   // Fetch states for the result set to build the location label.
@@ -252,7 +254,14 @@ export async function getSitemapListings(): Promise<
   return db
     .select({ slug: listings.slug, updatedAt: listings.updatedAt })
     .from(listings)
-    .where(and(eq(listings.status, "approved"), eq(listings.active, true)))
+    .innerJoin(profiles, eq(profiles.id, listings.trainerId))
+    .where(
+      and(
+        eq(listings.status, "approved"),
+        eq(listings.active, true),
+        eq(profiles.accountStatus, "active"),
+      ),
+    )
     .orderBy(desc(listings.updatedAt));
 }
 

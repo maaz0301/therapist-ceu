@@ -54,6 +54,25 @@ export async function signInAction(
 
   if (error) return { error: error.message };
 
+  if (data.user) {
+    const [profile] = await db
+      .select({ role: profiles.role, accountStatus: profiles.accountStatus })
+      .from(profiles)
+      .where(eq(profiles.id, data.user.id))
+      .limit(1);
+
+    if (
+      profile &&
+      profile.accountStatus === "suspended" &&
+      profile.role !== "admin"
+    ) {
+      await supabase.auth.signOut();
+      return {
+        error: "Your account has been suspended. Please contact support.",
+      };
+    }
+  }
+
   redirect(await destinationFor(data.user.id));
 }
 

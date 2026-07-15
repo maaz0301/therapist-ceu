@@ -176,6 +176,7 @@ export async function getListingDetail(
       trainerCredentials: profiles.credentials,
       trainerBio: profiles.bio,
       trainerWebsite: profiles.websiteUrl,
+      trainerAccountStatus: profiles.accountStatus,
     })
     .from(listings)
     .innerJoin(profiles, eq(profiles.id, listings.trainerId))
@@ -184,7 +185,10 @@ export async function getListingDetail(
 
   if (!row) return null;
 
-  const isPublic = row.listing.status === "approved" && row.listing.active;
+  const isPublic =
+    row.listing.status === "approved" &&
+    row.listing.active &&
+    row.trainerAccountStatus === "active";
   const canView =
     isPublic ||
     (viewer && (viewer.isAdmin || viewer.id === row.listing.trainerId));

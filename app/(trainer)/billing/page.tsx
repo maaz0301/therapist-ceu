@@ -66,7 +66,11 @@ export default async function BillingPage({
           </p>
         </div>
         <Badge variant={subscription.isActive ? "default" : "outline"}>
-          {subscription.isActive ? "Active" : "Inactive"}
+          {subscription.status === "active"
+            ? "Active"
+            : subscription.status === "trialing"
+              ? "Trialing"
+              : "Inactive"}
         </Badge>
       </Card>
 

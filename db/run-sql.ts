@@ -8,6 +8,9 @@ import postgres from "postgres";
  * Usage: tsx db/run-sql.ts db/rls.sql
  */
 config({ path: ".env.local" });
+if (!process.env.DATABASE_URL) {
+  config({ path: ".env" });
+}
 
 async function main() {
   const file = process.argv[2];
