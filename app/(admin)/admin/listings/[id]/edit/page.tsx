@@ -43,7 +43,7 @@ export default async function AdminEditListingPage({
         action={action}
         groups={groups}
         listing={listing}
-        submitLabel="Save changes"
+        submitLabel="Update Changes"
       />
     </div>
   );

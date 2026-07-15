@@ -46,7 +46,7 @@ export function DirectorySearch({ filters }: { filters: DirectoryFilters }) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Search by keyword, topic, or presenter…"
-        className="h-11 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        className="h-11 w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         aria-label="Search trainings"
       />
     </form>

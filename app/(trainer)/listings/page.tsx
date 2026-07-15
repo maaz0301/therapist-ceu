@@ -6,6 +6,7 @@ import { FormatBadge } from "@/components/format-badge";
 import { ListingActions } from "@/components/trainer/listing-actions";
 import { ListingStatusBadge } from "@/components/listing-status-badge";
 import { SubscriptionBanner } from "@/components/subscription-banner";
+import { ClearQueryParams } from "@/components/clear-query-params";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -103,16 +104,19 @@ export default async function ListingsPage({
       </div>
 
       {banner ? (
-        <div
-          className={cn(
-            "rounded-lg border px-4 py-3 text-sm",
-            banner.tone === "success"
-              ? "border-primary/30 bg-primary/10 text-primary"
-              : "border-amber-300 bg-amber-50 text-amber-700",
-          )}
-        >
-          {banner.text}
-        </div>
+        <>
+          <ClearQueryParams params={["new", "updated", "error"]} />
+          <div
+            className={cn(
+              "rounded-lg border px-4 py-3 text-sm",
+              banner.tone === "success"
+                ? "border-primary/30 bg-primary/10 text-primary"
+                : "border-amber-300 bg-amber-50 text-amber-700",
+            )}
+          >
+            {banner.text}
+          </div>
+        </>
       ) : null}
 
       <SubscriptionBanner subscription={subscription} activeCount={activeCount} />

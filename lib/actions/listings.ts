@@ -134,8 +134,13 @@ export async function updateListing(
     imageUrl = await uploadImage(file, profile.id);
   }
 
-  // Editing a rejected listing re-submits it for review.
-  const nextStatus = existing.status === "rejected" ? "pending" : existing.status;
+  // Editing an approved, rejected, or inactive listing re-submits it for review.
+  const nextStatus =
+    existing.status === "approved" ||
+    existing.status === "rejected" ||
+    existing.status === "inactive"
+      ? "pending"
+      : existing.status;
 
   await db
     .update(listings)

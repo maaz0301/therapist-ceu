@@ -9,6 +9,7 @@ import { ListingStatusBadge } from "@/components/listing-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { ClearQueryParams } from "@/components/clear-query-params";
 import {
   getAdminListingCounts,
   getAdminListings,
@@ -68,9 +69,12 @@ export default async function AdminListingsPage({
       </div>
 
       {sp.updated ? (
-        <div className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">
-          Listing updated.
-        </div>
+        <>
+          <ClearQueryParams params={["updated"]} />
+          <div className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">
+            Listing updated.
+          </div>
+        </>
       ) : null}
 
       {/* Status tabs */}

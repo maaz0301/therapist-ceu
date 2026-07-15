@@ -55,7 +55,7 @@ export default async function EditListingPage({
         action={action}
         groups={groups}
         listing={listing}
-        submitLabel="Save changes"
+        submitLabel="Update Changes"
       />
     </div>
   );

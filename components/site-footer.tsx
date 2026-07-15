@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Logo } from "@/components/logo";
+import { getCurrentProfile } from "@/lib/auth";
 
 const FOOTER_SECTIONS = [
   {
@@ -29,7 +30,28 @@ const FOOTER_SECTIONS = [
   },
 ];
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const profile = await getCurrentProfile();
+  const trainerDashboardHref = profile?.role === "admin" ? "/admin" : "/dashboard";
+
+  const sections = FOOTER_SECTIONS.map((section) => {
+    if (section.title === "Trainers") {
+      return {
+        ...section,
+        links: section.links.map((link) => {
+          if (link.href === "/login") {
+            return {
+              href: profile ? trainerDashboardHref : "/login",
+              label: profile ? "Trainer dashboard" : "Trainer login",
+            };
+          }
+          return link;
+        }),
+      };
+    }
+    return section;
+  });
+
   return (
     <footer className="mt-auto border-t border-border bg-card">
       <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6">
@@ -42,7 +64,7 @@ export function SiteFooter() {
             </p>
           </div>
 
-          {FOOTER_SECTIONS.map((section) => (
+          {sections.map((section) => (
             <div key={section.title}>
               <h4 className="text-sm font-semibold text-foreground">
                 {section.title}
