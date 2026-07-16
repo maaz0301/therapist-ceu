@@ -9,7 +9,7 @@ import {
 export const DIRECTORY_PAGE_SIZE = 12;
 
 export type DirectoryFilters = {
-  q: string;
+  q: string[];
   states: string[];
   formats: ListingFormat[];
   priceId: PriceRangeId | null;
@@ -56,7 +56,7 @@ export function parseDirectoryFilters(
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? Math.floor(pageRaw) : 1;
 
   return {
-    q: (readParam(sp.q) ?? "").trim(),
+    q: readList(sp.q),
     states: readList(sp.states),
     formats,
     priceId,
@@ -69,7 +69,7 @@ export function parseDirectoryFilters(
 /** Serializes filters into a query string (omits defaults/empties). */
 export function filtersToQueryString(filters: DirectoryFilters): string {
   const params = new URLSearchParams();
-  if (filters.q) params.set("q", filters.q);
+  if (filters.q.length) params.set("q", filters.q.join(","));
   if (filters.states.length) params.set("states", filters.states.join(","));
   if (filters.formats.length) params.set("formats", filters.formats.join(","));
   if (filters.priceId) params.set("price", filters.priceId);
@@ -81,7 +81,7 @@ export function filtersToQueryString(filters: DirectoryFilters): string {
 
 export function hasActiveFilters(filters: DirectoryFilters): boolean {
   return Boolean(
-    filters.q ||
+    filters.q.length ||
       filters.states.length ||
       filters.formats.length ||
       filters.priceId ||
@@ -91,7 +91,7 @@ export function hasActiveFilters(filters: DirectoryFilters): boolean {
 }
 
 export const EMPTY_FILTERS: DirectoryFilters = {
-  q: "",
+  q: [],
   states: [],
   formats: [],
   priceId: null,

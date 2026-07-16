@@ -1,5 +1,7 @@
 "use client";
 
+import { useOptimistic, startTransition } from "react";
+
 import { X } from "lucide-react";
 
 import { useFilterNav } from "@/components/directory/use-filter-nav";
@@ -25,9 +27,21 @@ export function ActiveFilterChips({
   filters: DirectoryFilters;
   groups: GroupedTags;
 }) {
-  const { update, apply } = useFilterNav(filters);
+  const { apply } = useFilterNav(filters);
 
-  if (!hasActiveFilters(filters)) return null;
+  const [optimisticFilters, setOptimisticFilters] = useOptimistic<
+    DirectoryFilters,
+    DirectoryFilters
+  >(filters, (state, newFilters) => newFilters);
+
+  const handleApply = (next: DirectoryFilters) => {
+    startTransition(() => {
+      setOptimisticFilters(next);
+    });
+    apply(next);
+  };
+
+  if (!hasActiveFilters(optimisticFilters)) return null;
 
   const tagName = (id: string) => {
     for (const g of groups) {
@@ -39,48 +53,72 @@ export function ActiveFilterChips({
 
   const chips: Chip[] = [];
 
-  if (filters.q) {
+  for (const term of optimisticFilters.q) {
     chips.push({
-      key: "q",
-      label: `“${filters.q}”`,
-      onRemove: () => update({ q: "" }),
+      key: `q-${term}`,
+      label: `“${term}”`,
+      onRemove: () =>
+        handleApply({
+          ...optimisticFilters,
+          q: optimisticFilters.q.filter((x) => x !== term),
+          page: 1,
+        }),
     });
   }
-  for (const f of filters.formats) {
+  for (const f of optimisticFilters.formats) {
     chips.push({
       key: `format-${f}`,
       label: f,
-      onRemove: () => update({ formats: filters.formats.filter((x) => x !== f) }),
+      onRemove: () =>
+        handleApply({
+          ...optimisticFilters,
+          formats: optimisticFilters.formats.filter((x) => x !== f),
+          page: 1,
+        }),
     });
   }
-  if (filters.priceId) {
-    const range = PRICE_RANGES.find((r) => r.id === filters.priceId);
+  if (optimisticFilters.priceId) {
+    const range = PRICE_RANGES.find((r) => r.id === optimisticFilters.priceId);
     chips.push({
       key: "price",
       label: range?.label ?? "Price",
-      onRemove: () => update({ priceId: null }),
+      onRemove: () => handleApply({ ...optimisticFilters, priceId: null, page: 1 }),
     });
   }
-  for (const p of filters.providers) {
+  for (const p of optimisticFilters.providers) {
     chips.push({
       key: `provider-${p}`,
       label: p,
-      onRemove: () => update({ providers: filters.providers.filter((x) => x !== p) }),
+      onRemove: () =>
+        handleApply({
+          ...optimisticFilters,
+          providers: optimisticFilters.providers.filter((x) => x !== p),
+          page: 1,
+        }),
     });
   }
-  for (const code of filters.states) {
+  for (const code of optimisticFilters.states) {
     chips.push({
       key: `state-${code}`,
       label: STATE_NAMES.get(code) ?? code,
       onRemove: () =>
-        update({ states: filters.states.filter((x) => x !== code) }),
+        handleApply({
+          ...optimisticFilters,
+          states: optimisticFilters.states.filter((x) => x !== code),
+          page: 1,
+        }),
     });
   }
-  for (const id of filters.tagIds) {
+  for (const id of optimisticFilters.tagIds) {
     chips.push({
       key: `tag-${id}`,
       label: tagName(id),
-      onRemove: () => update({ tagIds: filters.tagIds.filter((x) => x !== id) }),
+      onRemove: () =>
+        handleApply({
+          ...optimisticFilters,
+          tagIds: optimisticFilters.tagIds.filter((x) => x !== id),
+          page: 1,
+        }),
     });
   }
 
@@ -103,7 +141,7 @@ export function ActiveFilterChips({
         variant="ghost"
         size="sm"
         className="text-muted-foreground"
-        onClick={() => apply(EMPTY_FILTERS)}
+        onClick={() => handleApply(EMPTY_FILTERS)}
       >
         Clear all
       </Button>

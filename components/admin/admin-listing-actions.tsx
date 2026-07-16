@@ -172,11 +172,14 @@ export function AdminListingActions({
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectOpen(false)}>
+            <Button
+              className="bg-background text-foreground border-border hover:bg-muted"
+              onClick={() => setRejectOpen(false)}
+            >
               Cancel
             </Button>
             <Button
-              variant="destructive"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={isPending || reason.trim().length < 3}
               onClick={() =>
                 run(async () => {
@@ -206,11 +209,14 @@ export function AdminListingActions({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+            <Button
+              className="bg-background text-foreground border-border hover:bg-muted"
+              onClick={() => setDeleteOpen(false)}
+            >
               Cancel
             </Button>
             <Button
-              variant="destructive"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={isPending}
               onClick={() =>
                 run(async () => {

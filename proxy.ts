@@ -91,29 +91,6 @@ export async function proxy(request: NextRequest) {
         request.nextUrl.pathname,
       );
     }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, account_status")
-      .eq("id", user.id)
-      .single();
-
-    if (
-      profile &&
-      (profile as { account_status: string }).account_status === "suspended" &&
-      profile.role !== "admin"
-    ) {
-      return redirectTo(request, "/suspended", response);
-    }
-
-    if (protection === "admin") {
-      // Only bounce when we positively know the user is not an admin; if the
-      // lookup fails we fall through to the layout guard rather than risk
-      // locking an admin out.
-      if (profile && profile.role !== "admin") {
-        return redirectTo(request, "/dashboard", response);
-      }
-    }
   }
 
   return response;

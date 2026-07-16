@@ -38,15 +38,22 @@ export async function SiteFooter() {
     if (section.title === "Trainers") {
       return {
         ...section,
-        links: section.links.map((link) => {
-          if (link.href === "/login") {
-            return {
-              href: profile ? trainerDashboardHref : "/login",
-              label: profile ? "Trainer dashboard" : "Trainer login",
-            };
-          }
-          return link;
-        }),
+        links: section.links
+          .filter((link) => {
+            if (profile && (link.href === "/login" || link.href === "/signup")) {
+              return false;
+            }
+            return true;
+          })
+          .map((link) => {
+            if (link.href === "/login") {
+              return {
+                href: profile ? trainerDashboardHref : "/login",
+                label: profile ? "Trainer dashboard" : "Trainer login",
+              };
+            }
+            return link;
+          }),
       };
     }
     return section;

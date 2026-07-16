@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { getCurrentProfile } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
 import { Logo } from "@/components/logo";
 
@@ -10,6 +12,11 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  const profile = await getCurrentProfile();
+  if (profile) {
+    redirect(profile.role === "admin" ? "/admin" : "/dashboard");
+  }
+
   const { error } = await searchParams;
 
   return (

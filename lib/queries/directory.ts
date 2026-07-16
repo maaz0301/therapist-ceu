@@ -129,13 +129,17 @@ function buildWhere(filters: DirectoryFilters): SQL | undefined {
     );
   }
 
-  if (filters.q) {
-    const keyword = or(
-      sql`${listings.searchVector} @@ websearch_to_tsquery('english', ${filters.q})`,
-      ilike(listings.title, `%${filters.q}%`),
-      ilike(listings.presenterNames, `%${filters.q}%`),
+  if (filters.q.length > 0) {
+    const keywordConditions = filters.q.map((term) =>
+      or(
+        sql`${listings.searchVector} @@ websearch_to_tsquery('english', ${term})`,
+        ilike(listings.title, `%${term}%`),
+        ilike(listings.presenterNames, `%${term}%`),
+      )
     );
-    if (keyword) conditions.push(keyword);
+    // AND them together so that all tags must match the listing
+    const combinedKeyword = and(...keywordConditions);
+    if (combinedKeyword) conditions.push(combinedKeyword);
   }
 
   return and(...conditions);
@@ -270,7 +274,7 @@ export async function getFeaturedListings(
   limit = 3,
 ): Promise<DirectoryItem[]> {
   const { items } = await searchListings({
-    q: "",
+    q: [],
     states: [],
     formats: [],
     priceId: null,

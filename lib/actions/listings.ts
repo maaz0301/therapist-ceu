@@ -31,72 +31,78 @@ export async function createListing(
   _prev: ListingFormState,
   formData: FormData,
 ): Promise<ListingFormState> {
-  const profile = await requireTrainer();
+  try {
+    const profile = await requireTrainer();
 
-  const parsed = parseListingForm(formData);
-  if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
+    const parsed = parseListingForm(formData);
+    if (!parsed.success) {
+      return { fieldErrors: parsed.error.flatten().fieldErrors };
+    }
+    const data = parsed.data;
+
+    const usableTagIds = await filterUsableTagIds(data.tagIds, profile.id);
+    if (usableTagIds.length === 0) {
+      return { fieldErrors: { tagIds: ["Choose at least one valid topic tag."] } };
+    }
+
+    const file = getImageFile(formData);
+    if (file) {
+      const imageError = validateImageFile(file);
+      if (imageError) return { fieldErrors: { image: [imageError.error] } };
+    }
+
+    // Tier gating: auto-publish if there is room, otherwise save as a draft.
+    const subscription = getSubscriptionState(profile);
+    const activeCount = await getActiveListingCount(profile.id);
+    const willActivate = canPublishMore(subscription, activeCount);
+
+    let imageUrl: string | null = null;
+    if (file) imageUrl = await uploadImage(file, profile.id);
+
+    const slug = await generateUniqueSlug(data.title);
+
+    const [created] = await db
+      .insert(listings)
+      .values({
+        trainerId: profile.id,
+        slug,
+        status: "pending",
+        active: willActivate,
+        title: data.title,
+        description: data.description,
+        presenterNames: data.presenterNames,
+        credentials: data.credentials,
+        format: data.format,
+        isOnline: data.isOnline,
+        startDate: data.onDemand ? null : data.startDate,
+        endDate: data.onDemand ? null : data.endDate,
+        onDemand: data.onDemand,
+        durationHours: data.durationHours ? String(data.durationHours) : null,
+        price: String(data.price),
+        registrationUrl: data.registrationUrl,
+        hasCeu: data.hasCeu,
+        ceCount: data.hasCeu ? data.ceCount : null,
+        accreditingBody: data.hasCeu ? data.accreditingBody : null,
+        websiteUrl: data.websiteUrl,
+        imageUrl,
+      })
+      .returning({ id: listings.id });
+
+    await replaceStatesAndTags(created.id, data, usableTagIds);
+
+    await sendListingSubmittedEmail(profile.id, {
+      name: profile.fullName,
+      listingTitle: data.title,
+    });
+
+    revalidatePath("/listings");
+    revalidatePath("/dashboard");
+    redirect(`/listings?new=${willActivate ? "published" : "limit"}`);
+  } catch (err: any) {
+    if (err && err.message && err.message === "NEXT_REDIRECT") throw err;
+    require("fs").writeFileSync("/Users/muhammadmaaz/Documents/GitHub/TherapistCEU/error.log", err.stack || err.message || String(err));
+    throw err;
   }
-  const data = parsed.data;
-
-  const usableTagIds = await filterUsableTagIds(data.tagIds, profile.id);
-  if (usableTagIds.length === 0) {
-    return { fieldErrors: { tagIds: ["Choose at least one valid topic tag."] } };
-  }
-
-  const file = getImageFile(formData);
-  if (file) {
-    const imageError = validateImageFile(file);
-    if (imageError) return { fieldErrors: { image: [imageError.error] } };
-  }
-
-  // Tier gating: auto-publish if there is room, otherwise save as a draft.
-  const subscription = getSubscriptionState(profile);
-  const activeCount = await getActiveListingCount(profile.id);
-  const willActivate = canPublishMore(subscription, activeCount);
-
-  let imageUrl: string | null = null;
-  if (file) imageUrl = await uploadImage(file, profile.id);
-
-  const slug = await generateUniqueSlug(data.title);
-
-  const [created] = await db
-    .insert(listings)
-    .values({
-      trainerId: profile.id,
-      slug,
-      status: "pending",
-      active: willActivate,
-      title: data.title,
-      description: data.description,
-      presenterNames: data.presenterNames,
-      credentials: data.credentials,
-      format: data.format,
-      isOnline: data.isOnline,
-      startDate: data.onDemand ? null : data.startDate,
-      endDate: data.onDemand ? null : data.endDate,
-      onDemand: data.onDemand,
-      durationHours: data.durationHours ? String(data.durationHours) : null,
-      price: String(data.price),
-      registrationUrl: data.registrationUrl,
-      hasCeu: data.hasCeu,
-      ceCount: data.hasCeu ? data.ceCount : null,
-      accreditingBody: data.hasCeu ? data.accreditingBody : null,
-      websiteUrl: data.websiteUrl,
-      imageUrl,
-    })
-    .returning({ id: listings.id });
-
-  await replaceStatesAndTags(created.id, data, usableTagIds);
-
-  await sendListingSubmittedEmail(profile.id, {
-    name: profile.fullName,
-    listingTitle: data.title,
-  });
-
-  revalidatePath("/listings");
-  revalidatePath("/dashboard");
-  redirect(`/listings?new=${willActivate ? "published" : "limit"}`);
 }
 
 export async function updateListing(
@@ -199,6 +205,10 @@ export async function setListingActive(formData: FormData): Promise<void> {
   if (!listing) redirect("/listings");
 
   if (active && !listing.active) {
+    if (listing.status === "rejected") {
+      redirect("/listings?error=rejected");
+    }
+
     const subscription = getSubscriptionState(profile);
     const otherActive = await getOtherActiveCount(profile.id, id);
     if (!canPublishMore(subscription, otherActive)) {

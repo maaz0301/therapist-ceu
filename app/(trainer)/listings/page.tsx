@@ -1,4 +1,5 @@
 import { ListChecks, Plus } from "lucide-react";
+import Link from "next/link";
 
 import { CeuBadge } from "@/components/ceu-badge";
 import { EmptyState } from "@/components/empty-state";
@@ -48,19 +49,39 @@ function formatLocation(listing: TrainerListing) {
   return listing.states.join(", ");
 }
 
-const BANNERS: Record<string, { tone: "success" | "warn"; text: string }> = {
+const BANNERS: Record<string, { tone: "success" | "warn"; text: React.ReactNode }> = {
   "new=published": {
     tone: "success",
     text: "Listing created and submitted for review.",
   },
   "new=limit": {
     tone: "warn",
-    text: "Listing saved as a draft — you've reached your plan's active listing limit. Upgrade or unpublish another to publish it.",
+    text: (
+      <>
+        Listing saved as a draft — you've reached your plan's active listing limit.{" "}
+        <Link href="/billing" className="underline font-medium hover:text-amber-900">
+          Upgrade to Pro
+        </Link>{" "}
+        or unpublish another to publish it.
+      </>
+    ),
   },
   "updated=1": { tone: "success", text: "Listing updated." },
   "error=limit": {
     tone: "warn",
-    text: "You've reached your active listing limit. Upgrade to Pro or unpublish another listing first.",
+    text: (
+      <>
+        You've reached your active listing limit.{" "}
+        <Link href="/billing" className="underline font-medium hover:text-amber-900">
+          Upgrade to Pro
+        </Link>{" "}
+        or unpublish another listing first.
+      </>
+    ),
+  },
+  "error=rejected": {
+    tone: "warn",
+    text: "This listing was rejected. Please edit the listing to address the feedback and resubmit it for review.",
   },
 };
 
