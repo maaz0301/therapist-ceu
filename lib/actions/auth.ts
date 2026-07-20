@@ -172,9 +172,19 @@ export async function requestPasswordResetAction(
   }
 
   const supabase = await createSupabaseServerClient();
-  await supabase.auth.resetPasswordForEmail(parsed.data, {
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data, {
     redirectTo: `${await getBaseUrl()}/auth/callback?next=/update-password`,
   });
+
+  // The response stays generic either way, so a delivery failure is otherwise
+  // indistinguishable from success — log it rather than discarding it.
+  if (error) {
+    console.error("[requestPasswordReset] Supabase rejected the request:", {
+      message: error.message,
+      status: error.status,
+      code: error.code,
+    });
+  }
 
   // Always report success to avoid leaking which emails are registered.
   return {
