@@ -8,11 +8,11 @@ const STATUS_STYLES: Record<
 > = {
   pending: {
     label: "Pending review",
-    className: "border-amber-300 bg-amber-50 text-amber-700",
+    className: "border-clay/30 bg-clay/10 text-clay-deep",
   },
   approved: {
     label: "Approved",
-    className: "border-emerald-300 bg-emerald-50 text-emerald-700",
+    className: "border-clay/30 bg-clay/10 text-clay-deep",
   },
   rejected: {
     label: "Rejected",

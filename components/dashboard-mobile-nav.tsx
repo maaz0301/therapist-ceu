@@ -66,7 +66,7 @@ export function DashboardMobileNav({
                 key={item.href}
                 variant="ghost"
                 size="sm"
-                className="justify-start hover:bg-primary/10 hover:text-primary"
+                className="justify-start hover:bg-clay/10 hover:text-clay-deep"
                 href={item.href}
                 onClick={() => setOpen(false)}
               >
@@ -90,7 +90,7 @@ export function DashboardMobileNav({
           <ButtonLink
             variant="ghost"
             size="sm"
-            className="w-full justify-start text-muted-foreground hover:bg-primary/10 hover:text-primary"
+            className="w-full justify-start text-muted-foreground hover:bg-clay/10 hover:text-clay-deep"
             href="/"
             onClick={() => setOpen(false)}
           >
@@ -101,7 +101,7 @@ export function DashboardMobileNav({
               type="submit"
               variant="ghost"
               size="sm"
-              className="w-full justify-start text-muted-foreground hover:bg-primary/10 hover:text-primary"
+              className="w-full justify-start text-muted-foreground hover:bg-clay/10 hover:text-clay-deep"
             >
               <LogOut data-icon="inline-start" className="mr-2 size-4" />
               Log out

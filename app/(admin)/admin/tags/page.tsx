@@ -20,7 +20,7 @@ export default async function AdminTagsPage() {
           </p>
         </div>
         {suggestedCount > 0 ? (
-          <Badge className="bg-amber-100 text-amber-700">
+          <Badge className="bg-clay/15 text-clay-deep">
             {suggestedCount} awaiting approval
           </Badge>
         ) : null}

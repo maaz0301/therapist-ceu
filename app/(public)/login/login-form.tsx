@@ -54,7 +54,7 @@ export function LoginForm({ initialError }: { initialError?: string }) {
             required
           />
         </div>
-        <SubmitButton className="w-full" pendingLabel="Logging in…">
+        <SubmitButton variant="clay" className="w-full" pendingLabel="Logging in…">
           Log in
         </SubmitButton>
       </form>

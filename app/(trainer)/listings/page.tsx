@@ -59,7 +59,7 @@ const BANNERS: Record<string, { tone: "success" | "warn"; text: React.ReactNode 
     text: (
       <>
         Listing saved as a draft — you've reached your plan's active listing limit.{" "}
-        <Link href="/billing" className="underline font-medium hover:text-amber-900">
+        <Link href="/billing" className="underline font-medium hover:text-clay">
           Upgrade to Pro
         </Link>{" "}
         or unpublish another to publish it.
@@ -72,7 +72,7 @@ const BANNERS: Record<string, { tone: "success" | "warn"; text: React.ReactNode 
     text: (
       <>
         You've reached your active listing limit.{" "}
-        <Link href="/billing" className="underline font-medium hover:text-amber-900">
+        <Link href="/billing" className="underline font-medium hover:text-clay">
           Upgrade to Pro
         </Link>{" "}
         or unpublish another listing first.
@@ -132,7 +132,7 @@ export default async function ListingsPage({
               "rounded-lg border px-4 py-3 text-sm",
               banner.tone === "success"
                 ? "border-primary/30 bg-primary/10 text-primary"
-                : "border-amber-300 bg-amber-50 text-amber-700",
+                : "border-clay/30 bg-clay/10 text-clay-deep",
             )}
           >
             {banner.text}

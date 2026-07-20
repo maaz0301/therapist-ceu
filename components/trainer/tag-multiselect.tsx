@@ -134,7 +134,7 @@ export function TagMultiselect({
           {selectedOptions.map((opt) => (
             <Badge
               key={opt.id}
-              variant="secondary"
+              variant="clay-subtle"
               className="gap-1 pr-1 pl-2"
             >
               {opt.name}

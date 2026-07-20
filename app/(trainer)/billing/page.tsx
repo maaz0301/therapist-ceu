@@ -38,7 +38,7 @@ export default async function BillingPage({
           </p>
         </div>
       ) : sp.checkout === "canceled" ? (
-        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+        <div className="rounded-lg border border-clay/30 bg-clay/10 px-4 py-3 text-sm text-clay-deep">
           Checkout was canceled. You can try again whenever you&apos;re ready.
         </div>
       ) : null}

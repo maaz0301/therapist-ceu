@@ -44,12 +44,12 @@ export function SubscriptionBanner({
     <Card
       className={cn(
         "flex flex-wrap items-center justify-between gap-3 p-4",
-        atLimit ? "border-amber-300 bg-amber-50" : "border-primary/20 bg-primary/5",
+        atLimit ? "border-clay/30 bg-clay/10" : "border-primary/20 bg-primary/5",
       )}
     >
       <div className="flex items-center gap-3">
         {atLimit ? (
-          <AlertTriangle className="size-5 text-amber-600" />
+          <AlertTriangle className="size-5 text-clay" />
         ) : (
           <BadgeCheck className="size-5 text-primary" />
         )}

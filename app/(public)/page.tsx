@@ -210,7 +210,7 @@ export default async function HomePage() {
                   }
                 >
                 {tier.highlighted ? (
-                  <Badge className="absolute top-3 right-5 bg-primary text-primary-foreground">
+                  <Badge className="absolute top-3 right-5 bg-clay text-clay-foreground">
                     Most popular
                   </Badge>
                 ) : null}

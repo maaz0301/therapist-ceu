@@ -140,7 +140,7 @@ export default async function ListingDetailPage({
       ) : null}
 
       {!isPublic ? (
-        <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+        <div className="mb-6 rounded-lg border border-clay/30 bg-clay/10 px-4 py-3 text-sm text-clay-deep">
           Preview — this listing isn&apos;t visible to the public yet
           (status: {listing.status}
           {listing.active ? "" : ", unpublished"}).
@@ -223,7 +223,7 @@ export default async function ListingDetailPage({
       {listing.tagList.length > 0 ? (
         <div className="mt-6 flex flex-wrap gap-1.5">
           {listing.tagList.map((tag) => (
-            <Badge key={tag.id} variant="secondary">
+            <Badge key={tag.id} variant="clay-subtle">
               {tag.name}
             </Badge>
           ))}

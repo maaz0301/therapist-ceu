@@ -95,7 +95,7 @@ and component patterns defined in Phase 0. No raw/unstyled screens are ever acce
 in early phases.
 
 Component notes (Base UI / `base-nova`):
-- Brand tokens live in `app/globals.css`: teal `--primary`, coral `--coral`, plus
+- Brand tokens live in `app/globals.css`: sage `--sage` and `--primary`, clay `--clay`, plus
   `--success` / `--warning`. Reusable primitives: `components/format-badge.tsx`,
   `components/ceu-badge.tsx`, `components/empty-state.tsx`, `components/listing-card.tsx`.
 - These shadcn components are built on **Base UI** (use the `render` prop to compose, not

@@ -130,7 +130,7 @@ export function TagManager({ groups }: { groups: AdminTagGroup[] }) {
                     {tag.name}
                   </span>
                   {tag.status === "suggested" ? (
-                    <Badge className="bg-amber-100 text-amber-700">
+                    <Badge variant="clay-subtle">
                       Suggested
                       {tag.suggestedByName ? ` · ${tag.suggestedByName}` : ""}
                     </Badge>

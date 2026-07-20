@@ -86,7 +86,7 @@ export function ListingCard({
         <span className="text-base font-semibold text-foreground">
           {formatPrice(listing.price)}
         </span>
-        <span className="text-sm font-medium text-primary group-hover:underline">
+        <span className="text-sm font-medium text-clay group-hover:underline">
           View details
         </span>
       </div>

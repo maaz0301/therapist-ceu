@@ -11,13 +11,19 @@ import {
 } from "@react-email/components";
 import type { ReactNode } from "react";
 
+/*
+ * Mirrors the brand tokens in app/globals.css. Email clients don't support
+ * CSS custom properties reliably, so the swatches are duplicated here as
+ * literals — keep them in sync with the :root block if the palette moves.
+ */
 const COLORS = {
-  bg: "#f1f5f6",
-  card: "#ffffff",
-  border: "#e2e8f0",
-  text: "#0f172a",
-  muted: "#64748b",
-  primary: "#0d9488",
+  bg: "#F7F8F5", // off-white page background
+  card: "#FFFFFF",
+  border: "#DCE0D7",
+  text: "#374446", // iron grey
+  muted: "#5E6E70",
+  primary: "#9D6858", // terracotta clay — the CTA color, matches `variant="clay"`
+  quote: "#EAEDE5",
 };
 
 export const emailButton = {
@@ -128,7 +134,7 @@ export const emailStyles = {
     fontSize: "15px",
     lineHeight: "23px",
     color: COLORS.text,
-    backgroundColor: "#f8fafc",
+    backgroundColor: COLORS.quote,
     borderLeft: `3px solid ${COLORS.border}`,
     borderRadius: "6px",
     padding: "12px 16px",
