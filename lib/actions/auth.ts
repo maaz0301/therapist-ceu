@@ -62,6 +62,11 @@ export async function signInAction(
   if (error) return { error: error.message };
 
   if (data.user) {
+    if (!data.user.email_confirmed_at) {
+      await supabase.auth.signOut();
+      return { error: "Please verify your email address before logging in." };
+    }
+
     const [profile] = await db
       .select({ role: profiles.role, accountStatus: profiles.accountStatus })
       .from(profiles)

@@ -2,11 +2,7 @@ import { Logo } from "@/components/logo";
 import { ButtonLink } from "@/components/ui/button-link";
 import { getCurrentProfile } from "@/lib/auth";
 
-const NAV_LINKS = [
-  { href: "/directory", label: "Browse trainings" },
-  { href: "/#how-it-works", label: "How it works" },
-  { href: "/#for-trainers", label: "For trainers" },
-];
+import { SiteNav } from "@/components/site-nav";
 
 export async function SiteHeader() {
   const profile = await getCurrentProfile();
@@ -17,18 +13,7 @@ export async function SiteHeader() {
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <Logo />
 
-        <nav className="hidden items-center gap-1 md:flex">
-          {NAV_LINKS.map((link) => (
-            <ButtonLink
-              key={link.href}
-              variant="ghost"
-              size="sm"
-              href={link.href}
-            >
-              {link.label}
-            </ButtonLink>
-          ))}
-        </nav>
+        <SiteNav />
 
         <div className="flex items-center gap-2">
           {profile ? (
