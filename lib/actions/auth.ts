@@ -13,6 +13,13 @@ import { sendWelcomeEmail } from "@/lib/email/send";
 export type AuthActionState = {
   error?: string;
   success?: string;
+  /**
+   * Non-secret fields echoed back on failure. React resets an uncontrolled
+   * form once its action resolves, so without these every field blanks out and
+   * the user has to retype the whole form to fix one mistake. Passwords are
+   * deliberately excluded — they are preserved client-side instead.
+   */
+  values?: { fullName?: string; email?: string };
 } | null;
 
 const emailSchema = z.string().trim().email("Enter a valid email address.");
@@ -92,8 +99,16 @@ export async function signUpAction(
       password: formData.get("password"),
     });
 
+  const submitted = {
+    fullName: String(formData.get("fullName") ?? ""),
+    email: String(formData.get("email") ?? ""),
+  };
+
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return {
+      error: parsed.error.issues[0]?.message ?? "Invalid input.",
+      values: submitted,
+    };
   }
 
   const { fullName, email, password } = parsed.data;
@@ -104,7 +119,10 @@ export async function signUpAction(
   );
 
   if (existingUser.length > 0) {
-    return { error: "An account with this email address already exists." };
+    return {
+      error: "An account with this email address already exists.",
+      values: submitted,
+    };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -118,7 +136,7 @@ export async function signUpAction(
     },
   });
 
-  if (error) return { error: error.message };
+  if (error) return { error: error.message, values: submitted };
 
   // Profile row is created by the on_auth_user_created trigger; set the name.
   if (data.user) {

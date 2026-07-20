@@ -27,6 +27,7 @@ export function SignupForm() {
           name="fullName"
           type="text"
           autoComplete="name"
+          defaultValue={state?.values?.fullName ?? ""}
           required
           placeholder="Jane Doe, LCSW"
         />
@@ -38,6 +39,7 @@ export function SignupForm() {
           name="email"
           type="email"
           autoComplete="email"
+          defaultValue={state?.values?.email ?? ""}
           required
           placeholder="you@example.com"
         />
@@ -50,7 +52,7 @@ export function SignupForm() {
           autoComplete="new-password"
           required
           placeholder="At least 8 characters"
-          value={password}
+          defaultValue={password}
           onChange={(e) => setPassword(e.target.value)}
         />
         <PasswordRequirements password={password} />
