@@ -10,12 +10,45 @@ const NAV_LINKS = [
   { href: "/#for-trainers", label: "For trainers" },
 ];
 
+const LOCATION_CHANGE = "sitenav:locationchange";
+
+/**
+ * The App Router navigates with history.pushState, which fires neither
+ * `hashchange` nor `popstate`. Clicking "/#for-trainers" from the same page
+ * therefore changes the URL with no event and no re-render — pathname is
+ * unchanged, so nothing tells the nav to re-read the hash.
+ *
+ * Patch the two history methods once to emit an event we can subscribe to.
+ * Idempotent, and left in place for the page's lifetime: other subscribers
+ * may still depend on it, and restoring the originals could clobber another
+ * patch applied after ours.
+ */
+let historyPatched = false;
+function patchHistory() {
+  if (historyPatched || typeof window === "undefined") return;
+  historyPatched = true;
+  for (const method of ["pushState", "replaceState"] as const) {
+    const original = window.history[method];
+    window.history[method] = function patched(
+      this: History,
+      ...args: Parameters<History["pushState"]>
+    ) {
+      const result = original.apply(this, args);
+      window.dispatchEvent(new Event(LOCATION_CHANGE));
+      return result;
+    };
+  }
+}
+
 function subscribeToHash(onChange: () => void) {
+  patchHistory();
   window.addEventListener("hashchange", onChange);
   window.addEventListener("popstate", onChange);
+  window.addEventListener(LOCATION_CHANGE, onChange);
   return () => {
     window.removeEventListener("hashchange", onChange);
     window.removeEventListener("popstate", onChange);
+    window.removeEventListener(LOCATION_CHANGE, onChange);
   };
 }
 
@@ -25,13 +58,8 @@ const getServerHash = () => "";
 export function SiteNav() {
   const pathname = usePathname();
 
-  /**
-   * The hash isn't part of `usePathname`, and an App Router <Link> navigation
-   * to a hash on another route doesn't reliably fire `hashchange` — so an
-   * effect that only listens for that event goes stale. Reading through
-   * useSyncExternalStore re-checks on every render, which includes the
-   * re-render `usePathname` triggers on navigation.
-   */
+  // The hash isn't part of `usePathname`, so it needs its own subscription —
+  // see patchHistory above for why the built-in events aren't enough.
   const hash = useSyncExternalStore(subscribeToHash, getHash, getServerHash);
 
   return (
