@@ -4,9 +4,8 @@ import { redirect } from "next/navigation";
 
 import { stripe, STRIPE_PRICE_IDS } from "@/lib/stripe";
 import { requireTrainer } from "@/lib/auth";
+import { getBaseUrl } from "@/lib/site-url";
 import type { SubscriptionTier } from "@/lib/constants";
-
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 /**
  * Creates a Stripe Checkout session for the given tier and redirects the
@@ -21,6 +20,8 @@ export async function createCheckoutSession(formData: FormData) {
   if (!priceId) {
     throw new Error(`No Stripe price configured for tier "${tier}"`);
   }
+
+  const appUrl = await getBaseUrl();
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
@@ -51,6 +52,8 @@ export async function createPortalSession() {
       "No Stripe customer on file yet — subscribe to a plan first.",
     );
   }
+
+  const appUrl = await getBaseUrl();
 
   const session = await stripe.billingPortal.sessions.create({
     customer: profile.stripeCustomerId,
