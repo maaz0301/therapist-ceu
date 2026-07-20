@@ -1,6 +1,6 @@
 import "server-only";
 
-import { env } from "@/lib/env";
+import { getBaseUrl } from "@/lib/site-url";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/client";
 import { WelcomeEmail } from "@/lib/email/templates/welcome";
@@ -64,7 +64,7 @@ export async function sendTrainerInviteEmail(
   // dropping them straight on the dashboard would leave them unable to log
   // in again once this one-time link is spent.
   const inviteUrl =
-    `${env.appUrl}/auth/confirm` +
+    `${await getBaseUrl()}/auth/confirm` +
     `?token_hash=${encodeURIComponent(data.properties.hashed_token)}` +
     `&type=invite&next=${encodeURIComponent("/update-password")}`;
 
@@ -102,7 +102,7 @@ export async function sendWelcomeEmail(to: string, name?: string | null) {
   return sendEmail({
     to,
     subject: "Welcome to TherapistCEU",
-    react: WelcomeEmail({ name, dashboardUrl: `${env.appUrl}/dashboard` }),
+    react: WelcomeEmail({ name, dashboardUrl: `${await getBaseUrl()}/dashboard` }),
   });
 }
 
@@ -118,7 +118,7 @@ export async function sendListingSubmittedEmail(
     react: ListingSubmittedEmail({
       name: args.name,
       listingTitle: args.listingTitle,
-      dashboardUrl: `${env.appUrl}/listings`,
+      dashboardUrl: `${await getBaseUrl()}/listings`,
     }),
   });
 }
@@ -135,7 +135,7 @@ export async function sendListingApprovedEmail(
     react: ListingApprovedEmail({
       name: args.name,
       listingTitle: args.listingTitle,
-      listingUrl: `${env.appUrl}/listings/${args.slug}`,
+      listingUrl: `${await getBaseUrl()}/listings/${args.slug}`,
     }),
   });
 }
@@ -158,7 +158,7 @@ export async function sendListingRejectedEmail(
       name: args.name,
       listingTitle: args.listingTitle,
       reason: args.reason,
-      editUrl: `${env.appUrl}/listings/${args.slug}/edit`,
+      editUrl: `${await getBaseUrl()}/listings/${args.slug}/edit`,
     }),
   });
 }
@@ -174,7 +174,7 @@ export async function sendPaymentFailedEmail(
     subject: "Action needed: payment failed",
     react: PaymentFailedEmail({
       name: args.name,
-      billingUrl: `${env.appUrl}/billing`,
+      billingUrl: `${await getBaseUrl()}/billing`,
     }),
   });
 }
@@ -190,7 +190,7 @@ export async function sendAccountDeactivatedEmail(
     subject: "Your listings have been deactivated",
     react: AccountDeactivatedEmail({
       name: args.name,
-      billingUrl: `${env.appUrl}/billing`,
+      billingUrl: `${await getBaseUrl()}/billing`,
     }),
   });
 }
@@ -207,7 +207,7 @@ export async function sendRenewalReminderEmail(
     react: RenewalReminderEmail({
       name: args.name,
       renewalDate: args.renewalDate,
-      billingUrl: `${env.appUrl}/billing`,
+      billingUrl: `${await getBaseUrl()}/billing`,
     }),
   });
 }

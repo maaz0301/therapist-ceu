@@ -22,15 +22,22 @@ export async function getBaseUrl(): Promise<string> {
   const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (configured) return env.appUrl;
 
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  if (host) {
-    const proto =
-      h.get("x-forwarded-proto") ??
-      (host.startsWith("localhost") || host.startsWith("127.0.0.1")
-        ? "http"
-        : "https");
-    return `${proto}://${host}`;
+  // Not every caller runs inside a request — `after()` callbacks and cron
+  // routes may have no header store, where headers() throws rather than
+  // returning empty. Fall through to the env-based values in that case.
+  try {
+    const h = await headers();
+    const host = h.get("x-forwarded-host") ?? h.get("host");
+    if (host) {
+      const proto =
+        h.get("x-forwarded-proto") ??
+        (host.startsWith("localhost") || host.startsWith("127.0.0.1")
+          ? "http"
+          : "https");
+      return `${proto}://${host}`;
+    }
+  } catch {
+    // no request context — fall through
   }
 
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;

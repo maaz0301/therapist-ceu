@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import { profiles } from "@/db/schema";
 import { db } from "@/lib/db";
-import { env } from "@/lib/env";
+import { getBaseUrl } from "@/lib/site-url";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { sendWelcomeEmail } from "@/lib/email/send";
 
@@ -114,7 +114,7 @@ export async function signUpAction(
     password,
     options: {
       data: { full_name: fullName },
-      emailRedirectTo: `${env.appUrl}/auth/callback?next=/dashboard`,
+      emailRedirectTo: `${await getBaseUrl()}/auth/callback?next=/dashboard`,
     },
   });
 
@@ -154,7 +154,7 @@ export async function signInWithMagicLinkAction(
   const { error } = await supabase.auth.signInWithOtp({
     email: parsed.data,
     options: {
-      emailRedirectTo: `${env.appUrl}/auth/callback?next=/dashboard`,
+      emailRedirectTo: `${await getBaseUrl()}/auth/callback?next=/dashboard`,
     },
   });
 
@@ -173,7 +173,7 @@ export async function requestPasswordResetAction(
 
   const supabase = await createSupabaseServerClient();
   await supabase.auth.resetPasswordForEmail(parsed.data, {
-    redirectTo: `${env.appUrl}/auth/callback?next=/update-password`,
+    redirectTo: `${await getBaseUrl()}/auth/callback?next=/update-password`,
   });
 
   // Always report success to avoid leaking which emails are registered.
