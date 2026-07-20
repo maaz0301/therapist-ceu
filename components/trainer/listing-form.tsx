@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useSyncExternalStore } from "react";
 
 import { AuthMessage } from "@/components/auth/auth-message";
 import { SubmitButton } from "@/components/auth/submit-button";
@@ -10,9 +10,18 @@ import { TagMultiselect } from "@/components/trainer/tag-multiselect";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { LISTING_FORMATS } from "@/lib/constants";
+import { DESCRIPTION_MAX, LISTING_FORMATS } from "@/lib/constants";
+import {
+  addDays,
+  END_DATE_ORDER_ERROR,
+  START_DATE_PAST_ERROR,
+  todayIso,
+} from "@/lib/dates";
+import { listingFormValues } from "@/lib/listings/form-fields";
+import { buildListingSchema } from "@/lib/validation/listing";
 import type { ListingFormState } from "@/lib/actions/listings";
 import type { OwnedListing } from "@/lib/queries/listings";
 import type { GroupedTags } from "@/lib/queries/tags";
@@ -22,8 +31,31 @@ type ListingAction = (
   formData: FormData,
 ) => Promise<ListingFormState>;
 
-const selectClass =
-  "h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+// Visual order of the fields, used to focus the first one that fails.
+const FIELD_ORDER = [
+  "title",
+  "description",
+  "presenterNames",
+  "credentials",
+  "format",
+  "states",
+  "startDate",
+  "endDate",
+  "durationHours",
+  "price",
+  "registrationUrl",
+  "websiteUrl",
+  "ceCount",
+  "accreditingBody",
+  "tagIds",
+] as const;
+
+// Resolved once per page load so `getToday` is referentially stable, as
+// useSyncExternalStore requires. The date never changes mid-session.
+let cachedToday: string | null = null;
+const getToday = () => (cachedToday ??= todayIso());
+const getServerToday = () => "";
+const subscribeNever = () => () => {};
 
 function FieldError({ messages }: { messages?: string[] }) {
   if (!messages?.length) return null;
@@ -42,7 +74,87 @@ export function ListingForm({
   submitLabel: string;
 }) {
   const [state, formAction] = useActionState(action, null);
-  const errors = state?.fieldErrors;
+
+  /**
+   * Server errors describe the values as they were *submitted*. Once a trainer
+   * edits a field that feedback is stale, so each field's error is dropped as
+   * soon as it is touched — and the whole set resets on the next submit.
+   */
+  const [touched, setTouched] = useState<ReadonlySet<string>>(new Set());
+  const [clientErrors, setClientErrors] = useState<Record<
+    string,
+    string[] | undefined
+  > | null>(null);
+
+  const [seenState, setSeenState] = useState(state);
+  if (seenState !== state) {
+    // Adjusting state during render — React's documented alternative to an
+    // effect for resetting derived state when an input changes.
+    setSeenState(state);
+    if (touched.size > 0) setTouched(new Set());
+    if (clientErrors) setClientErrors(null);
+  }
+
+  function markTouched(name: string) {
+    setTouched((prev) => {
+      if (!name || prev.has(name)) return prev;
+      const next = new Set(prev);
+      next.add(name);
+      return next;
+    });
+  }
+
+  // Native inputs, textareas and selects all bubble change events to the form,
+  // so one handler covers them. The two multiselects report in via callbacks.
+  function handleFieldChange(e: React.ChangeEvent<HTMLFormElement>) {
+    const target = e.target as unknown as { name?: string };
+    if (target.name) markTouched(target.name);
+  }
+
+  /**
+   * Client-side pass over the *same* Zod schema the action uses, so every
+   * required field reports inline on submit instead of after a round-trip.
+   * Native `required` tooltips are suppressed (`noValidate`) in favour of these
+   * — the browser shows one at a time and skips the custom multiselects.
+   */
+  const errorsFor = (name: string) =>
+    touched.has(name)
+      ? undefined
+      : (clientErrors?.[name] ?? state?.fieldErrors?.[name]);
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    const form = e.currentTarget;
+    const parsed = buildListingSchema(savedStart || undefined).safeParse(
+      listingFormValues(new FormData(form)),
+    );
+    if (parsed.success) {
+      setClientErrors(null);
+      return;
+    }
+
+    // Cancelling the submit event also cancels React's form action.
+    e.preventDefault();
+    const fieldErrors = parsed.error.flatten().fieldErrors;
+    setClientErrors(fieldErrors);
+    setTouched(new Set());
+
+    // Land the trainer on the first problem rather than leaving them to hunt
+    // for it — the form is long enough that errors can be off-screen.
+    const first = FIELD_ORDER.find((name) => fieldErrors[name]?.length);
+    if (!first) return;
+    const el = form.querySelector<HTMLElement>(`[name="${first}"]`);
+    (el ?? form).scrollIntoView({ behavior: "smooth", block: "center" });
+    el?.focus({ preventScroll: true });
+  }
+
+
+  /**
+   * Prefer what the trainer just submitted over the saved listing. React resets
+   * the form after the action resolves, and the reset reads these — so echoing
+   * the rejected input back is what keeps it on screen.
+   */
+  const initial = (field: string, fallback?: string | number | null) =>
+    state?.values?.[field] ?? (fallback == null ? "" : String(fallback));
 
   const [format, setFormat] = useState<string>(
     listing?.format ?? "Live Virtual",
@@ -51,11 +163,45 @@ export function ListingForm({
   const [onDemand, setOnDemand] = useState(listing?.onDemand ?? false);
   const [hasCeu, setHasCeu] = useState(listing?.hasCeu ?? false);
 
+  // Dates are controlled so the ordering rules can be caught before submit.
+  const savedStart = listing?.startDate ?? "";
+  const [startDate, setStartDate] = useState(savedStart);
+  const [endDate, setEndDate] = useState(listing?.endDate ?? "");
+
+  // `todayIso()` reads the browser's timezone, which the server doesn't share.
+  // The empty server snapshot keeps the two renders identical through
+  // hydration; the real date lands on the client pass.
+  const today = useSyncExternalStore(subscribeNever, getToday, getServerToday);
+
   const showStates =
     (format === "In-Person" || format === "Hybrid") && !isOnline;
 
+  // A training that already started keeps its date; only a *change* must be
+  // in the future, matching what the server enforces.
+  const startChanged = startDate !== savedStart;
+  const minStart = startChanged || !savedStart ? today : undefined;
+
+  // ISO date strings (yyyy-mm-dd) compare correctly as plain strings.
+  const startPastError =
+    !onDemand && startDate && today && startChanged && startDate < today
+      ? START_DATE_PAST_ERROR
+      : null;
+
+  // End date is optional; when set it must be at least a day after the start.
+  const minEnd = startDate ? addDays(startDate, 1) : today || undefined;
+  const dateOrderError =
+    !onDemand && startDate && endDate && endDate < addDays(startDate, 1)
+      ? END_DATE_ORDER_ERROR
+      : null;
+
   return (
-    <form action={formAction} className="space-y-6">
+    <form
+      action={formAction}
+      onChange={handleFieldChange}
+      onSubmit={handleSubmit}
+      noValidate
+      className="space-y-6"
+    >
       <AuthMessage error={state?.error} />
 
       {/* Basics */}
@@ -67,11 +213,11 @@ export function ListingForm({
           <Input
             id="title"
             name="title"
-            defaultValue={listing?.title}
-            placeholder="e.g. EMDR Foundations for Trauma Treatment"
+            defaultValue={initial("title", listing?.title)}
+            placeholder="e.g. EMDR Foundations"
             required
           />
-          <FieldError messages={errors?.title} />
+          <FieldError messages={errorsFor("title")} />
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -79,12 +225,13 @@ export function ListingForm({
           <Textarea
             id="description"
             name="description"
-            defaultValue={listing?.description}
+            defaultValue={initial("description", listing?.description)}
             placeholder="What will attendees learn? Who is it for? Any prerequisites?"
+            maxLength={DESCRIPTION_MAX}
             className="min-h-32"
             required
           />
-          <FieldError messages={errors?.description} />
+          <FieldError messages={errorsFor("description")} />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -93,22 +240,22 @@ export function ListingForm({
             <Input
               id="presenterNames"
               name="presenterNames"
-              defaultValue={listing?.presenterNames}
+              defaultValue={initial("presenterNames", listing?.presenterNames)}
               placeholder="Dr. Jane Doe"
               required
             />
-            <FieldError messages={errors?.presenterNames} />
+            <FieldError messages={errorsFor("presenterNames")} />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="credentials">Credentials</Label>
             <Input
               id="credentials"
               name="credentials"
-              defaultValue={listing?.credentials}
+              defaultValue={initial("credentials", listing?.credentials)}
               placeholder="LCSW, RPT-S"
               required
             />
-            <FieldError messages={errors?.credentials} />
+            <FieldError messages={errorsFor("credentials")} />
           </div>
         </div>
       </Card>
@@ -120,20 +267,21 @@ export function ListingForm({
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="format">Format</Label>
-            <select
+            <NativeSelect
               id="format"
               name="format"
               value={format}
               onChange={(e) => setFormat(e.target.value)}
-              className={selectClass}
+              selectSize="sm"
+              className="w-full"
             >
               {LISTING_FORMATS.map((f) => (
                 <option key={f} value={f}>
                   {f}
                 </option>
               ))}
-            </select>
-            <FieldError messages={errors?.format} />
+            </NativeSelect>
+            <FieldError messages={errorsFor("format")} />
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -154,7 +302,8 @@ export function ListingForm({
             <Label>In-person state(s)</Label>
             <StateMultiselect
               defaultSelected={listing?.states ?? []}
-              error={errors?.states?.[0]}
+              error={errorsFor("states")?.[0]}
+              onSelectionChange={() => markTouched("states")}
             />
           </div>
         ) : null}
@@ -181,9 +330,18 @@ export function ListingForm({
                 id="startDate"
                 name="startDate"
                 type="date"
-                defaultValue={listing?.startDate ?? ""}
+                value={startDate}
+                min={minStart}
+                onChange={(e) => setStartDate(e.target.value)}
+                aria-invalid={startPastError ? true : undefined}
               />
-              <FieldError messages={errors?.startDate} />
+              {startPastError ? (
+                <p role="alert" className="text-sm text-destructive">
+                  {startPastError}
+                </p>
+              ) : (
+                <FieldError messages={errorsFor("startDate")} />
+              )}
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="endDate">End date (optional)</Label>
@@ -191,9 +349,18 @@ export function ListingForm({
                 id="endDate"
                 name="endDate"
                 type="date"
-                defaultValue={listing?.endDate ?? ""}
+                value={endDate}
+                min={minEnd}
+                onChange={(e) => setEndDate(e.target.value)}
+                aria-invalid={dateOrderError ? true : undefined}
               />
-              <FieldError messages={errors?.endDate} />
+              {dateOrderError ? (
+                <p role="alert" className="text-sm text-destructive">
+                  {dateOrderError}
+                </p>
+              ) : (
+                <FieldError messages={errorsFor("endDate")} />
+              )}
             </div>
           </div>
         ) : null}
@@ -206,10 +373,10 @@ export function ListingForm({
             type="number"
             step="0.5"
             min="0"
-            defaultValue={listing?.durationHours ?? ""}
+            defaultValue={initial("durationHours", listing?.durationHours)}
             placeholder="e.g. 6"
           />
-          <FieldError messages={errors?.durationHours} />
+          <FieldError messages={errorsFor("durationHours")} />
         </div>
       </Card>
 
@@ -228,11 +395,11 @@ export function ListingForm({
               type="number"
               step="0.01"
               min="0"
-              defaultValue={listing?.price ?? "0"}
+              defaultValue={initial("price", listing?.price ?? "0")}
               placeholder="0 for free"
               required
             />
-            <FieldError messages={errors?.price} />
+            <FieldError messages={errorsFor("price")} />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="registrationUrl">Registration link</Label>
@@ -240,11 +407,11 @@ export function ListingForm({
               id="registrationUrl"
               name="registrationUrl"
               type="url"
-              defaultValue={listing?.registrationUrl}
+              defaultValue={initial("registrationUrl", listing?.registrationUrl)}
               placeholder="https://…"
               required
             />
-            <FieldError messages={errors?.registrationUrl} />
+            <FieldError messages={errorsFor("registrationUrl")} />
           </div>
         </div>
 
@@ -254,10 +421,10 @@ export function ListingForm({
             id="websiteUrl"
             name="websiteUrl"
             type="url"
-            defaultValue={listing?.websiteUrl ?? ""}
+            defaultValue={initial("websiteUrl", listing?.websiteUrl)}
             placeholder="https://…"
           />
-          <FieldError messages={errors?.websiteUrl} />
+          <FieldError messages={errorsFor("websiteUrl")} />
         </div>
       </Card>
 
@@ -284,20 +451,20 @@ export function ListingForm({
                 type="number"
                 step="0.25"
                 min="0"
-                defaultValue={listing?.ceCount ?? ""}
+                defaultValue={initial("ceCount", listing?.ceCount)}
                 placeholder="e.g. 6"
               />
-              <FieldError messages={errors?.ceCount} />
+              <FieldError messages={errorsFor("ceCount")} />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="accreditingBody">Accrediting body</Label>
               <Input
                 id="accreditingBody"
                 name="accreditingBody"
-                defaultValue={listing?.accreditingBody ?? ""}
+                defaultValue={initial("accreditingBody", listing?.accreditingBody)}
                 placeholder="e.g. APA, ASWB, EMDRIA"
               />
-              <FieldError messages={errors?.accreditingBody} />
+              <FieldError messages={errorsFor("accreditingBody")} />
             </div>
           </div>
         ) : null}
@@ -312,7 +479,8 @@ export function ListingForm({
         <TagMultiselect
           groups={groups}
           defaultSelected={listing?.tagIds ?? []}
-          error={errors?.tagIds?.[0]}
+          error={errorsFor("tagIds")?.[0]}
+              onSelectionChange={() => markTouched("tagIds")}
         />
       </Card>
 
@@ -321,12 +489,17 @@ export function ListingForm({
         <h2 className="font-heading text-lg font-semibold">Promo image</h2>
         <ImageUpload
           defaultUrl={listing?.imageUrl ?? null}
-          error={errors?.image?.[0]}
+          error={errorsFor("image")?.[0]}
         />
       </Card>
 
       <div className="flex items-center justify-end gap-3">
-        <SubmitButton variant="coral" size="lg" pendingLabel="Saving…">
+        <SubmitButton
+          variant="clay"
+          size="lg"
+          pendingLabel="Saving…"
+          disabled={Boolean(dateOrderError || startPastError)}
+        >
           {submitLabel}
         </SubmitButton>
       </div>

@@ -4,6 +4,24 @@
  * trainer portal, and admin. Keep this the single source of truth.
  */
 
+/**
+ * Promo image limits. Shared so the client upload field can reject bad files
+ * before they are ever sent — an oversized body blows past the request size
+ * limit and surfaces as a generic "something went wrong" crash.
+ *
+ * 4 MB is dictated by the host: Vercel caps serverless function request bodies
+ * at 4.5 MB, and that ceiling is not raisable from `next.config.ts`. The cap
+ * covers the whole multipart body, so the image limit sits below it to leave
+ * room for the rest of the listing fields.
+ */
+export const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+export const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+export const IMAGE_TYPE_ERROR = "Use a PNG, JPG, or WebP image.";
+export const IMAGE_SIZE_ERROR = "Image must be under 4 MB.";
+
+/** Description length cap — mirrored by the textarea's maxLength attribute. */
+export const DESCRIPTION_MAX = 5000;
+
 export const LISTING_FORMATS = [
   "Live Virtual",
   "In-Person",
@@ -12,7 +30,14 @@ export const LISTING_FORMATS = [
 ] as const;
 export type ListingFormat = (typeof LISTING_FORMATS)[number];
 
-export const CEU_PROVIDERS = ["APA", "NBCC", "ACE/NASW", "State Board Approved", "Non-CE"] as const;
+export const CEU_PROVIDERS = [
+  "APA",
+  "NBCC",
+  "ACE/NASW",
+  "APT (Association for Play Therapy)",
+  "State Board Approved",
+  "Non-CE",
+] as const;
 export type CeuProvider = (typeof CEU_PROVIDERS)[number];
 
 export const PRICE_RANGES = [
@@ -37,8 +62,14 @@ export const SUBSCRIPTION_TIERS = {
 } as const;
 export type SubscriptionTier = keyof typeof SUBSCRIPTION_TIERS;
 
+/**
+ * Location options. "ONLINE" is a pseudo-location (matches every listing that
+ * is online); "INTL" is a real, selectable location stored in listing_states
+ * like any state code, for trainings held outside the US (e.g. CEU retreats).
+ */
 export const US_STATES = [
   { code: "ONLINE", name: "Online / Any State" },
+  { code: "INTL", name: "Outside the US" },
   { code: "AL", name: "Alabama" },
   { code: "AK", name: "Alaska" },
   { code: "AZ", name: "Arizona" },
@@ -95,27 +126,18 @@ export const US_STATES = [
 /** The full Phase 1 tag taxonomy (seed source of truth). */
 export const TAG_TAXONOMY: Record<TagCategory, string[]> = {
   modality: [
+    "CBT",
+    "DBT",
+    "ACT",
     "EMDR",
-    "Play Therapy",
-    "Child-Centered Play Therapy (CCPT)",
-    "Cognitive Behavioral Therapy (CBT)",
-    "Dialectical Behavior Therapy (DBT)",
-    "Acceptance and Commitment Therapy (ACT)",
-    "Internal Family Systems (IFS)",
-    "Somatic Therapy",
+    "IFS/Parts work",
+    "Somatic & body-based (Somatic Experiencing, sensorimotor, Brainspotting)",
+    "Play therapy (CCPT, sand tray, filial)",
+    "Attachment based interventions",
+    "Exposure Therapies",
+    "Mindfulness-based (MBSR, MBCT)",
     "Motivational Interviewing",
-    "Narrative Therapy",
-    "Gottman Method",
-    "Emotionally Focused Therapy (EFT)",
-    "Sandtray Therapy",
-    "Art Therapy",
-    "Brainspotting",
-    "Trauma-Focused CBT (TF-CBT)",
-    "SPACE Program",
-    "Filial Therapy",
-    "Theraplay",
-    "Child Parent Psychotherapy (CPP)",
-    "Parent Child Interaction Therapy (PCIT)",
+    "Expressive arts (art, music, drama)",
   ],
   population: [
     "Children (under 12)",
@@ -142,6 +164,9 @@ export const TAG_TAXONOMY: Record<TagCategory, string[]> = {
     "Parenting",
     "School-Based Issues",
     "Chronic Illness",
+    "Suicide Prevention",
+    "Cultural Competence / Diversity",
+    "ADHD / Executive Functioning",
   ],
   business: [
     "Private Practice Building",
@@ -151,5 +176,6 @@ export const TAG_TAXONOMY: Record<TagCategory, string[]> = {
     "Telehealth",
     "Marketing Your Practice",
     "Insurance and Billing",
+    "Clinician Burnout / Wellness",
   ],
 };

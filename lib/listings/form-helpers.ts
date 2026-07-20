@@ -3,43 +3,67 @@ import "server-only";
 import { eq } from "drizzle-orm";
 
 import { listings, listingStates, listingTags } from "@/db/schema";
+import {
+  ALLOWED_IMAGE_TYPES,
+  IMAGE_SIZE_ERROR,
+  IMAGE_TYPE_ERROR,
+  MAX_IMAGE_BYTES,
+} from "@/lib/constants";
 import { db } from "@/lib/db";
-import { listingSchema, type ListingInput } from "@/lib/validation/listing";
+import { listingFormValues } from "@/lib/listings/form-fields";
+import { buildListingSchema, type ListingInput } from "@/lib/validation/listing";
 import { slugify, shortId } from "@/lib/slug";
 import {
   createSupabaseAdminClient,
   LISTING_IMAGE_BUCKET,
 } from "@/lib/supabase/admin";
 
-export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-export const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
-function emptyToNull(value: FormDataEntryValue | null): string | null {
-  const s = typeof value === "string" ? value.trim() : "";
-  return s.length > 0 ? s : null;
+/**
+ * @param originalStartDate pass the listing's saved start date when editing, so
+ *   an already-past training stays editable. Omit when creating.
+ */
+export function parseListingForm(
+  formData: FormData,
+  originalStartDate?: string | null,
+) {
+  return buildListingSchema(originalStartDate).safeParse(
+    listingFormValues(formData),
+  );
 }
 
-export function parseListingForm(formData: FormData) {
-  return listingSchema.safeParse({
-    title: formData.get("title") ?? "",
-    description: formData.get("description") ?? "",
-    presenterNames: formData.get("presenterNames") ?? "",
-    credentials: formData.get("credentials") ?? "",
-    format: formData.get("format") ?? "",
-    isOnline: formData.get("isOnline") === "true",
-    states: formData.getAll("states").map(String),
-    onDemand: formData.get("onDemand") === "true",
-    startDate: emptyToNull(formData.get("startDate")),
-    endDate: emptyToNull(formData.get("endDate")),
-    durationHours: (formData.get("durationHours") as string) ?? "",
-    price: formData.get("price") ?? "0",
-    registrationUrl: formData.get("registrationUrl") ?? "",
-    hasCeu: formData.get("hasCeu") === "true",
-    ceCount: (formData.get("ceCount") as string) ?? "",
-    accreditingBody: emptyToNull(formData.get("accreditingBody")),
-    websiteUrl: (formData.get("websiteUrl") as string) ?? "",
-    tagIds: formData.getAll("tagIds").map(String),
-  });
+/** Text fields echoed back on a failed submit, keyed by input `name`. */
+export type SubmittedValues = Record<string, string>;
+
+const ECHOED_FIELDS = [
+  "title",
+  "description",
+  "presenterNames",
+  "credentials",
+  "format",
+  "startDate",
+  "endDate",
+  "durationHours",
+  "price",
+  "registrationUrl",
+  "ceCount",
+  "accreditingBody",
+  "websiteUrl",
+] as const;
+
+/**
+ * React resets an uncontrolled form once its action resolves, so a validation
+ * failure would wipe everything the trainer typed. Echoing the raw strings back
+ * as the new `defaultValue`s means the reset restores their input instead of
+ * blanking it. (File inputs can't be repopulated — browsers forbid it.)
+ */
+export function submittedValues(formData: FormData): SubmittedValues {
+  const values: SubmittedValues = {};
+  for (const field of ECHOED_FIELDS) {
+    const raw = formData.get(field);
+    if (typeof raw === "string") values[field] = raw;
+  }
+  return values;
 }
 
 export function getImageFile(formData: FormData): File | null {
@@ -105,9 +129,9 @@ export async function replaceStatesAndTags(
 export function validateImageFile(
   file: File,
 ): { error: string } | null {
-  if (file.size > MAX_IMAGE_BYTES) return { error: "Image must be under 5 MB." };
+  if (file.size > MAX_IMAGE_BYTES) return { error: IMAGE_SIZE_ERROR };
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    return { error: "Use a PNG, JPG, or WebP image." };
+    return { error: IMAGE_TYPE_ERROR };
   }
   return null;
 }

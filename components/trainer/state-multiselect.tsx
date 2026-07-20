@@ -11,9 +11,12 @@ const STATES = US_STATES.filter((s) => s.code !== "ONLINE");
 export function StateMultiselect({
   defaultSelected,
   error,
+  onSelectionChange,
 }: {
   defaultSelected: string[];
   error?: string;
+  /** Fired on every toggle so the parent can clear a stale server error. */
+  onSelectionChange?: () => void;
 }) {
   const [selected, setSelected] = useState<string[]>(defaultSelected);
 
@@ -21,6 +24,7 @@ export function StateMultiselect({
     setSelected((prev) =>
       prev.includes(code) ? prev.filter((x) => x !== code) : [...prev, code],
     );
+    onSelectionChange?.();
   }
 
   return (

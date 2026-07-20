@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { and, eq, ne } from "drizzle-orm";
 
@@ -18,13 +19,17 @@ import {
   getImageFile,
   parseListingForm,
   replaceStatesAndTags,
+  submittedValues,
   uploadImage,
   validateImageFile,
+  type SubmittedValues,
 } from "@/lib/listings/form-helpers";
 
 export type ListingFormState = {
   error?: string;
   fieldErrors?: Record<string, string[] | undefined>;
+  /** Echoed back on failure so the form doesn't blank out. */
+  values?: SubmittedValues;
 } | null;
 
 export async function createListing(
@@ -34,21 +39,28 @@ export async function createListing(
   try {
     const profile = await requireTrainer();
 
+    const values = submittedValues(formData);
+
     const parsed = parseListingForm(formData);
     if (!parsed.success) {
-      return { fieldErrors: parsed.error.flatten().fieldErrors };
+      return { fieldErrors: parsed.error.flatten().fieldErrors, values };
     }
     const data = parsed.data;
 
     const usableTagIds = await filterUsableTagIds(data.tagIds, profile.id);
     if (usableTagIds.length === 0) {
-      return { fieldErrors: { tagIds: ["Choose at least one valid topic tag."] } };
+      return {
+        fieldErrors: { tagIds: ["Choose at least one valid topic tag."] },
+        values,
+      };
     }
 
     const file = getImageFile(formData);
     if (file) {
       const imageError = validateImageFile(file);
-      if (imageError) return { fieldErrors: { image: [imageError.error] } };
+      if (imageError) {
+        return { fieldErrors: { image: [imageError.error] }, values };
+      }
     }
 
     // Tier gating: auto-publish if there is room, otherwise save as a draft.
@@ -90,17 +102,21 @@ export async function createListing(
 
     await replaceStatesAndTags(created.id, data, usableTagIds);
 
-    await sendListingSubmittedEmail(profile.id, {
-      name: profile.fullName,
-      listingTitle: data.title,
+    // Two third-party round-trips (user lookup + Resend). Run them after the
+    // response so the trainer isn't held on the "Create listing" spinner.
+    after(async () => {
+      await sendListingSubmittedEmail(profile.id, {
+        name: profile.fullName,
+        listingTitle: data.title,
+      });
     });
 
     revalidatePath("/listings");
     revalidatePath("/dashboard");
     redirect(`/listings?new=${willActivate ? "published" : "limit"}`);
-  } catch (err: any) {
-    if (err && err.message && err.message === "NEXT_REDIRECT") throw err;
-    require("fs").writeFileSync("/Users/muhammadmaaz/Documents/GitHub/TherapistCEU/error.log", err.stack || err.message || String(err));
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message === "NEXT_REDIRECT") throw err;
+    console.error("[createListing] failed:", err);
     throw err;
   }
 }
@@ -121,22 +137,29 @@ export async function updateListing(
     return { error: "Listing not found." };
   }
 
-  const parsed = parseListingForm(formData);
+  const values = submittedValues(formData);
+
+  const parsed = parseListingForm(formData, existing.startDate);
   if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
+    return { fieldErrors: parsed.error.flatten().fieldErrors, values };
   }
   const data = parsed.data;
 
   const usableTagIds = await filterUsableTagIds(data.tagIds, profile.id);
   if (usableTagIds.length === 0) {
-    return { fieldErrors: { tagIds: ["Choose at least one valid topic tag."] } };
+    return {
+      fieldErrors: { tagIds: ["Choose at least one valid topic tag."] },
+      values,
+    };
   }
 
   const file = getImageFile(formData);
   let imageUrl = existing.imageUrl;
   if (file) {
     const imageError = validateImageFile(file);
-    if (imageError) return { fieldErrors: { image: [imageError.error] } };
+    if (imageError) {
+      return { fieldErrors: { image: [imageError.error] }, values };
+    }
     imageUrl = await uploadImage(file, profile.id);
   }
 
@@ -242,6 +265,8 @@ async function getOtherActiveCount(
 export type SuggestTagState = {
   error?: string;
   tag?: { id: string; name: string; category: TagCategory };
+  /** True when the name matched a tag that already existed rather than creating one. */
+  existed?: boolean;
 } | null;
 
 export async function suggestTag(
@@ -273,6 +298,7 @@ export async function suggestTag(
         name: existing.name,
         category: existing.category as TagCategory,
       },
+      existed: true,
     };
   }
 
@@ -293,5 +319,6 @@ export async function suggestTag(
       name: created.name,
       category: created.category as TagCategory,
     },
+    existed: false,
   };
 }

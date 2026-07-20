@@ -1,18 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { listings, listingTags, profiles, tags } from "@/db/schema";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { env } from "@/lib/env";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import {
   sendListingApprovedEmail,
   sendListingRejectedEmail,
+  sendTrainerInviteEmail,
 } from "@/lib/email/send";
 import {
   getImageFile,
@@ -80,10 +80,13 @@ export async function approveListing(id: string): Promise<ActionResult> {
     .set({ status: "approved", active: true, rejectionReason: null })
     .where(eq(listings.id, id));
 
-  await sendListingApprovedEmail(listing.trainerId, {
-    name: await trainerName(listing.trainerId),
-    listingTitle: listing.title,
-    slug: listing.slug,
+  // Don't make the admin wait on a name lookup + the Resend round-trip.
+  after(async () => {
+    await sendListingApprovedEmail(listing.trainerId, {
+      name: await trainerName(listing.trainerId),
+      listingTitle: listing.title,
+      slug: listing.slug,
+    });
   });
 
   revalidateAdminListings();
@@ -113,11 +116,13 @@ export async function rejectListing(
     .set({ status: "rejected", active: false, rejectionReason: trimmed })
     .where(eq(listings.id, id));
 
-  await sendListingRejectedEmail(listing.trainerId, {
-    name: await trainerName(listing.trainerId),
-    listingTitle: listing.title,
-    reason: trimmed,
-    slug: listing.slug,
+  after(async () => {
+    await sendListingRejectedEmail(listing.trainerId, {
+      name: await trainerName(listing.trainerId),
+      listingTitle: listing.title,
+      reason: trimmed,
+      slug: listing.slug,
+    });
   });
 
   revalidateAdminListings();
@@ -180,7 +185,7 @@ export async function adminUpdateListing(
     .limit(1);
   if (!existing) return { error: "Listing not found." };
 
-  const parsed = parseListingForm(formData);
+  const parsed = parseListingForm(formData, existing.startDate);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
@@ -323,26 +328,19 @@ export async function inviteTrainer(
     return { error: "An account with this email address already exists." };
   }
 
-  const supabaseAdmin = createSupabaseAdminClient();
-  const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(cleanEmail, {
-    redirectTo: `${env.appUrl}/auth/callback?next=/dashboard`,
-    data: { full_name: cleanName },
-  });
-
-  if (error) {
-    return { error: error.message };
+  const invite = await sendTrainerInviteEmail(cleanEmail, cleanName);
+  if (!invite.ok) {
+    return { error: invite.error };
   }
 
-  if (data.user) {
-    await db
-      .update(profiles)
-      .set({
-        fullName: cleanName,
-        subscriptionTier: selectedTier === "none" ? null : selectedTier,
-        subscriptionStatus: selectedStatus,
-      })
-      .where(eq(profiles.id, data.user.id));
-  }
+  await db
+    .update(profiles)
+    .set({
+      fullName: cleanName,
+      subscriptionTier: selectedTier === "none" ? null : selectedTier,
+      subscriptionStatus: selectedStatus,
+    })
+    .where(eq(profiles.id, invite.userId));
 
   revalidatePath("/admin/trainers");
   return { ok: true };

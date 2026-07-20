@@ -7,7 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { suggestTag } from "@/lib/actions/listings";
+import { slugify } from "@/lib/slug";
 import { TAG_CATEGORIES, type TagCategory } from "@/lib/constants";
 import type { GroupedTags } from "@/lib/queries/tags";
 import { cn } from "@/lib/utils";
@@ -18,10 +20,13 @@ export function TagMultiselect({
   groups,
   defaultSelected,
   error,
+  onSelectionChange,
 }: {
   groups: GroupedTags;
   defaultSelected: string[];
   error?: string;
+  /** Fired whenever the selection changes so the parent can clear a stale error. */
+  onSelectionChange?: () => void;
 }) {
   const [selected, setSelected] = useState<string[]>(defaultSelected);
   const [extra, setExtra] = useState<Option[]>([]);
@@ -29,6 +34,7 @@ export function TagMultiselect({
   const [suggestCategory, setSuggestCategory] =
     useState<TagCategory>("modality");
   const [suggestError, setSuggestError] = useState<string | null>(null);
+  const [suggestNote, setSuggestNote] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const allOptions = useMemo<Option[]>(() => {
@@ -53,14 +59,35 @@ export function TagMultiselect({
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
+    onSelectionChange?.();
   }
 
   function handleSuggest() {
     const name = suggestName.trim();
+    setSuggestNote(null);
     if (name.length < 2) {
       setSuggestError("Enter a tag name.");
       return;
     }
+
+    // Catch duplicates against the tags already on screen before hitting the
+    // server, so the common case answers instantly. `slugify` matches how the
+    // server dedupes, making "Test", "test" and "TEST" the same tag here too.
+    const slug = slugify(name);
+    const known = allOptions.find((o) => slugify(o.name) === slug);
+    if (known) {
+      if (selected.includes(known.id)) {
+        setSuggestError(`"${known.name}" is already added to this listing.`);
+        return;
+      }
+      setSelected((prev) => [...prev, known.id]);
+      onSelectionChange?.();
+      setSuggestName("");
+      setSuggestError(null);
+      setSuggestNote(`"${known.name}" already existed — selected it for you.`);
+      return;
+    }
+
     setSuggestError(null);
     const formData = new FormData();
     formData.set("name", name);
@@ -73,13 +100,25 @@ export function TagMultiselect({
         return;
       }
       if (res?.tag) {
+        const tag = res.tag;
+        // A tag can exist server-side without being in `allOptions` — another
+        // trainer suggested it, or it is pending review and not yet published.
+        const alreadySelected = selected.includes(tag.id);
         setExtra((prev) =>
-          prev.some((t) => t.id === res.tag!.id) ? prev : [...prev, res.tag!],
+          prev.some((t) => t.id === tag.id) ? prev : [...prev, tag],
         );
         setSelected((prev) =>
-          prev.includes(res.tag!.id) ? prev : [...prev, res.tag!.id],
+          prev.includes(tag.id) ? prev : [...prev, tag.id],
         );
+        onSelectionChange?.();
         setSuggestName("");
+        if (alreadySelected) {
+          setSuggestError(`"${tag.name}" is already added to this listing.`);
+        } else if (res.existed) {
+          setSuggestNote(`"${tag.name}" already existed — selected it for you.`);
+        } else {
+          setSuggestNote(`"${tag.name}" added and sent for admin review.`);
+        }
       }
     });
   }
@@ -160,23 +199,35 @@ export function TagMultiselect({
         <div className="flex flex-col gap-2 sm:flex-row">
           <Input
             value={suggestName}
-            onChange={(e) => setSuggestName(e.target.value)}
+            onChange={(e) => {
+              setSuggestName(e.target.value);
+              setSuggestError(null);
+              setSuggestNote(null);
+            }}
+            onKeyDown={(e) => {
+              // Enter inside a form would submit the listing; suggest instead.
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleSuggest();
+              }
+            }}
             placeholder="New topic name"
+            aria-invalid={suggestError ? true : undefined}
             className="sm:flex-1"
           />
-          <select
+          <NativeSelect
+            selectSize="sm"
             value={suggestCategory}
             onChange={(e) =>
               setSuggestCategory(e.target.value as TagCategory)
             }
-            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             {TAG_CATEGORIES.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.label}
               </option>
             ))}
-          </select>
+          </NativeSelect>
           <Button
             type="button"
             variant="outline"
@@ -189,7 +240,13 @@ export function TagMultiselect({
           </Button>
         </div>
         {suggestError ? (
-          <p className="mt-2 text-sm text-destructive">{suggestError}</p>
+          <p role="alert" className="mt-2 text-sm text-destructive">
+            {suggestError}
+          </p>
+        ) : suggestNote ? (
+          <p role="status" className="mt-2 text-sm text-muted-foreground">
+            {suggestNote}
+          </p>
         ) : null}
       </div>
     </div>
