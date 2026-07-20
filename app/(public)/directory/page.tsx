@@ -2,7 +2,9 @@ import { SearchX } from "lucide-react";
 
 import { ActiveFilterChips } from "@/components/directory/active-filter-chips";
 import { DirectoryFilters } from "@/components/directory/directory-filters";
+import { DirectoryResults } from "@/components/directory/directory-results";
 import { DirectorySearch } from "@/components/directory/directory-search";
+import { DirectoryFilterProvider } from "@/components/directory/filter-provider";
 import { EmptyState } from "@/components/empty-state";
 import { ListingCard } from "@/components/listing-card";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -49,33 +51,36 @@ export default async function DirectoryPage({
         </p>
       </div>
 
+      <DirectoryFilterProvider serverFilters={filters}>
       <div className="mt-6">
-        <DirectorySearch filters={filters} />
+        <DirectorySearch />
       </div>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[14rem_1fr]">
-        <DirectoryFilters filters={filters} groups={groups} />
+        <DirectoryFilters groups={groups} />
 
         <div className="min-w-0 space-y-4">
-          <ActiveFilterChips filters={filters} groups={groups} />
+          <ActiveFilterChips groups={groups} />
 
-          <p className="text-sm text-muted-foreground">
-            {result.total} training{result.total === 1 ? "" : "s"} found
-          </p>
+          <DirectoryResults>
+            <p className="text-sm text-muted-foreground">
+              {result.total} training{result.total === 1 ? "" : "s"} found
+            </p>
 
-          {result.items.length === 0 ? (
-            <EmptyState
-              icon={SearchX}
-              title="No trainings match your filters"
-              description="Try removing a filter or broadening your search to see more results."
-            />
-          ) : (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {result.items.map((item) => (
-                <ListingCard key={item.id} listing={item} />
-              ))}
-            </div>
-          )}
+            {result.items.length === 0 ? (
+              <EmptyState
+                icon={SearchX}
+                title="No trainings match your filters"
+                description="Try removing a filter or broadening your search to see more results."
+              />
+            ) : (
+              <div className="mt-4 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                {result.items.map((item) => (
+                  <ListingCard key={item.id} listing={item} />
+                ))}
+              </div>
+            )}
+          </DirectoryResults>
 
           {result.totalPages > 1 ? (
             <nav className="flex items-center justify-between border-t border-border pt-4">
@@ -110,6 +115,7 @@ export default async function DirectoryPage({
           ) : null}
         </div>
       </div>
+      </DirectoryFilterProvider>
     </div>
   );
 }

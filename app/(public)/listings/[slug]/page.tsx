@@ -235,7 +235,7 @@ export default async function ListingDetailPage({
           href={`/go/${listing.id}`}
           target="_blank"
           rel="noopener noreferrer"
-          className={cn(buttonVariants({ variant: "coral", size: "lg" }))}
+          className={cn(buttonVariants({ variant: "clay", size: "lg" }))}
         >
           Register on trainer&apos;s site
           <ExternalLink data-icon="inline-end" />

@@ -3,11 +3,10 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 
-import { useFilterNav } from "@/components/directory/use-filter-nav";
-import type { DirectoryFilters } from "@/lib/directory-params";
+import { useDirectoryFilters } from "@/components/directory/filter-provider";
 
-export function DirectorySearch({ filters }: { filters: DirectoryFilters }) {
-  const { update } = useFilterNav(filters);
+export function DirectorySearch() {
+  const { filters, update } = useDirectoryFilters();
   const [value, setValue] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -35,7 +35,7 @@ const SWATCHES = [
   { name: "foreground", className: "bg-foreground" },
   { name: "primary", className: "bg-primary" },
   { name: "secondary", className: "bg-secondary" },
-  { name: "coral", className: "bg-coral" },
+  { name: "clay", className: "bg-clay" },
   { name: "muted", className: "bg-muted" },
   { name: "success", className: "bg-success" },
   { name: "warning", className: "bg-warning" },
@@ -102,7 +102,7 @@ export default function StyleguidePage() {
       <Section title="Buttons">
         <div className="flex flex-wrap items-center gap-3">
           <Button>Primary</Button>
-          <Button variant="coral">Coral CTA</Button>
+          <Button variant="clay">Clay CTA</Button>
           <Button variant="secondary">Secondary</Button>
           <Button variant="outline">Outline</Button>
           <Button variant="ghost">Ghost</Button>
@@ -114,7 +114,7 @@ export default function StyleguidePage() {
           <Button size="sm">SM</Button>
           <Button size="default">Default</Button>
           <Button size="lg">LG</Button>
-          <Button size="xl" variant="coral">
+          <Button size="xl" variant="clay">
             XL CTA
           </Button>
           <Button onClick={() => toast.success("Saved!")}>Trigger toast</Button>

@@ -88,10 +88,10 @@ export default async function AdminListingsPage({
               key={tab.id}
               href={tab.id === "pending" ? "/admin" : `/admin?status=${tab.id}`}
               className={cn(
-                "inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition-colors",
+                "inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition-colors",
                 isActive
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-foreground hover:bg-muted",
+                  ? "border-primary bg-primary text-primary-foreground hover:opacity-90"
+                  : "border-border bg-card text-foreground hover:border-clay hover:bg-muted",
               )}
             >
               {tab.label}

@@ -15,6 +15,13 @@
       "when": 1783624501869,
       "tag": "0001_stiff_wind_dancer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784558583460,
+      "tag": "0002_peaceful_preak",
+      "breakpoints": true
     }
   ]
 }

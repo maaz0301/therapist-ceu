@@ -8,6 +8,7 @@ import { UserPlus } from "lucide-react";
 import { inviteTrainer } from "@/lib/actions/admin";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -17,9 +18,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-const selectClass =
-  "h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 export function InviteTrainerButton() {
   const router = useRouter();
@@ -111,22 +109,22 @@ export function InviteTrainerButton() {
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="invite-tier">Subscription Tier</Label>
-                <select
+                <NativeSelect
                   id="invite-tier"
                   value={tier}
                   onChange={(e) => setTier(e.target.value as "basic" | "pro" | "none")}
-                  className={selectClass}
+                  className="w-full"
                   disabled={isPending}
                 >
                   <option value="none">No Plan</option>
                   <option value="basic">Basic (up to 2 listings)</option>
                   <option value="pro">Pro (unlimited)</option>
-                </select>
+                </NativeSelect>
               </div>
 
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="invite-status">Subscription Status</Label>
-                <select
+                <NativeSelect
                   id="invite-status"
                   value={status}
                   onChange={(e) =>
@@ -140,7 +138,7 @@ export function InviteTrainerButton() {
                         | "unpaid",
                     )
                   }
-                  className={selectClass}
+                  className="w-full"
                   disabled={isPending}
                 >
                   <option value="none">None</option>
@@ -149,7 +147,7 @@ export function InviteTrainerButton() {
                   <option value="past_due">Past Due</option>
                   <option value="canceled">Canceled</option>
                   <option value="unpaid">Unpaid</option>
-                </select>
+                </NativeSelect>
               </div>
             </div>
 

@@ -13,7 +13,7 @@ const FORMAT_STYLES: Record<
     Icon: Monitor,
   },
   "In-Person": {
-    className: "bg-coral text-coral-foreground hover:bg-coral/90",
+    className: "bg-clay text-clay-foreground hover:bg-clay/90",
     Icon: MapPin,
   },
   "On-Demand": {

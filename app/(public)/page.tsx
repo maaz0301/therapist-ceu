@@ -30,7 +30,7 @@ const HOW_IT_WORKS = [
     title: "Compare at a glance",
     description:
       "Clean listing cards show format, CE credits, price, and dates so you can compare options without the guesswork.",
-    colorClass: "bg-coral/8 text-coral border border-coral/15",
+    colorClass: "bg-clay/8 text-clay border border-clay/15",
   },
   {
     icon: CalendarCheck,
@@ -71,15 +71,15 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="relative overflow-hidden bg-background">
         <div className="pointer-events-none absolute -top-40 -left-20 -z-10 h-96 w-96 rounded-full bg-secondary/40 blur-[100px]" />
-        <div className="pointer-events-none absolute -top-40 -right-20 -z-10 h-[500px] w-[500px] rounded-full bg-coral/20 blur-[120px]" />
+        <div className="pointer-events-none absolute -top-40 -right-20 -z-10 h-[500px] w-[500px] rounded-full bg-clay/20 blur-[120px]" />
         <div className="mx-auto w-full max-w-6xl px-4 pt-20 pb-16 text-center sm:px-6 sm:pt-28">
-          <Badge className="mx-auto bg-coral/10 text-coral border border-coral/20 hover:bg-coral/20 transition-colors">
+          <Badge className="mx-auto bg-clay/10 text-clay border border-clay/20 hover:bg-clay/20 transition-colors">
             <Sparkles className="size-3.5 mr-1" />
             For licensed mental health therapists
           </Badge>
           <h1 className="mx-auto mt-5 max-w-3xl text-4xl leading-[1.1] font-bold text-foreground sm:text-5xl">
             Find the right CEU training,{" "}
-            <span className="bg-linear-to-r from-primary to-coral bg-clip-text text-transparent">without the endless search.</span>
+            <span className="bg-linear-to-r from-primary to-clay bg-clip-text text-transparent">without the endless search.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground">
             One clean, searchable directory of CEU and professional trainings —
@@ -89,7 +89,7 @@ export default async function HomePage() {
 
           <form
             action="/directory"
-            className="mx-auto mt-8 flex w-full max-w-xl items-center gap-2 rounded-2xl border border-border bg-card p-2 shadow-lg shadow-coral/10"
+            className="mx-auto mt-8 flex w-full max-w-xl items-center gap-2 rounded-2xl border border-border bg-card p-2 shadow-lg shadow-clay/10"
           >
             <div className="flex flex-1 items-center gap-2 pl-3">
               <Search className="size-5 shrink-0 text-muted-foreground" />
@@ -101,7 +101,7 @@ export default async function HomePage() {
                 aria-label="Search trainings"
               />
             </div>
-            <Button type="submit" variant="coral" size="lg">
+            <Button type="submit" variant="clay" size="lg">
               Search
             </Button>
           </form>
@@ -183,7 +183,7 @@ export default async function HomePage() {
       >
         <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6">
           <div className="mx-auto max-w-2xl text-center">
-            <Badge className="mx-auto bg-coral/12 text-coral">
+            <Badge className="mx-auto bg-clay/12 text-clay">
               <MousePointerClick data-icon="inline-start" />
               For trainers
             </Badge>
@@ -239,7 +239,7 @@ export default async function HomePage() {
                 </ul>
                 <div className="mt-auto pt-6">
                   <ButtonLink
-                    variant={tier.highlighted ? "coral" : "outline"}
+                    variant={tier.highlighted ? "clay" : "outline"}
                     className="w-full"
                     href="/signup"
                   >
@@ -266,7 +266,7 @@ export default async function HomePage() {
             therapists actively looking for CEUs.
           </p>
           <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <ButtonLink variant="coral" size="xl" href="/directory">
+            <ButtonLink variant="clay" size="xl" href="/directory">
               Browse trainings
             </ButtonLink>
             <ButtonLink variant="secondary" size="xl" href="/signup">

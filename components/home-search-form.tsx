@@ -25,7 +25,7 @@ export function HomeSearchForm() {
     <div className="mx-auto mt-8 w-full max-w-xl text-left">
       <form
         onSubmit={handleSubmit}
-        className="flex w-full items-center gap-2 rounded-2xl border border-border bg-card p-2 shadow-lg shadow-coral/10 transition-all focus-within:ring-2 focus-within:ring-primary/20"
+        className="flex w-full items-center gap-2 rounded-2xl border border-border bg-card p-2 shadow-lg shadow-clay/10 transition-all focus-within:ring-2 focus-within:ring-primary/20"
       >
         <div className="flex flex-1 items-center gap-2 pl-3">
           <Search className="size-5 shrink-0 text-muted-foreground" />
@@ -43,12 +43,12 @@ export function HomeSearchForm() {
             aria-label="Search trainings"
           />
         </div>
-        <Button type="submit" variant="coral" size="lg">
+        <Button type="submit" variant="clay" size="lg">
           Search
         </Button>
       </form>
       {error && (
-        <p className="mt-2 text-sm text-coral font-medium animate-in fade-in slide-in-from-top-1 duration-200 pl-4">
+        <p className="mt-2 text-sm text-clay font-medium animate-in fade-in slide-in-from-top-1 duration-200 pl-4">
           {error}
         </p>
       )}

@@ -40,7 +40,7 @@ export function ListingCard({
         className,
       )}
     >
-      <div className="absolute top-0 right-0 h-2 w-full bg-gradient-to-l from-coral/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="absolute top-0 right-0 h-2 w-full bg-gradient-to-l from-clay/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       
       <div className="flex flex-wrap items-center gap-2">
         <FormatBadge format={listing.format} />

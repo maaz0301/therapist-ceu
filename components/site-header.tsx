@@ -32,7 +32,7 @@ export async function SiteHeader() {
 
         <div className="flex items-center gap-2">
           {profile ? (
-            <ButtonLink variant="coral" size="sm" href={dashboardHref}>
+            <ButtonLink variant="clay" size="sm" href={dashboardHref}>
               Go to dashboard
             </ButtonLink>
           ) : (
@@ -45,7 +45,7 @@ export async function SiteHeader() {
               >
                 Log in
               </ButtonLink>
-              <ButtonLink variant="coral" size="sm" href="/signup">
+              <ButtonLink variant="clay" size="sm" href="/signup">
                 List your training
               </ButtonLink>
             </>

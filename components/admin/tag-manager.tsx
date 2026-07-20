@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 import {
   Dialog,
   DialogContent,
@@ -26,9 +27,6 @@ import {
 } from "@/components/ui/dialog";
 import { TAG_CATEGORIES } from "@/lib/constants";
 import type { AdminTag, AdminTagGroup } from "@/lib/queries/admin";
-
-const selectClass =
-  "h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 export function TagManager({ groups }: { groups: AdminTagGroup[] }) {
   const router = useRouter();
@@ -78,23 +76,23 @@ export function TagManager({ groups }: { groups: AdminTagGroup[] }) {
           </div>
           <div className="flex flex-col gap-1.5 sm:w-56">
             <Label htmlFor="new-cat">Category</Label>
-            <select
+            <NativeSelect
               id="new-cat"
               value={newCategory}
               onChange={(e) =>
                 setNewCategory(e.target.value as typeof newCategory)
               }
-              className={selectClass}
+              className="w-full"
             >
               {TAG_CATEGORIES.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.label}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
           <Button
-            variant="coral"
+            variant="clay"
             disabled={isPending || newName.trim().length < 2}
             onClick={() =>
               run(async () => {
@@ -204,18 +202,18 @@ export function TagManager({ groups }: { groups: AdminTagGroup[] }) {
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="edit-cat">Category</Label>
-              <select
+              <NativeSelect
                 id="edit-cat"
                 value={editCategory}
                 onChange={(e) => setEditCategory(e.target.value)}
-                className={selectClass}
+                className="w-full"
               >
                 {TAG_CATEGORIES.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.label}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
           </div>
           <DialogFooter>

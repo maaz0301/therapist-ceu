@@ -212,7 +212,7 @@ const LISTINGS: SeedListing[] = [
     ceCount: 6,
     accreditingBody: "APT",
     tagSlugs: [
-      slugify("Child-Centered Play Therapy (CCPT)"),
+      slugify("Play therapy (CCPT, sand tray, filial)"),
       slugify("Children (under 12)"),
     ],
   },
@@ -239,7 +239,7 @@ const LISTINGS: SeedListing[] = [
     ceCount: 12,
     accreditingBody: "ASWB",
     tagSlugs: [
-      slugify("Dialectical Behavior Therapy (DBT)"),
+      slugify("DBT"),
       slugify("Adolescents"),
     ],
   },
@@ -289,7 +289,7 @@ const LISTINGS: SeedListing[] = [
     hasCeu: true,
     ceCount: 12,
     accreditingBody: "ASWB",
-    tagSlugs: [slugify("Internal Family Systems (IFS)"), slugify("Trauma")],
+    tagSlugs: [slugify("IFS/Parts work"), slugify("Trauma")],
   },
 ];
 

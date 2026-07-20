@@ -77,13 +77,16 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Verifies the ES256 signature locally against a cached JWKS rather than
+  // calling the Auth server (see lib/auth.ts for the rationale), and still
+  // refreshes the session when the access token is near expiry — so this keeps
+  // running on every matched request, as before.
+  const { data, error } = await supabase.auth.getClaims();
+  const userId = error ? null : data?.claims?.sub;
 
   const protection = protectionFor(request.nextUrl.pathname);
   if (protection) {
-    if (!user) {
+    if (!userId) {
       return redirectTo(
         request,
         "/login",

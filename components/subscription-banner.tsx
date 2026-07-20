@@ -21,9 +21,9 @@ export function SubscriptionBanner({
 
   if (!subscription.isActive) {
     return (
-      <Card className="flex flex-wrap items-center justify-between gap-3 border-coral/30 bg-coral/5 p-4">
+      <Card className="flex flex-wrap items-center justify-between gap-3 border-clay/30 bg-clay/5 p-4">
         <div className="flex items-center gap-3">
-          <Sparkles className="size-5 text-coral" />
+          <Sparkles className="size-5 text-clay" />
           <div>
             <p className="text-sm font-semibold text-foreground">
               No active subscription
@@ -33,7 +33,7 @@ export function SubscriptionBanner({
             </p>
           </div>
         </div>
-        <ButtonLink variant="coral" size="sm" href="/billing">
+        <ButtonLink variant="clay" size="sm" href="/billing">
           Choose a plan
         </ButtonLink>
       </Card>
@@ -67,7 +67,7 @@ export function SubscriptionBanner({
         </div>
       </div>
       {atLimit ? (
-        <ButtonLink variant="coral" size="sm" href="/billing">
+        <ButtonLink variant="clay" size="sm" href="/billing">
           Upgrade to Pro
         </ButtonLink>
       ) : null}

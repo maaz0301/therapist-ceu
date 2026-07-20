@@ -15,6 +15,7 @@ import {
 } from "@/lib/actions/admin";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -121,7 +122,8 @@ export function AdminListingActions({
 
       <label className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
         Status
-        <select
+        <NativeSelect
+          selectSize="xs"
           value={status}
           disabled={isPending}
           onChange={(e) =>
@@ -130,14 +132,13 @@ export function AdminListingActions({
               "Status updated",
             )
           }
-          className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           {STATUS_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </label>
 
       <Button

@@ -75,7 +75,9 @@ export const analyticsType = pgEnum("analytics_type", ["view", "link_click"]);
 // profiles (1:1 with auth.users)
 // ---------------------------------------------------------------------------
 
-export const profiles = pgTable("profiles", {
+export const profiles = pgTable(
+  "profiles",
+  {
   id: uuid("id").primaryKey(),
   role: userRole("role").notNull().default("trainer"),
   fullName: text("full_name"),
@@ -97,7 +99,14 @@ export const profiles = pgTable("profiles", {
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
-});
+  },
+  (table) => [
+    // Filtered on every directory query (accountStatus) and on the admin
+    // trainer list (role, ordered by createdAt).
+    index("profiles_account_status_idx").on(table.accountStatus),
+    index("profiles_role_created_idx").on(table.role, table.createdAt.desc()),
+  ],
+);
 
 // ---------------------------------------------------------------------------
 // listings
@@ -162,6 +171,20 @@ export const listings = pgTable(
     index("listings_start_date_idx").on(table.startDate),
     index("listings_end_date_idx").on(table.endDate),
     index("listings_search_idx").using("gin", table.searchVector),
+    // Every listing query orders by created_at desc. Without this the planner
+    // has to sort the whole filtered set before applying LIMIT/OFFSET; the
+    // composite serves the directory's hot path (status + active) directly.
+    index("listings_status_active_created_idx").on(
+      table.status,
+      table.active,
+      table.createdAt.desc(),
+    ),
+    index("listings_created_at_idx").on(table.createdAt.desc()),
+    // getTrainerListings / getTrainerWithListings filter by trainer, order by date.
+    index("listings_trainer_created_idx").on(
+      table.trainerId,
+      table.createdAt.desc(),
+    ),
   ],
 );
 

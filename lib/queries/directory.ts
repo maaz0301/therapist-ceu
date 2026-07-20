@@ -58,6 +58,14 @@ function buildWhere(filters: DirectoryFilters): SQL | undefined {
         );
       } else if (p === "State Board Approved") {
         providerConds.push(ilike(listings.accreditingBody, "%State Board%"));
+      } else if (p.startsWith("APT")) {
+        // Trainers type this field freehand ("APT", "APT Approved Provider",
+        // "Association for Play Therapy"), so match the acronym on word
+        // boundaries — a bare %APT% would also hit "adapted" and "chapter".
+        providerConds.push(
+          sql`${listings.accreditingBody} ~* '\mAPT\M'`,
+          ilike(listings.accreditingBody, "%Association for Play Therapy%"),
+        );
       } else if (p === "Non-CE") {
         hasNonCeu = true;
       } else {
@@ -167,12 +175,16 @@ function formatSchedule(row: {
   return `Starts ${fmt(row.startDate)}`;
 }
 
-export async function searchListings(
-  filters: DirectoryFilters,
-): Promise<DirectoryResult> {
-  const where = buildWhere(filters);
-  const offset = (filters.page - 1) * DIRECTORY_PAGE_SIZE;
-
+/**
+ * Fetches one page of listing rows and stitches on their state labels.
+ * Shared by the directory and the landing page's featured strip, so the latter
+ * doesn't have to run a full paginated search to get a handful of rows.
+ */
+async function fetchListingPage(
+  where: ReturnType<typeof buildWhere>,
+  limit: number,
+  offset: number,
+): Promise<DirectoryItem[]> {
   const rows = await db
     .select({
       id: listings.id,
@@ -190,37 +202,24 @@ export async function searchListings(
       imageUrl: listings.imageUrl,
       trainerName: profiles.fullName,
       credentials: listings.credentials,
+      // Aggregated in SQL rather than a follow-up `inArray` query. That second
+      // round-trip could not be parallelized (it needs the page's ids), so it
+      // added a full ~220ms to every directory and landing-page render.
+      states: sql<string[]>`coalesce(array(
+        select ${listingStates.stateCode}
+        from ${listingStates}
+        where ${listingStates.listingId} = ${listings.id}
+      ), '{}')`,
     })
     .from(listings)
     .innerJoin(profiles, eq(profiles.id, listings.trainerId))
     .where(where)
     .orderBy(desc(listings.createdAt))
-    .limit(DIRECTORY_PAGE_SIZE)
+    .limit(limit)
     .offset(offset);
 
-  const [{ total }] = await db
-    .select({ total: count() })
-    .from(listings)
-    .innerJoin(profiles, eq(profiles.id, listings.trainerId))
-    .where(where);
-
-  // Fetch states for the result set to build the location label.
-  const ids = rows.map((r) => r.id);
-  const stateRows =
-    ids.length > 0
-      ? await db
-          .select({
-            listingId: listingStates.listingId,
-            stateCode: listingStates.stateCode,
-          })
-          .from(listingStates)
-          .where(inArray(listingStates.listingId, ids))
-      : [];
-
-  const items: DirectoryItem[] = rows.map((row) => {
-    const states = stateRows
-      .filter((s) => s.listingId === row.id)
-      .map((s) => s.stateCode);
+  return rows.map((row) => {
+    const states = row.states ?? [];
     const location = row.isOnline
       ? "Online"
       : states.length > 0
@@ -242,6 +241,24 @@ export async function searchListings(
       excerpt: row.description.slice(0, 180),
     };
   });
+}
+
+export async function searchListings(
+  filters: DirectoryFilters,
+): Promise<DirectoryResult> {
+  const where = buildWhere(filters);
+  const offset = (filters.page - 1) * DIRECTORY_PAGE_SIZE;
+
+  // The page fetch and the count are independent — with a ~220ms round-trip to
+  // the DB region, running them serially doubled the cost for no reason.
+  const [items, [{ total }]] = await Promise.all([
+    fetchListingPage(where, DIRECTORY_PAGE_SIZE, offset),
+    db
+      .select({ total: count() })
+      .from(listings)
+      .innerJoin(profiles, eq(profiles.id, listings.trainerId))
+      .where(where),
+  ]);
 
   return {
     items,
@@ -273,7 +290,9 @@ export async function getSitemapListings(): Promise<
 export async function getFeaturedListings(
   limit = 3,
 ): Promise<DirectoryItem[]> {
-  const { items } = await searchListings({
+  // Pushes `limit` into SQL and skips the COUNT(*) entirely — this runs on the
+  // landing page, which never uses the total.
+  const where = buildWhere({
     q: [],
     states: [],
     formats: [],
@@ -282,5 +301,5 @@ export async function getFeaturedListings(
     tagIds: [],
     page: 1,
   });
-  return items.slice(0, limit);
+  return fetchListingPage(where, limit, 0);
 }

@@ -46,7 +46,7 @@ export default async function TrainerDashboardPage() {
             Manage your trainings and track their performance.
           </p>
         </div>
-        <ButtonLink variant="coral" href="/listings/new">
+        <ButtonLink variant="clay" href="/listings/new">
           <Plus data-icon="inline-start" />
           New listing
         </ButtonLink>
@@ -90,7 +90,7 @@ export default async function TrainerDashboardPage() {
             title="No listings yet"
             description="Create your first training listing to start reaching therapists."
             action={
-              <ButtonLink variant="coral" href="/listings/new">
+              <ButtonLink variant="clay" href="/listings/new">
                 Create a listing
               </ButtonLink>
             }

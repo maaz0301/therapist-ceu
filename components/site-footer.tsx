@@ -32,31 +32,32 @@ const FOOTER_SECTIONS = [
 
 export async function SiteFooter() {
   const profile = await getCurrentProfile();
-  const trainerDashboardHref = profile?.role === "admin" ? "/admin" : "/dashboard";
+  const isAdmin = profile?.role === "admin";
 
+  /**
+   * Signed-in visitors get the destination they actually want: "Trainer login"
+   * becomes their dashboard, and "List your training" jumps straight to the
+   * listing form instead of bouncing them to signup for an account they have.
+   */
   const sections = FOOTER_SECTIONS.map((section) => {
-    if (section.title === "Trainers") {
-      return {
-        ...section,
-        links: section.links
-          .filter((link) => {
-            if (profile && (link.href === "/login" || link.href === "/signup")) {
-              return false;
-            }
-            return true;
-          })
-          .map((link) => {
-            if (link.href === "/login") {
-              return {
-                href: profile ? trainerDashboardHref : "/login",
-                label: profile ? "Trainer dashboard" : "Trainer login",
-              };
-            }
-            return link;
-          }),
-      };
-    }
-    return section;
+    if (section.title !== "Trainers" || !profile) return section;
+
+    return {
+      ...section,
+      links: section.links.map((link) => {
+        if (link.href === "/signup") {
+          return isAdmin
+            ? { href: "/admin", label: "Review listings" }
+            : { href: "/listings/new", label: "List your training" };
+        }
+        if (link.href === "/login") {
+          return isAdmin
+            ? { href: "/admin/trainers", label: "Manage trainers" }
+            : { href: "/dashboard", label: "Trainer dashboard" };
+        }
+        return link;
+      }),
+    };
   });
 
   return (
@@ -78,7 +79,7 @@ export async function SiteFooter() {
               </h4>
               <ul className="mt-3 space-y-2">
                 {section.links.map((link) => (
-                  <li key={link.href}>
+                  <li key={`${link.href}-${link.label}`}>
                     <Link
                       href={link.href}
                       className="text-sm text-muted-foreground transition-colors hover:text-foreground"

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 
-import { useFilterNav } from "@/components/directory/use-filter-nav";
+import { useDirectoryFilters } from "@/components/directory/filter-provider";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -19,10 +19,7 @@ import {
   PRICE_RANGES,
   US_STATES,
 } from "@/lib/constants";
-import {
-  hasActiveFilters,
-  type DirectoryFilters,
-} from "@/lib/directory-params";
+import { hasActiveFilters } from "@/lib/directory-params";
 import type { GroupedTags } from "@/lib/queries/tags";
 
 
@@ -57,14 +54,8 @@ function CheckRow({
   );
 }
 
-function FilterPanel({
-  filters,
-  groups,
-}: {
-  filters: DirectoryFilters;
-  groups: GroupedTags;
-}) {
-  const { update } = useFilterNav(filters);
+function FilterPanel({ groups }: { groups: GroupedTags }) {
+  const { filters, update } = useDirectoryFilters();
 
   return (
     <div className="space-y-6">
@@ -107,7 +98,7 @@ function FilterPanel({
               name="price"
               checked={filters.priceId === null}
               onChange={() => update({ priceId: null })}
-              className="accent-coral"
+              className="accent-clay"
             />
             Any price
           </label>
@@ -121,7 +112,7 @@ function FilterPanel({
                 name="price"
                 checked={filters.priceId === range.id}
                 onChange={() => update({ priceId: range.id })}
-                className="accent-coral"
+                className="accent-clay"
               />
               {range.label}
             </label>
@@ -173,14 +164,9 @@ function FilterPanel({
   );
 }
 
-export function DirectoryFilters({
-  filters,
-  groups,
-}: {
-  filters: DirectoryFilters;
-  groups: GroupedTags;
-}) {
+export function DirectoryFilters({ groups }: { groups: GroupedTags }) {
   const [open, setOpen] = useState(false);
+  const { filters } = useDirectoryFilters();
   const active = hasActiveFilters(filters);
 
   return (
@@ -206,7 +192,7 @@ export function DirectoryFilters({
               <SheetTitle>Filters</SheetTitle>
             </SheetHeader>
             <div className="px-4 pb-8">
-              <FilterPanel filters={filters} groups={groups} />
+              <FilterPanel groups={groups} />
             </div>
           </SheetContent>
         </Sheet>
@@ -215,7 +201,7 @@ export function DirectoryFilters({
       {/* Desktop sidebar */}
       <aside className="hidden lg:block">
         <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pr-2">
-          <FilterPanel filters={filters} groups={groups} />
+          <FilterPanel groups={groups} />
         </div>
       </aside>
     </>

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, eq, or } from "drizzle-orm";
+import { and, asc, eq, inArray, or } from "drizzle-orm";
 
 import { TAG_CATEGORIES, type TagCategory } from "@/lib/constants";
 import { tags } from "@/db/schema";
@@ -57,8 +57,8 @@ export async function filterUsableTagIds(
     .from(tags)
     .where(
       and(
+        inArray(tags.id, tagIds),
         or(eq(tags.status, "approved"), eq(tags.suggestedBy, trainerId)),
-        // ids checked in JS below to keep the query simple
       ),
     );
   const allowed = new Set(rows.map((r) => r.id));
