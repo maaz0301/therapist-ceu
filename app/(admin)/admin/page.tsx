@@ -16,6 +16,7 @@ import {
   type AdminListing,
   type AdminListingStatus,
 } from "@/lib/queries/admin";
+import { formatDateRange, sortDateRanges, upcomingRanges } from "@/lib/dates";
 
 export const metadata = { title: "Listing queue" };
 export const dynamic = "force-dynamic";
@@ -33,14 +34,20 @@ function formatPrice(price: string) {
   return n <= 0 ? "Free" : `$${n % 1 === 0 ? n : n.toFixed(2)}`;
 }
 
+// Moderation cares about what's still to come, but a listing whose dates have
+// all passed still has to be reviewable — so fall back to the last one rather
+// than showing nothing.
 function formatSchedule(listing: AdminListing) {
   if (listing.onDemand) return "On demand";
-  if (!listing.startDate) return "No date";
-  return new Date(`${listing.startDate}T00:00:00`).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  if (listing.dates.length === 0) return "No date";
+
+  const sorted = sortDateRanges(listing.dates);
+  const today = new Date().toISOString().slice(0, 10);
+  const upcoming = upcomingRanges(sorted, today);
+  const more = listing.dates.length - 1;
+  const label = formatDateRange(upcoming[0] ?? sorted[sorted.length - 1]);
+
+  return more > 0 ? `${label} · ${listing.dates.length} dates` : label;
 }
 
 export default async function AdminListingsPage({

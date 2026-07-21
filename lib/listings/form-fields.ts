@@ -11,6 +11,32 @@ function emptyToNull(value: FormDataEntryValue | null): string | null {
   return s.length > 0 ? s : null;
 }
 
+
+
+/**
+ * The schedule is submitted as two parallel repeated fields — one `dateStart`
+ * and one `dateEnd` per row, in document order — which is what a plain HTML
+ * form can express without inventing an index-in-the-name convention.
+ *
+ * A row the trainer never filled in is dropped so an empty extra row isn't an
+ * error; a row with only an end date is kept, so validation can say why.
+ */
+export function listingDateRows(
+  formData: FormData,
+): { startDate: string; endDate: string | null }[] {
+  const starts = formData.getAll("dateStart");
+  const ends = formData.getAll("dateEnd");
+
+  const rows: { startDate: string; endDate: string | null }[] = [];
+  for (let i = 0; i < starts.length; i++) {
+    const startDate = String(starts[i] ?? "").trim();
+    const endDate = String(ends[i] ?? "").trim();
+    if (!startDate && !endDate) continue;
+    rows.push({ startDate, endDate: endDate || null });
+  }
+  return rows;
+}
+
 export function listingFormValues(formData: FormData) {
   return {
     title: formData.get("title") ?? "",
@@ -21,8 +47,7 @@ export function listingFormValues(formData: FormData) {
     isOnline: formData.get("isOnline") === "true",
     states: formData.getAll("states").map(String),
     onDemand: formData.get("onDemand") === "true",
-    startDate: emptyToNull(formData.get("startDate")),
-    endDate: emptyToNull(formData.get("endDate")),
+    dates: listingDateRows(formData),
     durationHours: (formData.get("durationHours") as string) ?? "",
     price: formData.get("price") ?? "0",
     registrationUrl: formData.get("registrationUrl") ?? "",

@@ -5,6 +5,7 @@ import {
   addDays,
   earliestAcceptableStart,
   END_DATE_ORDER_ERROR,
+  MAX_LISTING_DATES,
   START_DATE_PAST_ERROR,
 } from "@/lib/dates";
 
@@ -66,8 +67,19 @@ const listingObject = z
     states: z.array(z.enum(LOCATION_CODES)).default([]),
 
     onDemand: z.boolean(),
-    startDate: z.string().optional().nullable(),
-    endDate: z.string().optional().nullable(),
+    /**
+     * One entry per scheduled run. Shape-only here — ordering, past dates and
+     * duplicates are cross-field rules, so they live in the refinement below.
+     */
+    dates: z
+      .array(
+        z.object({
+          startDate: z.string().trim(),
+          endDate: z.string().trim().nullable().default(null),
+        }),
+      )
+      .max(MAX_LISTING_DATES, `A listing can hold up to ${MAX_LISTING_DATES} dates.`)
+      .default([]),
 
     durationHours: emptyToNullNumber(
       "Duration must be a positive number of hours.",
@@ -107,12 +119,14 @@ const listingObject = z
   });
 
 /**
- * @param originalStartDate the start date already saved on the listing, if any.
- *   An existing training whose start date is in the past must stay editable, so
- *   the "no past dates" rule is skipped when the trainer leaves it untouched.
- *   Always pass the value from the database, never one echoed by the client.
+ * @param originalStartDates the start dates already saved on the listing. A
+ *   training whose earlier runs are in the past must stay editable, so the "no
+ *   past dates" rule is skipped for any start the trainer left untouched.
+ *   Always pass the values from the database, never ones echoed by the client.
  */
-export function buildListingSchema(originalStartDate?: string | null) {
+export function buildListingSchema(originalStartDates?: readonly string[] | null) {
+  const saved = new Set(originalStartDates ?? []);
+
   return listingObject.superRefine((data, ctx) => {
     // Location: in-person/hybrid require at least one state unless marked online.
     const needsState = data.format === "In-Person" || data.format === "Hybrid";
@@ -124,40 +138,64 @@ export function buildListingSchema(originalStartDate?: string | null) {
       });
     }
 
-    // Schedule: on-demand has no dates; otherwise need a start date.
+    // Schedule: on-demand has no dates; otherwise at least one dated run.
     if (!data.onDemand) {
-      if (!data.startDate) {
+      const rows = data.dates;
+      if (rows.length === 0) {
         ctx.addIssue({
           code: "custom",
-          path: ["startDate"],
-          message: "Add a start date, or mark the training available on demand.",
+          path: ["dates"],
+          message:
+            "Add at least one date, or mark the training available on demand.",
         });
       }
-      const startUnchanged =
-        !!originalStartDate && data.startDate === originalStartDate;
-      if (
-        data.startDate &&
-        !startUnchanged &&
-        data.startDate < earliestAcceptableStart()
-      ) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["startDate"],
-          message: START_DATE_PAST_ERROR,
-        });
-      }
-      // End date is optional, but when given it must clear the start by a day.
-      if (
-        data.startDate &&
-        data.endDate &&
-        data.endDate < addDays(data.startDate, 1)
-      ) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["endDate"],
-          message: END_DATE_ORDER_ERROR,
-        });
-      }
+
+      // Every issue below is reported on `dates` rather than a nested path so
+      // Zod's `flatten()` still surfaces it — the row is named in the message
+      // instead. The form also checks these live, per row, as you type.
+      const earliest = earliestAcceptableStart();
+      const seen = new Set<string>();
+
+      rows.forEach((row, i) => {
+        const label = rows.length > 1 ? `Date ${i + 1}: ` : "";
+
+        if (!row.startDate) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["dates"],
+            message: `${label}add a start date or remove the row.`,
+          });
+          return;
+        }
+
+        // An already-saved run keeps its date even once it's past; only a new
+        // or edited one has to be in the future.
+        if (!saved.has(row.startDate) && row.startDate < earliest) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["dates"],
+            message: `${label}${START_DATE_PAST_ERROR}`,
+          });
+        }
+
+        // End date is optional, but when given it must clear the start by a day.
+        if (row.endDate && row.endDate < addDays(row.startDate, 1)) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["dates"],
+            message: `${label}${END_DATE_ORDER_ERROR}`,
+          });
+        }
+
+        if (seen.has(row.startDate)) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["dates"],
+            message: `${label}this start date is already listed.`,
+          });
+        }
+        seen.add(row.startDate);
+      });
     }
 
     // CEU details required when CEU = Yes.

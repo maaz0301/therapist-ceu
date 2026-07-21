@@ -79,7 +79,7 @@ export default async function HomePage() {
           </Badge>
           <h1 className="mx-auto mt-5 max-w-3xl text-4xl leading-[1.1] font-bold text-foreground sm:text-5xl">
             Find the right CEU training,{" "}
-            <span className="bg-linear-to-r from-primary to-clay bg-clip-text text-transparent">without the endless search.</span>
+            <span className="text-clay">without the endless search.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground">
             One clean, searchable directory of CEU and professional trainings —

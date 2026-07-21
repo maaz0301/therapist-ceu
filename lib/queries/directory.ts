@@ -10,15 +10,18 @@ import {
   or,
   sql,
   type SQL,
+  type SQLWrapper,
 } from "drizzle-orm";
 
 import {
+  listingDates,
   listings,
   listingStates,
   listingTags,
   profiles,
 } from "@/db/schema";
 import { db } from "@/lib/db";
+import { formatDateRange } from "@/lib/dates";
 import { PRICE_RANGES } from "@/lib/constants";
 import {
   DIRECTORY_PAGE_SIZE,
@@ -35,11 +38,42 @@ export type DirectoryResult = {
   totalPages: number;
 };
 
+/**
+ * Matches the rows in `listing_dates` for the current listing whose run hasn't
+ * finished yet. Correlated on `listings.id`, so it only ever appears inside a
+ * query that already selects from `listings`.
+ *
+ * `current_date` is re-evaluated on every query rather than cached anywhere,
+ * which is what makes a listing roll on to its next date by itself: the run
+ * that just finished stops matching, and the following one becomes first.
+ */
+const isUpcomingRun = sql`
+  ${listingDates.listingId} = ${listings.id}
+  and coalesce(${listingDates.endDate}, ${listingDates.startDate}) >= current_date
+`;
+
+/** Reads one column off the soonest of a listing's upcoming runs. */
+function fromNextRun(column: SQLWrapper) {
+  return sql`(
+    select ${column} from ${listingDates}
+    where ${isUpcomingRun}
+    order by ${listingDates.startDate}
+    limit 1
+  )`;
+}
+
 function buildWhere(filters: DirectoryFilters): SQL | undefined {
   const conditions: SQL[] = [
     eq(listings.status, "approved"),
     eq(listings.active, true),
     eq(profiles.accountStatus, "active"),
+    // A dated training with nothing left on the calendar is over. The nightly
+    // cron unpublishes these, but it only runs once a day — this keeps the
+    // directory honest in the hours between, without waiting for it.
+    or(
+      eq(listings.onDemand, true),
+      sql`exists (select 1 from ${listingDates} where ${isUpcomingRun})`,
+    )!,
   ];
 
   if (filters.formats.length > 0) {
@@ -157,22 +191,29 @@ function formatPrice(price: string): number {
   return Number(price);
 }
 
+/**
+ * The card shows the next run and, when a training repeats, how many more are
+ * booked — "Sep 14 – 16 · +2 more dates". Anything already finished is filtered
+ * out in SQL, so `nextStart` is always the soonest date still to come.
+ */
 function formatSchedule(row: {
   onDemand: boolean;
-  startDate: string | null;
-  endDate: string | null;
+  nextStart: string | null;
+  nextEnd: string | null;
+  upcomingCount: number;
 }): string {
   if (row.onDemand) return "On Demand";
-  if (!row.startDate) return "Date TBA";
-  const fmt = (d: string) =>
-    new Date(`${d}T00:00:00`).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  if (row.endDate && row.endDate !== row.startDate) {
-    return `${fmt(row.startDate)} – ${fmt(row.endDate)}`;
-  }
-  return `Starts ${fmt(row.startDate)}`;
+  if (!row.nextStart) return "Date TBA";
+
+  const range = formatDateRange(
+    { startDate: row.nextStart, endDate: row.nextEnd },
+    "short",
+  );
+  const label = row.nextEnd && row.nextEnd !== row.nextStart ? range : `Starts ${range}`;
+
+  const more = row.upcomingCount - 1;
+  if (more <= 0) return label;
+  return `${label} · +${more} more date${more === 1 ? "" : "s"}`;
 }
 
 /**
@@ -197,8 +238,14 @@ async function fetchListingPage(
       price: listings.price,
       isOnline: listings.isOnline,
       onDemand: listings.onDemand,
-      startDate: listings.startDate,
-      endDate: listings.endDate,
+      // The next run, resolved per row. Three correlated subqueries rather than
+      // a lateral join because each is a single index hit on
+      // (listing_id, start_date) over a page of 25 rows.
+      nextStart: sql<string | null>`${fromNextRun(listingDates.startDate)}`,
+      nextEnd: sql<string | null>`${fromNextRun(listingDates.endDate)}`,
+      upcomingCount: sql<number>`(
+        select count(*)::int from ${listingDates} where ${isUpcomingRun}
+      )`,
       imageUrl: listings.imageUrl,
       trainerName: profiles.fullName,
       credentials: listings.credentials,

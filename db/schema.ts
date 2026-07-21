@@ -133,9 +133,7 @@ export const listings = pgTable(
     // Location: in-person states live in listing_states; online covers any state.
     isOnline: boolean("is_online").notNull().default(false),
 
-    // Schedule: either a start/end window OR available on demand.
-    startDate: date("start_date"),
-    endDate: date("end_date"),
+    // Schedule: one or more dated sessions in listing_dates, OR on demand.
     onDemand: boolean("on_demand").notNull().default(false),
 
     durationHours: numeric("duration_hours"),
@@ -168,8 +166,6 @@ export const listings = pgTable(
     index("listings_format_idx").on(table.format),
     index("listings_has_ceu_idx").on(table.hasCeu),
     index("listings_price_idx").on(table.price),
-    index("listings_start_date_idx").on(table.startDate),
-    index("listings_end_date_idx").on(table.endDate),
     index("listings_search_idx").using("gin", table.searchVector),
     // Every listing query orders by created_at desc. Without this the planner
     // has to sort the whole filtered set before applying LIMIT/OFFSET; the
@@ -184,6 +180,40 @@ export const listings = pgTable(
     index("listings_trainer_created_idx").on(
       table.trainerId,
       table.createdAt.desc(),
+    ),
+  ],
+);
+
+// ---------------------------------------------------------------------------
+// listing_dates (one row per scheduled run of a training)
+// ---------------------------------------------------------------------------
+
+/**
+ * A training that repeats — say July, September and November — is one listing
+ * with three rows here, not three listings. Nothing stores "the next date":
+ * queries derive it from `coalesce(end_date, start_date) >= current_date`, so a
+ * run rolls off the moment it finishes with no cron or cached column to resync.
+ */
+export const listingDates = pgTable(
+  "listing_dates",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => listings.id, { onDelete: "cascade" }),
+    startDate: date("start_date").notNull(),
+    /** Null for a single-day run; otherwise the last day, always after start. */
+    endDate: date("end_date"),
+  },
+  (table) => [
+    // Serves the correlated "next upcoming run" lookup the directory, the
+    // detail page and the expiry cron all issue: filter by listing, order by
+    // start_date, take the first row still in range.
+    index("listing_dates_listing_start_idx").on(table.listingId, table.startDate),
+    // The expiry cron scans the other way — every row whose run has finished —
+    // so it needs the effective end date indexed on its own.
+    index("listing_dates_effective_end_idx").on(
+      sql`coalesce(${table.endDate}, ${table.startDate})`,
     ),
   ],
 );
@@ -288,6 +318,7 @@ export type Profile = typeof profiles.$inferSelect;
 export type NewProfile = typeof profiles.$inferInsert;
 export type Listing = typeof listings.$inferSelect;
 export type NewListing = typeof listings.$inferInsert;
+export type ListingDate = typeof listingDates.$inferSelect;
 export type Tag = typeof tags.$inferSelect;
 export type NewTag = typeof tags.$inferInsert;
 export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;

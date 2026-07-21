@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { getCurrentProfile } from "@/lib/auth";
 import { getListingDetail, type ListingDetail } from "@/lib/queries/listings";
+import { formatDateRange, upcomingRanges } from "@/lib/dates";
 import { US_STATES } from "@/lib/constants";
 
 const STATE_NAMES = new Map<string, string>(
@@ -28,19 +29,12 @@ function formatPrice(price: string) {
   return n <= 0 ? "Free" : `$${n % 1 === 0 ? n : n.toFixed(2)}`;
 }
 
-function formatSchedule(listing: ListingDetail) {
-  if (listing.onDemand) return "Available on demand";
-  if (!listing.startDate) return "Date to be announced";
-  const fmt = (d: string) =>
-    new Date(`${d}T00:00:00`).toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-  if (listing.endDate && listing.endDate !== listing.startDate) {
-    return `${fmt(listing.startDate)} – ${fmt(listing.endDate)}`;
-  }
-  return fmt(listing.startDate);
+/**
+ * The runs still ahead, soonest first. Read on the server, so "today" is UTC —
+ * a date only drops off once it's finished everywhere.
+ */
+function upcomingDates(listing: ListingDetail) {
+  return upcomingRanges(listing.dates, new Date().toISOString().slice(0, 10));
 }
 
 function formatLocation(listing: ListingDetail) {
@@ -97,16 +91,19 @@ function courseJsonLd(listing: ListingDetail) {
       priceCurrency: "USD",
       category: Number(listing.price) <= 0 ? "Free" : "Paid",
     },
-    hasCourseInstance: {
-      "@type": "CourseInstance",
-      courseMode: listing.isOnline ? "Online" : "Onsite",
-      ...(listing.onDemand
-        ? {}
-        : {
-            startDate: listing.startDate ?? undefined,
-            endDate: listing.endDate ?? undefined,
-          }),
-    },
+    // One CourseInstance per upcoming run, so search engines can surface the
+    // right date rather than only the first one ever scheduled.
+    hasCourseInstance: listing.onDemand
+      ? {
+          "@type": "CourseInstance",
+          courseMode: listing.isOnline ? "Online" : "Onsite",
+        }
+      : upcomingDates(listing).map((run) => ({
+          "@type": "CourseInstance",
+          courseMode: listing.isOnline ? "Online" : "Onsite",
+          startDate: run.startDate,
+          endDate: run.endDate ?? run.startDate,
+        })),
   };
   return JSON.stringify(data);
 }
@@ -126,6 +123,8 @@ export default async function ListingDetailPage({
   if (!listing) notFound();
 
   const isPublic = listing.status === "approved" && listing.active;
+  const upcoming = upcomingDates(listing);
+  const [nextRun, ...laterRuns] = upcoming;
 
   return (
     <article className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
@@ -175,11 +174,20 @@ export default async function ListingDetailPage({
         <Card className="p-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <CalendarDays className="size-4" />
-            Schedule
+            {laterRuns.length > 0 ? "Next date" : "Schedule"}
           </div>
           <p className="mt-1 text-sm font-medium text-foreground">
-            {formatSchedule(listing)}
+            {listing.onDemand
+              ? "Available on demand"
+              : nextRun
+                ? formatDateRange(nextRun, "long")
+                : "Date to be announced"}
           </p>
+          {laterRuns.length > 0 ? (
+            <p className="mt-1 text-sm text-muted-foreground">
+              +{laterRuns.length} more date{laterRuns.length === 1 ? "" : "s"}
+            </p>
+          ) : null}
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -211,6 +219,35 @@ export default async function ListingDetailPage({
           {listing.description}
         </p>
       </div>
+
+      {/* The card above only has room for the next date; a training that
+          repeats lists every remaining run here so a therapist who can't make
+          the first one can see what else is coming. */}
+      {laterRuns.length > 0 ? (
+        <div className="mt-8 space-y-3">
+          <h2 className="font-heading text-lg font-semibold">Upcoming dates</h2>
+          <ul className="space-y-1.5">
+            {upcoming.map((run) => (
+              <li
+                key={run.startDate}
+                className="flex items-center gap-2 text-sm text-muted-foreground"
+              >
+                <CalendarDays className="size-4 shrink-0 text-clay" />
+                <span
+                  className={
+                    run === nextRun ? "font-medium text-foreground" : undefined
+                  }
+                >
+                  {formatDateRange(run, "long")}
+                </span>
+                {run === nextRun ? (
+                  <Badge variant="clay-subtle">Next</Badge>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       {listing.hasCeu ? (
         <p className="mt-4 text-sm text-muted-foreground">

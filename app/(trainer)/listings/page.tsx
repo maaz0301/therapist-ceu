@@ -18,6 +18,7 @@ import {
   type TrainerListing,
 } from "@/lib/queries/listings";
 import { getSubscriptionState } from "@/lib/subscription";
+import { formatDateRange, upcomingRanges } from "@/lib/dates";
 
 export const metadata = { title: "My listings" };
 
@@ -26,21 +27,21 @@ function formatPrice(price: string) {
   return n <= 0 ? "Free" : `$${n % 1 === 0 ? n : n.toFixed(2)}`;
 }
 
+/**
+ * The next run plus a count of what follows. Past runs are dropped rather than
+ * shown, so a repeating training reads the same way here as in the directory —
+ * except when they're *all* past, which is the trainer's cue to add more.
+ */
 function formatSchedule(listing: TrainerListing) {
   if (listing.onDemand) return "On demand";
-  if (!listing.startDate) return "No date set";
-  const start = new Date(`${listing.startDate}T00:00:00`).toLocaleDateString(
-    "en-US",
-    { month: "short", day: "numeric", year: "numeric" },
-  );
-  if (listing.endDate && listing.endDate !== listing.startDate) {
-    const end = new Date(`${listing.endDate}T00:00:00`).toLocaleDateString(
-      "en-US",
-      { month: "short", day: "numeric", year: "numeric" },
-    );
-    return `${start} – ${end}`;
-  }
-  return start;
+  if (listing.dates.length === 0) return "No date set";
+
+  const upcoming = upcomingRanges(listing.dates, new Date().toISOString().slice(0, 10));
+  if (upcoming.length === 0) return "All dates have passed";
+
+  const next = formatDateRange(upcoming[0]);
+  const more = upcoming.length - 1;
+  return more > 0 ? `${next} · +${more} more` : next;
 }
 
 function formatLocation(listing: TrainerListing) {

@@ -100,8 +100,8 @@ type SeedListing = {
   format: "Live Virtual" | "In-Person" | "On-Demand" | "Hybrid";
   isOnline: boolean;
   states: string[];
-  startDate: string | null;
-  endDate: string | null;
+  /** One entry per scheduled run; empty for on-demand trainings. */
+  dates: { startDate: string; endDate: string | null }[];
   onDemand: boolean;
   durationHours: string | null;
   price: string;
@@ -126,8 +126,7 @@ const LISTINGS: SeedListing[] = [
     format: "Live Virtual",
     isOnline: true,
     states: [],
-    startDate: "2026-09-14",
-    endDate: "2026-09-16",
+    dates: [{ startDate: "2026-09-14", endDate: "2026-09-16" }],
     onDemand: false,
     durationHours: "18",
     price: "499.00",
@@ -150,8 +149,7 @@ const LISTINGS: SeedListing[] = [
     format: "On-Demand",
     isOnline: true,
     states: [],
-    startDate: null,
-    endDate: null,
+    dates: [],
     onDemand: true,
     durationHours: "3",
     price: "79.00",
@@ -174,8 +172,7 @@ const LISTINGS: SeedListing[] = [
     format: "Hybrid",
     isOnline: false,
     states: ["CA", "NV"],
-    startDate: "2026-10-02",
-    endDate: "2026-10-03",
+    dates: [{ startDate: "2026-10-02", endDate: "2026-10-03" }],
     onDemand: false,
     durationHours: "14",
     price: "350.00",
@@ -202,8 +199,13 @@ const LISTINGS: SeedListing[] = [
     format: "In-Person",
     isOnline: false,
     states: ["TX"],
-    startDate: "2026-11-08",
-    endDate: "2026-11-08",
+    // Runs quarterly — the directory shows whichever cohort is next and rolls
+    // forward on its own as each one finishes.
+    dates: [
+      { startDate: "2026-11-08", endDate: null },
+      { startDate: "2027-02-14", endDate: null },
+      { startDate: "2027-05-09", endDate: null },
+    ],
     onDemand: false,
     durationHours: "6",
     price: "150.00",
@@ -229,8 +231,7 @@ const LISTINGS: SeedListing[] = [
     format: "Live Virtual",
     isOnline: true,
     states: [],
-    startDate: "2026-09-28",
-    endDate: "2026-09-29",
+    dates: [{ startDate: "2026-09-28", endDate: "2026-09-29" }],
     onDemand: false,
     durationHours: "12",
     price: "275.00",
@@ -256,8 +257,7 @@ const LISTINGS: SeedListing[] = [
     format: "On-Demand",
     isOnline: true,
     states: [],
-    startDate: null,
-    endDate: null,
+    dates: [],
     onDemand: true,
     durationHours: "1",
     price: "0.00",
@@ -280,8 +280,7 @@ const LISTINGS: SeedListing[] = [
     format: "Live Virtual",
     isOnline: true,
     states: [],
-    startDate: "2026-12-05",
-    endDate: "2026-12-06",
+    dates: [{ startDate: "2026-12-05", endDate: "2026-12-06" }],
     onDemand: false,
     durationHours: "12",
     price: "320.00",
@@ -412,8 +411,6 @@ async function seedListings() {
         credentials: l.credentials,
         format: l.format,
         isOnline: l.isOnline,
-        startDate: l.startDate,
-        endDate: l.endDate,
         onDemand: l.onDemand,
         durationHours: l.durationHours,
         price: l.price,
@@ -438,7 +435,16 @@ async function seedListings() {
 
     const listingId = row.id;
 
-    // Reset states/tags for this listing, then re-link.
+    // Reset dates/states/tags for this listing, then re-link.
+    await db
+      .delete(schema.listingDates)
+      .where(inArray(schema.listingDates.listingId, [listingId]));
+    if (l.dates.length > 0) {
+      await db
+        .insert(schema.listingDates)
+        .values(l.dates.map((d) => ({ listingId, ...d })));
+    }
+
     await db
       .delete(schema.listingStates)
       .where(inArray(schema.listingStates.listingId, [listingId]));

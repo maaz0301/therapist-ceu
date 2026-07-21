@@ -1,12 +1,14 @@
 "use client";
 
 import { useActionState, useState, useSyncExternalStore } from "react";
+import { Plus, X } from "lucide-react";
 
 import { AuthMessage } from "@/components/auth/auth-message";
 import { SubmitButton } from "@/components/auth/submit-button";
 import { ImageUpload } from "@/components/trainer/image-upload";
 import { StateMultiselect } from "@/components/trainer/state-multiselect";
 import { TagMultiselect } from "@/components/trainer/tag-multiselect";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,8 +19,10 @@ import { DESCRIPTION_MAX, LISTING_FORMATS } from "@/lib/constants";
 import {
   addDays,
   END_DATE_ORDER_ERROR,
+  MAX_LISTING_DATES,
   START_DATE_PAST_ERROR,
   todayIso,
+  type DateRange,
 } from "@/lib/dates";
 import { listingFormValues } from "@/lib/listings/form-fields";
 import { buildListingSchema } from "@/lib/validation/listing";
@@ -39,8 +43,7 @@ const FIELD_ORDER = [
   "credentials",
   "format",
   "states",
-  "startDate",
-  "endDate",
+  "dates",
   "durationHours",
   "price",
   "registrationUrl",
@@ -50,12 +53,41 @@ const FIELD_ORDER = [
   "tagIds",
 ] as const;
 
+// The focus-first-error lookup goes by input name, which matches the schema
+// field everywhere except the schedule: that's an array of rows, so its errors
+// are reported on `dates` while the inputs are named per column.
+const FIELD_INPUT_NAMES: Record<string, string> = { dates: "dateStart" };
+
 // Resolved once per page load so `getToday` is referentially stable, as
 // useSyncExternalStore requires. The date never changes mid-session.
 let cachedToday: string | null = null;
 const getToday = () => (cachedToday ??= todayIso());
 const getServerToday = () => "";
 const subscribeNever = () => () => {};
+
+/**
+ * A schedule row. `key` is a stable React identity so removing the middle row
+ * doesn't make the ones after it inherit its input state — the dates themselves
+ * are editable and duplicable, so they can't serve as keys.
+ */
+type DateRow = DateRange & { key: number };
+
+let nextRowKey = 0;
+const blankRow = (): DateRow => ({
+  startDate: "",
+  endDate: null,
+  key: nextRowKey++,
+});
+
+/**
+ * Seeds the editable rows from whatever the form should show: the trainer's
+ * rejected submission if there was one, else the saved schedule, else a single
+ * empty row to type into.
+ */
+function toDateRows(ranges: readonly DateRange[] | undefined): DateRow[] {
+  if (!ranges?.length) return [blankRow()];
+  return ranges.map((r) => ({ ...r, key: nextRowKey++ }));
+}
 
 function FieldError({ messages }: { messages?: string[] }) {
   if (!messages?.length) return null;
@@ -86,15 +118,6 @@ export function ListingForm({
     string[] | undefined
   > | null>(null);
 
-  const [seenState, setSeenState] = useState(state);
-  if (seenState !== state) {
-    // Adjusting state during render — React's documented alternative to an
-    // effect for resetting derived state when an input changes.
-    setSeenState(state);
-    if (touched.size > 0) setTouched(new Set());
-    if (clientErrors) setClientErrors(null);
-  }
-
   function markTouched(name: string) {
     setTouched((prev) => {
       if (!name || prev.has(name)) return prev;
@@ -124,7 +147,7 @@ export function ListingForm({
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     const form = e.currentTarget;
-    const parsed = buildListingSchema(savedStart || undefined).safeParse(
+    const parsed = buildListingSchema(savedStarts).safeParse(
       listingFormValues(new FormData(form)),
     );
     if (parsed.success) {
@@ -142,7 +165,8 @@ export function ListingForm({
     // for it — the form is long enough that errors can be off-screen.
     const first = FIELD_ORDER.find((name) => fieldErrors[name]?.length);
     if (!first) return;
-    const el = form.querySelector<HTMLElement>(`[name="${first}"]`);
+    const inputName = FIELD_INPUT_NAMES[first] ?? first;
+    const el = form.querySelector<HTMLElement>(`[name="${inputName}"]`);
     (el ?? form).scrollIntoView({ behavior: "smooth", block: "center" });
     el?.focus({ preventScroll: true });
   }
@@ -164,9 +188,49 @@ export function ListingForm({
   const [hasCeu, setHasCeu] = useState(listing?.hasCeu ?? false);
 
   // Dates are controlled so the ordering rules can be caught before submit.
-  const savedStart = listing?.startDate ?? "";
-  const [startDate, setStartDate] = useState(savedStart);
-  const [endDate, setEndDate] = useState(listing?.endDate ?? "");
+  // The saved starts are what exempts an already-run date from the "no past
+  // dates" rule — a training that repeats keeps its history editable.
+  const savedStarts = listing?.dates?.map((d) => d.startDate) ?? [];
+  const savedStartSet = new Set(savedStarts);
+  const [dateRows, setDateRows] = useState<DateRow[]>(() =>
+    toDateRows(state?.dates ?? listing?.dates),
+  );
+
+  const [seenState, setSeenState] = useState(state);
+  if (seenState !== state) {
+    // Adjusting state during render — React's documented alternative to an
+    // effect for resetting derived state when an input changes. Placed after
+    // every useState above so it can reset them; hook order is unaffected.
+    setSeenState(state);
+    if (touched.size > 0) setTouched(new Set());
+    if (clientErrors) setClientErrors(null);
+    // React resets uncontrolled inputs once the action resolves. The schedule
+    // is controlled, so it has to be put back by hand — from the rejected
+    // submission if there is one, otherwise from what's saved.
+    setDateRows(toDateRows(state?.dates ?? listing?.dates));
+  }
+
+  function updateRow(key: number, patch: Partial<DateRange>) {
+    setDateRows((rows) =>
+      rows.map((row) => (row.key === key ? { ...row, ...patch } : row)),
+    );
+    markTouched("dates");
+  }
+
+  function addRow() {
+    setDateRows((rows) =>
+      rows.length >= MAX_LISTING_DATES ? rows : [...rows, blankRow()],
+    );
+  }
+
+  function removeRow(key: number) {
+    // Never drop to zero rows — an empty row is the prompt to add a date, and
+    // it submits as "no dates" all the same.
+    setDateRows((rows) =>
+      rows.length <= 1 ? [blankRow()] : rows.filter((row) => row.key !== key),
+    );
+    markTouched("dates");
+  }
 
   // `todayIso()` reads the browser's timezone, which the server doesn't share.
   // The empty server snapshot keeps the two renders identical through
@@ -176,23 +240,30 @@ export function ListingForm({
   const showStates =
     (format === "In-Person" || format === "Hybrid") && !isOnline;
 
-  // A training that already started keeps its date; only a *change* must be
-  // in the future, matching what the server enforces.
-  const startChanged = startDate !== savedStart;
-  const minStart = startChanged || !savedStart ? today : undefined;
+  /**
+   * The same two rules the server enforces, checked per row as the trainer
+   * types. ISO date strings (yyyy-mm-dd) compare correctly as plain strings.
+   *
+   * A run that's already saved keeps its date even once it's past — only a new
+   * or edited one has to be in the future.
+   */
+  const rowErrors = dateRows.map((row) => {
+    if (onDemand) return { start: null, end: null };
+    const start =
+      row.startDate &&
+      today &&
+      !savedStartSet.has(row.startDate) &&
+      row.startDate < today
+        ? START_DATE_PAST_ERROR
+        : null;
+    const end =
+      row.startDate && row.endDate && row.endDate < addDays(row.startDate, 1)
+        ? END_DATE_ORDER_ERROR
+        : null;
+    return { start, end };
+  });
 
-  // ISO date strings (yyyy-mm-dd) compare correctly as plain strings.
-  const startPastError =
-    !onDemand && startDate && today && startChanged && startDate < today
-      ? START_DATE_PAST_ERROR
-      : null;
-
-  // End date is optional; when set it must be at least a day after the start.
-  const minEnd = startDate ? addDays(startDate, 1) : today || undefined;
-  const dateOrderError =
-    !onDemand && startDate && endDate && endDate < addDays(startDate, 1)
-      ? END_DATE_ORDER_ERROR
-      : null;
+  const hasRowError = rowErrors.some((e) => e.start || e.end);
 
   return (
     <form
@@ -323,45 +394,107 @@ export function ListingForm({
         <input type="hidden" name="onDemand" value={String(onDemand)} />
 
         {!onDemand ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="startDate">Start date</Label>
-              <Input
-                id="startDate"
-                name="startDate"
-                type="date"
-                value={startDate}
-                min={minStart}
-                onChange={(e) => setStartDate(e.target.value)}
-                aria-invalid={startPastError ? true : undefined}
-              />
-              {startPastError ? (
-                <p role="alert" className="text-sm text-destructive">
-                  {startPastError}
-                </p>
-              ) : (
-                <FieldError messages={errorsFor("startDate")} />
-              )}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="endDate">End date (optional)</Label>
-              <Input
-                id="endDate"
-                name="endDate"
-                type="date"
-                value={endDate}
-                min={minEnd}
-                onChange={(e) => setEndDate(e.target.value)}
-                aria-invalid={dateOrderError ? true : undefined}
-              />
-              {dateOrderError ? (
-                <p role="alert" className="text-sm text-destructive">
-                  {dateOrderError}
-                </p>
-              ) : (
-                <FieldError messages={errorsFor("endDate")} />
-              )}
-            </div>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Running this training more than once? Add each date here instead of
+              creating a separate listing — the directory shows whichever one is
+              next and moves on to the following date once it has passed.
+            </p>
+
+            {dateRows.map((row, i) => {
+              const errors = rowErrors[i];
+              // A saved date stays editable even if it's past; a fresh row is
+              // held to today, matching what the server accepts.
+              const minStart = savedStartSet.has(row.startDate)
+                ? undefined
+                : today || undefined;
+
+              return (
+                <div
+                  key={row.key}
+                  className="flex flex-col gap-2 rounded-lg border border-border p-3 sm:flex-row sm:items-start sm:gap-3"
+                >
+                  <div className="flex flex-1 flex-col gap-1.5">
+                    <Label htmlFor={`dateStart-${row.key}`}>
+                      {dateRows.length > 1 ? `Start date ${i + 1}` : "Start date"}
+                    </Label>
+                    <Input
+                      id={`dateStart-${row.key}`}
+                      name="dateStart"
+                      type="date"
+                      value={row.startDate}
+                      min={minStart}
+                      onChange={(e) =>
+                        updateRow(row.key, { startDate: e.target.value })
+                      }
+                      aria-invalid={errors.start ? true : undefined}
+                    />
+                    {errors.start ? (
+                      <p role="alert" className="text-sm text-destructive">
+                        {errors.start}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="flex flex-1 flex-col gap-1.5">
+                    <Label htmlFor={`dateEnd-${row.key}`}>
+                      End date (optional)
+                    </Label>
+                    <Input
+                      id={`dateEnd-${row.key}`}
+                      name="dateEnd"
+                      type="date"
+                      value={row.endDate ?? ""}
+                      min={
+                        row.startDate
+                          ? addDays(row.startDate, 1)
+                          : today || undefined
+                      }
+                      onChange={(e) =>
+                        updateRow(row.key, { endDate: e.target.value || null })
+                      }
+                      aria-invalid={errors.end ? true : undefined}
+                    />
+                    {errors.end ? (
+                      <p role="alert" className="text-sm text-destructive">
+                        {errors.end}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeRow(row.key)}
+                    // The last row can't be removed, only cleared — keep the
+                    // control in the layout so the rows above don't shift.
+                    disabled={dateRows.length === 1 && !row.startDate}
+                    className="self-end text-muted-foreground sm:mt-6"
+                  >
+                    <X data-icon="inline-start" />
+                    Remove
+                    <span className="sr-only">
+                      {row.startDate ? ` date ${i + 1}` : " this date"}
+                    </span>
+                  </Button>
+                </div>
+              );
+            })}
+
+            <FieldError messages={errorsFor("dates")} />
+
+            {dateRows.length < MAX_LISTING_DATES ? (
+              <Button type="button" variant="outline" size="sm" onClick={addRow}>
+                <Plus data-icon="inline-start" />
+                Add another date
+              </Button>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                That&apos;s the maximum of {MAX_LISTING_DATES} dates for one
+                listing.
+              </p>
+            )}
           </div>
         ) : null}
 
@@ -498,7 +631,7 @@ export function ListingForm({
           variant="clay"
           size="lg"
           pendingLabel="Saving…"
-          disabled={Boolean(dateOrderError || startPastError)}
+          disabled={hasRowError}
         >
           {submitLabel}
         </SubmitButton>

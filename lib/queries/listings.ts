@@ -3,6 +3,7 @@ import "server-only";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 import {
+  listingDates,
   listings,
   listingStates,
   listingTags,
@@ -11,13 +12,41 @@ import {
   type Listing,
 } from "@/db/schema";
 import { db } from "@/lib/db";
+import type { DateRange } from "@/lib/dates";
+
+/** A listing's schedule, chronological. Empty for on-demand trainings. */
+export type ListingSchedule = DateRange[];
 
 export type TrainerListing = Listing & {
   tagNames: string[];
   states: string[];
+  dates: ListingSchedule;
 };
 
-async function attachTagsAndStates(rows: Listing[]): Promise<TrainerListing[]> {
+/** The saved start dates of a listing, used to exempt past runs from editing. */
+export async function getListingStartDates(
+  listingId: string,
+): Promise<string[]> {
+  const rows = await db
+    .select({ startDate: listingDates.startDate })
+    .from(listingDates)
+    .where(eq(listingDates.listingId, listingId));
+  return rows.map((r) => r.startDate);
+}
+
+async function selectDatesFor(listingIds: string[]) {
+  return db
+    .select({
+      listingId: listingDates.listingId,
+      startDate: listingDates.startDate,
+      endDate: listingDates.endDate,
+    })
+    .from(listingDates)
+    .where(inArray(listingDates.listingId, listingIds))
+    .orderBy(listingDates.startDate);
+}
+
+async function attachRelations(rows: Listing[]): Promise<TrainerListing[]> {
   if (rows.length === 0) return [];
   const ids = rows.map((r) => r.id);
 
@@ -35,12 +64,17 @@ async function attachTagsAndStates(rows: Listing[]): Promise<TrainerListing[]> {
     .from(listingStates)
     .where(inArray(listingStates.listingId, ids));
 
+  const dateRows = await selectDatesFor(ids);
+
   return rows.map((row) => ({
     ...row,
     tagNames: tagRows.filter((t) => t.listingId === row.id).map((t) => t.name),
     states: stateRows
       .filter((s) => s.listingId === row.id)
       .map((s) => s.stateCode),
+    dates: dateRows
+      .filter((d) => d.listingId === row.id)
+      .map((d) => ({ startDate: d.startDate, endDate: d.endDate })),
   }));
 }
 
@@ -53,7 +87,7 @@ export async function getTrainerListings(
     .where(eq(listings.trainerId, trainerId))
     .orderBy(desc(listings.createdAt));
 
-  return attachTagsAndStates(rows);
+  return attachRelations(rows);
 }
 
 export type ListingCounts = {
@@ -105,6 +139,7 @@ export async function getActiveListingCount(
 export type OwnedListing = Listing & {
   tagIds: string[];
   states: string[];
+  dates: ListingSchedule;
 };
 
 async function composeOwnedListing(row: Listing): Promise<OwnedListing> {
@@ -116,11 +151,16 @@ async function composeOwnedListing(row: Listing): Promise<OwnedListing> {
     .select({ stateCode: listingStates.stateCode })
     .from(listingStates)
     .where(eq(listingStates.listingId, row.id));
+  const dateRows = await selectDatesFor([row.id]);
 
   return {
     ...row,
     tagIds: tagRows.map((t) => t.tagId),
     states: stateRows.map((s) => s.stateCode),
+    dates: dateRows.map((d) => ({
+      startDate: d.startDate,
+      endDate: d.endDate,
+    })),
   };
 }
 
@@ -159,6 +199,7 @@ export type ListingDetail = Listing & {
   trainerWebsite: string | null;
   tagList: { id: string; name: string; category: string }[];
   states: string[];
+  dates: ListingSchedule;
 };
 
 /**
@@ -205,6 +246,8 @@ export async function getListingDetail(
     .from(listingStates)
     .where(eq(listingStates.listingId, row.listing.id));
 
+  const dateRows = await selectDatesFor([row.listing.id]);
+
   return {
     ...row.listing,
     trainerName: row.trainerName,
@@ -213,5 +256,9 @@ export async function getListingDetail(
     trainerWebsite: row.trainerWebsite,
     tagList,
     states: stateRows.map((s) => s.stateCode),
+    dates: dateRows.map((d) => ({
+      startDate: d.startDate,
+      endDate: d.endDate,
+    })),
   };
 }

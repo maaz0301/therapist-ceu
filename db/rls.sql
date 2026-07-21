@@ -83,6 +83,7 @@ create trigger set_tags_updated_at
 
 alter table public.profiles        enable row level security;
 alter table public.listings        enable row level security;
+alter table public.listing_dates   enable row level security;
 alter table public.listing_states  enable row level security;
 alter table public.tags            enable row level security;
 alter table public.listing_tags    enable row level security;
@@ -121,6 +122,39 @@ drop policy if exists listings_owner_write on public.listings;
 create policy listings_owner_write on public.listings
   for all using (auth.uid() = trainer_id or public.is_admin())
   with check (auth.uid() = trainer_id or public.is_admin());
+
+-- --- listing_dates --------------------------------------------------------
+
+-- Visibility follows the listing: public once it's approved and active,
+-- otherwise owner and admin only. Same shape as listing_states below.
+drop policy if exists listing_dates_read on public.listing_dates;
+create policy listing_dates_read on public.listing_dates
+  for select using (
+    exists (
+      select 1 from public.listings l
+      where l.id = listing_id
+        and (
+          (l.status = 'approved' and l.active = true)
+          or l.trainer_id = auth.uid()
+          or public.is_admin()
+        )
+    )
+  );
+
+drop policy if exists listing_dates_write on public.listing_dates;
+create policy listing_dates_write on public.listing_dates
+  for all using (
+    exists (
+      select 1 from public.listings l
+      where l.id = listing_id and (l.trainer_id = auth.uid() or public.is_admin())
+    )
+  )
+  with check (
+    exists (
+      select 1 from public.listings l
+      where l.id = listing_id and (l.trainer_id = auth.uid() or public.is_admin())
+    )
+  );
 
 -- --- listing_states -------------------------------------------------------
 

@@ -3,6 +3,7 @@ import "server-only";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 import {
+  listingDates,
   listings,
   listingStates,
   listingTags,
@@ -13,6 +14,7 @@ import {
 } from "@/db/schema";
 import { db } from "@/lib/db";
 import { TAG_CATEGORIES, type TagCategory } from "@/lib/constants";
+import type { DateRange } from "@/lib/dates";
 
 export type AdminListingStatus =
   | "pending"
@@ -23,6 +25,7 @@ export type AdminListingStatus =
 export type AdminListing = Listing & {
   trainerName: string | null;
   trainerAccountStatus: "active" | "suspended";
+  dates: DateRange[];
 };
 
 export async function getAdminListings(
@@ -39,10 +42,33 @@ export async function getAdminListings(
     .where(status ? eq(listings.status, status) : undefined)
     .orderBy(desc(listings.createdAt));
 
+  // One follow-up query for the whole page rather than one per listing — the
+  // review queue routinely renders every pending listing at once.
+  const dateRows =
+    rows.length === 0
+      ? []
+      : await db
+          .select({
+            listingId: listingDates.listingId,
+            startDate: listingDates.startDate,
+            endDate: listingDates.endDate,
+          })
+          .from(listingDates)
+          .where(
+            inArray(
+              listingDates.listingId,
+              rows.map((r) => r.listing.id),
+            ),
+          )
+          .orderBy(listingDates.startDate);
+
   return rows.map((r) => ({
     ...r.listing,
     trainerName: r.trainerName,
     trainerAccountStatus: r.trainerAccountStatus,
+    dates: dateRows
+      .filter((d) => d.listingId === r.listing.id)
+      .map((d) => ({ startDate: d.startDate, endDate: d.endDate })),
   }));
 }
 
@@ -175,10 +201,20 @@ export async function getAnyListingForEdit(id: string) {
     .from(listingStates)
     .where(eq(listingStates.listingId, id));
 
+  const dateRows = await db
+    .select({
+      startDate: listingDates.startDate,
+      endDate: listingDates.endDate,
+    })
+    .from(listingDates)
+    .where(eq(listingDates.listingId, id))
+    .orderBy(listingDates.startDate);
+
   return {
     ...row,
     tagIds: tagRows.map((t) => t.tagId),
     states: stateRows.map((s) => s.stateCode),
+    dates: dateRows,
   };
 }
 

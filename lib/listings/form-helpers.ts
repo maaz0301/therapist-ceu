@@ -2,7 +2,7 @@ import "server-only";
 
 import { eq } from "drizzle-orm";
 
-import { listings, listingStates, listingTags } from "@/db/schema";
+import { listingDates, listings, listingStates, listingTags } from "@/db/schema";
 import {
   ALLOWED_IMAGE_TYPES,
   IMAGE_SIZE_ERROR,
@@ -10,7 +10,8 @@ import {
   MAX_IMAGE_BYTES,
 } from "@/lib/constants";
 import { db } from "@/lib/db";
-import { listingFormValues } from "@/lib/listings/form-fields";
+import { sortDateRanges } from "@/lib/dates";
+import { listingDateRows, listingFormValues } from "@/lib/listings/form-fields";
 import { buildListingSchema, type ListingInput } from "@/lib/validation/listing";
 import { slugify, shortId } from "@/lib/slug";
 import {
@@ -20,14 +21,14 @@ import {
 
 
 /**
- * @param originalStartDate pass the listing's saved start date when editing, so
- *   an already-past training stays editable. Omit when creating.
+ * @param originalStartDates pass the listing's saved start dates when editing,
+ *   so runs that have already happened stay editable. Omit when creating.
  */
 export function parseListingForm(
   formData: FormData,
-  originalStartDate?: string | null,
+  originalStartDates?: readonly string[] | null,
 ) {
-  return buildListingSchema(originalStartDate).safeParse(
+  return buildListingSchema(originalStartDates).safeParse(
     listingFormValues(formData),
   );
 }
@@ -41,8 +42,6 @@ const ECHOED_FIELDS = [
   "presenterNames",
   "credentials",
   "format",
-  "startDate",
-  "endDate",
   "durationHours",
   "price",
   "registrationUrl",
@@ -64,6 +63,17 @@ export function submittedValues(formData: FormData): SubmittedValues {
     if (typeof raw === "string") values[field] = raw;
   }
   return values;
+}
+
+/**
+ * The schedule rows as submitted, echoed back for the same reason as the text
+ * fields above — they're repeated inputs rather than one named value, so they
+ * can't ride along in {@link SubmittedValues}.
+ */
+export type SubmittedDates = { startDate: string; endDate: string | null }[];
+
+export function submittedDates(formData: FormData): SubmittedDates {
+  return listingDateRows(formData);
 }
 
 export function getImageFile(formData: FormData): File | null {
@@ -105,11 +115,30 @@ export async function generateUniqueSlug(title: string): Promise<string> {
   return `${base}-${shortId()}`;
 }
 
-export async function replaceStatesAndTags(
+/**
+ * Rewrites the three child tables a listing owns — its dates, its in-person
+ * states and its topic tags — to match the submitted form. Delete-then-insert
+ * rather than a diff: the sets are tiny, and it keeps "what the trainer sees is
+ * exactly what's stored" true without reconciliation logic.
+ */
+export async function replaceListingRelations(
   listingId: string,
   data: ListingInput,
   usableTagIds: string[],
 ) {
+  await db.delete(listingDates).where(eq(listingDates.listingId, listingId));
+  // On-demand trainings have no fixed schedule, so any dates are discarded
+  // rather than kept dormant — the same rule the listing columns used to apply.
+  if (!data.onDemand && data.dates.length > 0) {
+    await db.insert(listingDates).values(
+      sortDateRanges(data.dates).map((d) => ({
+        listingId,
+        startDate: d.startDate,
+        endDate: d.endDate,
+      })),
+    );
+  }
+
   await db.delete(listingStates).where(eq(listingStates.listingId, listingId));
   if (!data.isOnline && data.states.length > 0) {
     await db

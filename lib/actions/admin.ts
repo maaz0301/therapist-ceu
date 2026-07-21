@@ -17,10 +17,12 @@ import {
 import {
   getImageFile,
   parseListingForm,
-  replaceStatesAndTags,
+  replaceListingRelations,
+  submittedDates,
   uploadImage,
   validateImageFile,
 } from "@/lib/listings/form-helpers";
+import { getListingStartDates } from "@/lib/queries/listings";
 import { slugify } from "@/lib/slug";
 import { TAG_CATEGORIES, type TagCategory } from "@/lib/constants";
 import type { ListingFormState } from "@/lib/actions/listings";
@@ -185,9 +187,15 @@ export async function adminUpdateListing(
     .limit(1);
   if (!existing) return { error: "Listing not found." };
 
-  const parsed = parseListingForm(formData, existing.startDate);
+  const parsed = parseListingForm(
+    formData,
+    await getListingStartDates(existing.id),
+  );
   if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
+    return {
+      fieldErrors: parsed.error.flatten().fieldErrors,
+      dates: submittedDates(formData),
+    };
   }
   const data = parsed.data;
 
@@ -221,8 +229,6 @@ export async function adminUpdateListing(
       credentials: data.credentials,
       format: data.format,
       isOnline: data.isOnline,
-      startDate: data.onDemand ? null : data.startDate,
-      endDate: data.onDemand ? null : data.endDate,
       onDemand: data.onDemand,
       durationHours: data.durationHours ? String(data.durationHours) : null,
       price: String(data.price),
@@ -235,7 +241,7 @@ export async function adminUpdateListing(
     })
     .where(eq(listings.id, id));
 
-  await replaceStatesAndTags(id, data, usableTagIds);
+  await replaceListingRelations(id, data, usableTagIds);
 
   revalidateAdminListings();
   redirect("/admin?updated=1");

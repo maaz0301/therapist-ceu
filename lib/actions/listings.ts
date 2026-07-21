@@ -9,7 +9,10 @@ import { listings, tags } from "@/db/schema";
 import { db } from "@/lib/db";
 import { requireTrainer } from "@/lib/auth";
 import { filterUsableTagIds } from "@/lib/queries/tags";
-import { getActiveListingCount } from "@/lib/queries/listings";
+import {
+  getActiveListingCount,
+  getListingStartDates,
+} from "@/lib/queries/listings";
 import { canPublishMore, getSubscriptionState } from "@/lib/subscription";
 import { TAG_CATEGORIES, type TagCategory } from "@/lib/constants";
 import { sendListingSubmittedEmail } from "@/lib/email/send";
@@ -18,10 +21,12 @@ import {
   generateUniqueSlug,
   getImageFile,
   parseListingForm,
-  replaceStatesAndTags,
+  replaceListingRelations,
+  submittedDates,
   submittedValues,
   uploadImage,
   validateImageFile,
+  type SubmittedDates,
   type SubmittedValues,
 } from "@/lib/listings/form-helpers";
 
@@ -30,6 +35,8 @@ export type ListingFormState = {
   fieldErrors?: Record<string, string[] | undefined>;
   /** Echoed back on failure so the form doesn't blank out. */
   values?: SubmittedValues;
+  /** Schedule rows echoed back for the same reason — see {@link SubmittedDates}. */
+  dates?: SubmittedDates;
 } | null;
 
 export async function createListing(
@@ -40,10 +47,11 @@ export async function createListing(
     const profile = await requireTrainer();
 
     const values = submittedValues(formData);
+    const dates = submittedDates(formData);
 
     const parsed = parseListingForm(formData);
     if (!parsed.success) {
-      return { fieldErrors: parsed.error.flatten().fieldErrors, values };
+      return { fieldErrors: parsed.error.flatten().fieldErrors, values, dates };
     }
     const data = parsed.data;
 
@@ -52,6 +60,7 @@ export async function createListing(
       return {
         fieldErrors: { tagIds: ["Choose at least one valid topic tag."] },
         values,
+        dates,
       };
     }
 
@@ -59,7 +68,7 @@ export async function createListing(
     if (file) {
       const imageError = validateImageFile(file);
       if (imageError) {
-        return { fieldErrors: { image: [imageError.error] }, values };
+        return { fieldErrors: { image: [imageError.error] }, values, dates };
       }
     }
 
@@ -86,8 +95,6 @@ export async function createListing(
         credentials: data.credentials,
         format: data.format,
         isOnline: data.isOnline,
-        startDate: data.onDemand ? null : data.startDate,
-        endDate: data.onDemand ? null : data.endDate,
         onDemand: data.onDemand,
         durationHours: data.durationHours ? String(data.durationHours) : null,
         price: String(data.price),
@@ -100,7 +107,7 @@ export async function createListing(
       })
       .returning({ id: listings.id });
 
-    await replaceStatesAndTags(created.id, data, usableTagIds);
+    await replaceListingRelations(created.id, data, usableTagIds);
 
     // Two third-party round-trips (user lookup + Resend). Run them after the
     // response so the trainer isn't held on the "Create listing" spinner.
@@ -138,10 +145,14 @@ export async function updateListing(
   }
 
   const values = submittedValues(formData);
+  const dates = submittedDates(formData);
 
-  const parsed = parseListingForm(formData, existing.startDate);
+  const parsed = parseListingForm(
+    formData,
+    await getListingStartDates(existing.id),
+  );
   if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors, values };
+    return { fieldErrors: parsed.error.flatten().fieldErrors, values, dates };
   }
   const data = parsed.data;
 
@@ -150,6 +161,7 @@ export async function updateListing(
     return {
       fieldErrors: { tagIds: ["Choose at least one valid topic tag."] },
       values,
+      dates,
     };
   }
 
@@ -158,7 +170,7 @@ export async function updateListing(
   if (file) {
     const imageError = validateImageFile(file);
     if (imageError) {
-      return { fieldErrors: { image: [imageError.error] }, values };
+      return { fieldErrors: { image: [imageError.error] }, values, dates };
     }
     imageUrl = await uploadImage(file, profile.id);
   }
@@ -180,8 +192,6 @@ export async function updateListing(
       credentials: data.credentials,
       format: data.format,
       isOnline: data.isOnline,
-      startDate: data.onDemand ? null : data.startDate,
-      endDate: data.onDemand ? null : data.endDate,
       onDemand: data.onDemand,
       durationHours: data.durationHours ? String(data.durationHours) : null,
       price: String(data.price),
@@ -196,7 +206,7 @@ export async function updateListing(
     })
     .where(eq(listings.id, id));
 
-  await replaceStatesAndTags(id, data, usableTagIds);
+  await replaceListingRelations(id, data, usableTagIds);
 
   revalidatePath("/listings");
   revalidatePath("/dashboard");
