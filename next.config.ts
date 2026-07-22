@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  /**
+   * Nodemailer resolves transports and TLS certs through dynamic requires that
+   * the bundler can't trace, so leave it as a real Node dependency at runtime.
+   */
+  serverExternalPackages: ["nodemailer"],
   experimental: {
     serverActions: {
       /**

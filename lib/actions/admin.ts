@@ -303,12 +303,21 @@ export async function setSubscription(
   return { ok: true };
 }
 
+/**
+ * `emailSent: false` means the trainer account was created but the invitation
+ * mail could not be delivered — the caller should surface `inviteUrl` so an
+ * admin can pass it on by hand.
+ */
+export type InviteTrainerResult =
+  | { ok: true; emailSent: boolean; inviteUrl: string }
+  | { error: string };
+
 export async function inviteTrainer(
   fullName: string,
   email: string,
   tier: "basic" | "pro" | "none",
   status: "none" | "trialing" | "active" | "past_due" | "canceled" | "unpaid",
-): Promise<ActionResult> {
+): Promise<InviteTrainerResult> {
   await requireAdmin();
 
   const inviteSchema = z.object({
@@ -349,7 +358,7 @@ export async function inviteTrainer(
     .where(eq(profiles.id, invite.userId));
 
   revalidatePath("/admin/trainers");
-  return { ok: true };
+  return { ok: true, emailSent: invite.emailSent, inviteUrl: invite.inviteUrl };
 }
 
 // ---------------------------------------------------------------------------

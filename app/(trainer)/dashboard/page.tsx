@@ -12,28 +12,33 @@ import { StatCard } from "@/components/analytics/stat-card";
 import { SubscriptionBanner } from "@/components/subscription-banner";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
-import { requireTrainer } from "@/lib/auth";
+import { requireTrainer, requireUser } from "@/lib/auth";
 import { getTrainerAnalytics } from "@/lib/queries/analytics";
 import {
-  getActiveListingCount,
+  getRecentTrainerListings,
   getTrainerListingCounts,
-  getTrainerListings,
 } from "@/lib/queries/listings";
 import { getSubscriptionState } from "@/lib/subscription";
 
 export const metadata = { title: "Dashboard" };
 
 export default async function TrainerDashboardPage() {
-  const profile = await requireTrainer();
+  // `requireUser` verifies the JWT locally, so the trainer's id is available
+  // without waiting on a database round-trip. That lets the profile lookup and
+  // the page's own queries go out together instead of one after the other —
+  // `requireTrainer` still gates rendering, it just no longer blocks the fetch.
+  const user = await requireUser();
 
-  const [counts, activeCount, analytics, listings] = await Promise.all([
-    getTrainerListingCounts(profile.id),
-    getActiveListingCount(profile.id),
-    getTrainerAnalytics(profile.id, "all"),
-    getTrainerListings(profile.id),
+  const [profile, counts, analytics, recent] = await Promise.all([
+    requireTrainer(),
+    getTrainerListingCounts(user.id),
+    getTrainerAnalytics(user.id, "all"),
+    getRecentTrainerListings(user.id, 5),
   ]);
   const subscription = getSubscriptionState(profile);
-  const recent = listings.slice(0, 5);
+  // `counts` already reports the active total; a second count query for the
+  // same table was a wasted round-trip.
+  const activeCount = counts.active;
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8">
@@ -77,7 +82,7 @@ export default async function TrainerDashboardPage() {
       <Card className="p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-heading text-lg font-semibold">Recent listings</h2>
-          {listings.length > 0 ? (
+          {counts.total > 0 ? (
             <ButtonLink variant="ghost" size="sm" href="/listings">
               View all
             </ButtonLink>

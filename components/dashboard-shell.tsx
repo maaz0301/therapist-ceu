@@ -79,6 +79,16 @@ export function DashboardShell({
                 size="sm"
                 className="justify-start hover:bg-clay/10 hover:text-clay-deep"
                 href={item.href}
+                /**
+                 * These are dynamic routes, so the default prefetch stops at
+                 * the `loading.tsx` boundary — enough to show a spinner
+                 * instantly, but the queries still only start on click. A full
+                 * prefetch warms the data too, so switching tabs renders from
+                 * the router cache instead of waiting on the round-trip that
+                 * made the dashboard feel slow. There are only a handful of
+                 * tabs, and `staleTimes.dynamic` keeps them from refetching.
+                 */
+                prefetch
               >
                 <Icon data-icon="inline-start" />
                 {item.label}

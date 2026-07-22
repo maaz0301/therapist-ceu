@@ -16,7 +16,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { getCurrentProfile } from "@/lib/auth";
-import { getListingDetail, type ListingDetail } from "@/lib/queries/listings";
+import {
+  getListingDetail,
+  getListingMeta,
+  type ListingDetail,
+} from "@/lib/queries/listings";
 import { formatDateRange, upcomingRanges } from "@/lib/dates";
 import { US_STATES } from "@/lib/constants";
 
@@ -49,7 +53,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const listing = await getListingDetail(slug);
+  const listing = await getListingMeta(slug);
   if (!listing) return { title: "Listing not found" };
 
   const description = listing.description.slice(0, 160);
@@ -114,10 +118,12 @@ export default async function ListingDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const profile = await getCurrentProfile();
-  const viewer = profile
-    ? { id: profile.id, isAdmin: profile.role === "admin" }
-    : null;
+
+  // Not awaited: the viewer is only consulted if the listing turns out to be
+  // non-public, so handing the promise over lets both queries run at once.
+  const viewer = getCurrentProfile().then((profile) =>
+    profile ? { id: profile.id, isAdmin: profile.role === "admin" } : null,
+  );
 
   const listing = await getListingDetail(slug, viewer);
   if (!listing) notFound();

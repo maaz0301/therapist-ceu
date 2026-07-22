@@ -3,14 +3,17 @@ import { ArrowLeft } from "lucide-react";
 import { ListingForm } from "@/components/trainer/listing-form";
 import { ButtonLink } from "@/components/ui/button-link";
 import { createListing } from "@/lib/actions/listings";
-import { requireTrainer } from "@/lib/auth";
+import { requireTrainer, requireUser } from "@/lib/auth";
 import { getGroupedTags } from "@/lib/queries/tags";
 
 export const metadata = { title: "New listing" };
 
 export default async function NewListingPage() {
-  const profile = await requireTrainer();
-  const groups = await getGroupedTags(profile.id);
+  const user = await requireUser();
+  const [, groups] = await Promise.all([
+    requireTrainer(),
+    getGroupedTags(user.id),
+  ]);
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6">

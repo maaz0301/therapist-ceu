@@ -11,7 +11,7 @@ import { ClearQueryParams } from "@/components/clear-query-params";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { requireTrainer } from "@/lib/auth";
+import { requireTrainer, requireUser } from "@/lib/auth";
 import {
   getActiveListingCount,
   getTrainerListings,
@@ -91,14 +91,18 @@ export default async function ListingsPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const profile = await requireTrainer();
-  const [listings, activeCount] = await Promise.all([
-    getTrainerListings(profile.id),
-    getActiveListingCount(profile.id),
+  // The JWT is verified locally, so the id is in hand before any query runs —
+  // the profile lookup then overlaps with the listings fetch rather than
+  // gating it. `requireTrainer` still redirects a suspended trainer, and every
+  // query below is scoped to that same id, so nothing renders out of turn.
+  const user = await requireUser();
+  const [profile, listings, activeCount, sp] = await Promise.all([
+    requireTrainer(),
+    getTrainerListings(user.id),
+    getActiveListingCount(user.id),
+    searchParams,
   ]);
   const subscription = getSubscriptionState(profile);
-
-  const sp = await searchParams;
   const bannerKey = sp.new
     ? `new=${sp.new}`
     : sp.updated

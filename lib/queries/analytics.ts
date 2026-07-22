@@ -54,12 +54,15 @@ export async function getTrainerAnalytics(
     ? sql`and e.created_at >= ${since.toISOString()}`
     : sql``;
 
-  const perListingRows = await db.execute<{
-    id: string;
-    title: string;
-    views: number;
-    clicks: number;
-  }>(sql`
+  // Per-listing totals and the daily trend are independent aggregates over the
+  // same events; issuing them together halves the page's round-trip depth.
+  const [perListingRows, trendRows] = await Promise.all([
+    db.execute<{
+      id: string;
+      title: string;
+      views: number;
+      clicks: number;
+    }>(sql`
     select
       l.id,
       l.title,
@@ -71,19 +74,8 @@ export async function getTrainerAnalytics(
     where l.trainer_id = ${trainerId}
     group by l.id, l.title
     order by views desc, l.created_at desc
-  `);
-
-  const perListing = perListingRows as unknown as PerListingStat[];
-
-  const totals = perListing.reduce(
-    (acc, r) => ({
-      views: acc.views + Number(r.views),
-      clicks: acc.clicks + Number(r.clicks),
-    }),
-    { views: 0, clicks: 0 },
-  );
-
-  const trendRows = await db.execute<{ day: string; views: number }>(sql`
+  `),
+    db.execute<{ day: string; views: number }>(sql`
     select
       to_char(date_trunc('day', e.created_at), 'YYYY-MM-DD') as day,
       count(*)::int as views
@@ -94,7 +86,18 @@ export async function getTrainerAnalytics(
       ${since ? sql`and e.created_at >= ${since.toISOString()}` : sql``}
     group by day
     order by day asc
-  `);
+  `),
+  ]);
+
+  const perListing = perListingRows as unknown as PerListingStat[];
+
+  const totals = perListing.reduce(
+    (acc, r) => ({
+      views: acc.views + Number(r.views),
+      clicks: acc.clicks + Number(r.clicks),
+    }),
+    { views: 0, clicks: 0 },
+  );
 
   return {
     totals,

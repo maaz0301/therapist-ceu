@@ -6,7 +6,7 @@ import { TrendChart } from "@/components/analytics/trend-chart";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { requireTrainer } from "@/lib/auth";
+import { requireTrainer, requireUser } from "@/lib/auth";
 import {
   ANALYTICS_PERIODS,
   getTrainerAnalytics,
@@ -24,11 +24,13 @@ export default async function AnalyticsPage({
 }: {
   searchParams: Promise<{ period?: string }>;
 }) {
-  const profile = await requireTrainer();
-  const sp = await searchParams;
+  const [user, sp] = await Promise.all([requireUser(), searchParams]);
   const period: AnalyticsPeriod = isPeriod(sp.period) ? sp.period : "all";
 
-  const analytics = await getTrainerAnalytics(profile.id, period);
+  const [, analytics] = await Promise.all([
+    requireTrainer(),
+    getTrainerAnalytics(user.id, period),
+  ]);
   const ctr =
     analytics.totals.views > 0
       ? Math.round((analytics.totals.clicks / analytics.totals.views) * 100)

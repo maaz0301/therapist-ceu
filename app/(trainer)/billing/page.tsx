@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { requireTrainer } from "@/lib/auth";
+import { requireTrainer, requireUser } from "@/lib/auth";
 import { SUBSCRIPTION_TIERS } from "@/lib/constants";
 import { getActiveListingCount } from "@/lib/queries/listings";
 import { getSubscriptionState } from "@/lib/subscription";
@@ -22,10 +22,13 @@ export default async function BillingPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const profile = await requireTrainer();
+  const user = await requireUser();
+  const [profile, activeCount, sp] = await Promise.all([
+    requireTrainer(),
+    getActiveListingCount(user.id),
+    searchParams,
+  ]);
   const subscription = getSubscriptionState(profile);
-  const activeCount = await getActiveListingCount(profile.id);
-  const sp = await searchParams;
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">

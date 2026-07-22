@@ -53,7 +53,54 @@ function redirectTo(
   return redirect;
 }
 
+/**
+ * Rescues auth links that did not land on an auth route.
+ *
+ * Supabase only honours `emailRedirectTo` when it matches the project's
+ * Redirect URL allow-list; otherwise it silently substitutes the bare Site URL
+ * and drops our path entirely. A magic link then lands on `/` still carrying
+ * its `?code=`, nothing consumes it, and the user is quietly never signed in
+ * (or, when Site URL is still the default, on localhost). Rather than depend on
+ * dashboard configuration being right, forward any request that carries auth
+ * params to the handler that knows how to spend them.
+ */
+function authHandoff(request: NextRequest): NextResponse | null {
+  const { pathname, searchParams } = request.nextUrl;
+  if (pathname.startsWith("/auth/")) return null;
+
+  // `error_code` is Supabase-specific, so this can't swallow an unrelated
+  // `?error=` belonging to one of our own pages.
+  if (searchParams.has("error_code") && pathname !== "/login") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.search = "";
+    url.searchParams.set(
+      "error",
+      searchParams.get("error_description") ??
+        "Could not sign you in. The link may have expired.",
+    );
+    return NextResponse.redirect(url);
+  }
+
+  const code = searchParams.get("code");
+  const hasTokenHash =
+    searchParams.has("token_hash") && searchParams.has("type");
+  if (!code && !hasTokenHash) return null;
+
+  const url = request.nextUrl.clone();
+  url.pathname = code ? "/auth/callback" : "/auth/confirm";
+  if (!searchParams.has("next")) {
+    // Keep the user headed where they were, except `/` — a magic link landing
+    // on the marketing page means the path was stripped, not requested.
+    url.searchParams.set("next", pathname === "/" ? "/dashboard" : pathname);
+  }
+  return NextResponse.redirect(url);
+}
+
 export async function proxy(request: NextRequest) {
+  const handoff = authHandoff(request);
+  if (handoff) return handoff;
+
   let response = NextResponse.next({ request });
 
   if (!env.supabaseUrl || !env.supabaseAnonKey) {

@@ -43,7 +43,8 @@ export async function sendTrainerInviteEmail(
   to: string,
   name?: string | null,
 ): Promise<
-  { ok: true; userId: string } | { ok: false; error: string }
+  | { ok: true; userId: string; inviteUrl: string; emailSent: boolean }
+  | { ok: false; error: string }
 > {
   const admin = createSupabaseAdminClient();
 
@@ -74,28 +75,25 @@ export async function sendTrainerInviteEmail(
     react: TrainerInviteEmail({ name, inviteUrl }),
   });
 
+  // A failed send is NOT a failed invite. The auth user exists and the link
+  // above is the trainer's actual way in, so we keep the account and hand the
+  // link back to the admin to pass along manually. Deleting the user here (as
+  // we used to) made an unconfigured mail provider a hard blocker on creating
+  // trainers at all.
   if (!sent.ok) {
-    // generateLink already created the auth user. If the mail never went out,
-    // roll it back — otherwise the address is taken, the trainer has no way in,
-    // and a retry just hits "an account with this email already exists".
-    const { error: cleanupError } = await admin.auth.admin.deleteUser(
-      data.user.id,
+    console.warn(
+      `[email] invite to ${to} was not delivered (${
+        sent.skipped ? "no mail provider configured" : "provider error"
+      }); returning the link for manual delivery`,
     );
-    if (cleanupError) {
-      console.error(
-        `[email] invite to ${to} failed to send AND cleanup failed:`,
-        cleanupError,
-      );
-    }
-    return {
-      ok: false,
-      error: sent.skipped
-        ? "Email is not configured (RESEND_API_KEY is missing), so the invitation could not be sent."
-        : "The invitation email failed to send. Please try again.",
-    };
   }
 
-  return { ok: true, userId: data.user.id };
+  return {
+    ok: true,
+    userId: data.user.id,
+    inviteUrl,
+    emailSent: sent.ok,
+  };
 }
 
 export async function sendWelcomeEmail(to: string, name?: string | null) {

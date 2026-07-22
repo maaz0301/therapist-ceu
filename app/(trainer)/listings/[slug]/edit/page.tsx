@@ -5,7 +5,7 @@ import { ListingForm } from "@/components/trainer/listing-form";
 import { ListingStatusBadge } from "@/components/listing-status-badge";
 import { ButtonLink } from "@/components/ui/button-link";
 import { updateListing } from "@/lib/actions/listings";
-import { requireTrainer } from "@/lib/auth";
+import { requireTrainer, requireUser } from "@/lib/auth";
 import { getOwnedListingBySlug } from "@/lib/queries/listings";
 import { getGroupedTags } from "@/lib/queries/tags";
 
@@ -16,13 +16,18 @@ export default async function EditListingPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
-  const profile = await requireTrainer();
+  // Profile, listing and tag list are independent lookups, and the trainer id
+  // comes from the locally-verified JWT — so all three go out at once instead
+  // of forming a four-deep chain of ~210ms round-trips.
+  const [{ slug }, user] = await Promise.all([params, requireUser()]);
 
-  const listing = await getOwnedListingBySlug(slug, profile.id);
+  const [, listing, groups] = await Promise.all([
+    requireTrainer(),
+    getOwnedListingBySlug(slug, user.id),
+    getGroupedTags(user.id),
+  ]);
   if (!listing) notFound();
 
-  const groups = await getGroupedTags(profile.id);
   const action = updateListing.bind(null, listing.id);
 
   return (

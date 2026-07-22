@@ -1,6 +1,7 @@
 import "server-only";
 
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { cache } from "react";
+import { and, desc, eq, sql, type SQL } from "drizzle-orm";
 
 import {
   listingDates,
@@ -34,60 +35,103 @@ export async function getListingStartDates(
   return rows.map((r) => r.startDate);
 }
 
-async function selectDatesFor(listingIds: string[]) {
-  return db
-    .select({
-      listingId: listingDates.listingId,
-      startDate: listingDates.startDate,
-      endDate: listingDates.endDate,
-    })
-    .from(listingDates)
-    .where(inArray(listingDates.listingId, listingIds))
-    .orderBy(listingDates.startDate);
-}
+/**
+ * A listing's tags/states/dates as correlated JSON aggregates.
+ *
+ * Every query through the connection pooler costs ~430ms regardless of how
+ * little it returns, so round-trip *count* is what the page waits on. Fetching
+ * the listings and then their three relation tables meant two trips minimum;
+ * gathering the relations as subqueries makes it one, which measured ~860ms →
+ * ~430ms on the listings screen. Drizzle still maps the listing columns
+ * itself, so only these three fields are hand-written SQL.
+ */
+/**
+ * The outer listing's id, written out rather than interpolated.
+ *
+ * Drizzle renders `${listings.id}` inside a `sql` template as a bare `"id"`,
+ * with no table qualifier. A correlated subquery then resolves that against
+ * its *own* table whenever that table also has an `id` column — `tags` and
+ * `listing_dates` both do — so `where d.listing_id = "id"` quietly becomes
+ * `d.listing_id = d.id`, matches nothing, and the listing comes back with no
+ * tags and no dates. (`listing_states` has a composite key and no `id`, which
+ * is why it alone appeared to work.) Qualifying it keeps the reference
+ * pointing at the outer query.
+ */
+const outerListingId = sql.raw('"listings"."id"');
 
-async function attachRelations(rows: Listing[]): Promise<TrainerListing[]> {
-  if (rows.length === 0) return [];
-  const ids = rows.map((r) => r.id);
+const tagNamesJson = sql<string[]>`coalesce((
+  select json_agg(t.name order by t.name)
+  from ${listingTags} lt
+  join ${tags} t on t.id = lt.tag_id
+  where lt.listing_id = ${outerListingId}
+), '[]'::json)`;
 
-  const tagRows = await db
-    .select({ listingId: listingTags.listingId, name: tags.name })
-    .from(listingTags)
-    .innerJoin(tags, eq(tags.id, listingTags.tagId))
-    .where(inArray(listingTags.listingId, ids));
+const stateCodesJson = sql<string[]>`coalesce((
+  select json_agg(ls.state_code order by ls.state_code)
+  from ${listingStates} ls
+  where ls.listing_id = ${outerListingId}
+), '[]'::json)`;
 
-  const stateRows = await db
-    .select({
-      listingId: listingStates.listingId,
-      stateCode: listingStates.stateCode,
-    })
-    .from(listingStates)
-    .where(inArray(listingStates.listingId, ids));
-
-  const dateRows = await selectDatesFor(ids);
-
-  return rows.map((row) => ({
-    ...row,
-    tagNames: tagRows.filter((t) => t.listingId === row.id).map((t) => t.name),
-    states: stateRows
-      .filter((s) => s.listingId === row.id)
-      .map((s) => s.stateCode),
-    dates: dateRows
-      .filter((d) => d.listingId === row.id)
-      .map((d) => ({ startDate: d.startDate, endDate: d.endDate })),
-  }));
-}
+const datesJson = sql<ListingSchedule>`coalesce((
+  select json_agg(
+    json_build_object('startDate', d.start_date, 'endDate', d.end_date)
+    order by d.start_date
+  )
+  from ${listingDates} d
+  where d.listing_id = ${outerListingId}
+), '[]'::json)`;
 
 export async function getTrainerListings(
   trainerId: string,
 ): Promise<TrainerListing[]> {
   const rows = await db
-    .select()
+    .select({
+      listing: listings,
+      tagNames: tagNamesJson,
+      states: stateCodesJson,
+      dates: datesJson,
+    })
     .from(listings)
     .where(eq(listings.trainerId, trainerId))
     .orderBy(desc(listings.createdAt));
 
-  return attachRelations(rows);
+  return rows.map((row) => ({
+    ...row.listing,
+    tagNames: row.tagNames,
+    states: row.states,
+    dates: row.dates,
+  }));
+}
+
+/** Just enough for the dashboard's "recent listings" rows. */
+export type RecentListing = Pick<
+  Listing,
+  "id" | "title" | "slug" | "format" | "status" | "active"
+>;
+
+/**
+ * The dashboard shows five rows of title/status/link. Reusing
+ * `getTrainerListings` for that pulled every listing the trainer owns plus its
+ * tags, states and dates — four round-trips to render data the page throws
+ * away. One narrow query instead.
+ */
+export async function getRecentTrainerListings(
+  trainerId: string,
+  limit = 5,
+): Promise<RecentListing[]> {
+  return db
+    .select({
+      id: listings.id,
+      title: listings.title,
+      slug: listings.slug,
+      format: listings.format,
+      status: listings.status,
+      active: listings.active,
+    })
+    .from(listings)
+    .where(eq(listings.trainerId, trainerId))
+    .orderBy(desc(listings.createdAt))
+    .limit(limit);
 }
 
 export type ListingCounts = {
@@ -142,25 +186,31 @@ export type OwnedListing = Listing & {
   dates: ListingSchedule;
 };
 
-async function composeOwnedListing(row: Listing): Promise<OwnedListing> {
-  const tagRows = await db
-    .select({ tagId: listingTags.tagId })
-    .from(listingTags)
-    .where(eq(listingTags.listingId, row.id));
-  const stateRows = await db
-    .select({ stateCode: listingStates.stateCode })
-    .from(listingStates)
-    .where(eq(listingStates.listingId, row.id));
-  const dateRows = await selectDatesFor([row.id]);
+const tagIdsJson = sql<string[]>`coalesce((
+  select json_agg(lt.tag_id)
+  from ${listingTags} lt
+  where lt.listing_id = ${outerListingId}
+), '[]'::json)`;
 
+/** Shared by the id and slug lookups; both feed the edit form. */
+async function selectOwnedListing(where: SQL | undefined) {
+  const [row] = await db
+    .select({
+      listing: listings,
+      tagIds: tagIdsJson,
+      states: stateCodesJson,
+      dates: datesJson,
+    })
+    .from(listings)
+    .where(where)
+    .limit(1);
+
+  if (!row) return null;
   return {
-    ...row,
-    tagIds: tagRows.map((t) => t.tagId),
-    states: stateRows.map((s) => s.stateCode),
-    dates: dateRows.map((d) => ({
-      startDate: d.startDate,
-      endDate: d.endDate,
-    })),
+    ...row.listing,
+    tagIds: row.tagIds,
+    states: row.states,
+    dates: row.dates,
   };
 }
 
@@ -169,13 +219,9 @@ export async function getOwnedListing(
   id: string,
   trainerId: string,
 ): Promise<OwnedListing | null> {
-  const [row] = await db
-    .select()
-    .from(listings)
-    .where(and(eq(listings.id, id), eq(listings.trainerId, trainerId)))
-    .limit(1);
-  if (!row) return null;
-  return composeOwnedListing(row);
+  return selectOwnedListing(
+    and(eq(listings.id, id), eq(listings.trainerId, trainerId)),
+  );
 }
 
 /** A trainer's own listing by slug (for the edit page URL). */
@@ -183,14 +229,49 @@ export async function getOwnedListingBySlug(
   slug: string,
   trainerId: string,
 ): Promise<OwnedListing | null> {
-  const [row] = await db
-    .select()
-    .from(listings)
-    .where(and(eq(listings.slug, slug), eq(listings.trainerId, trainerId)))
-    .limit(1);
-  if (!row) return null;
-  return composeOwnedListing(row);
+  return selectOwnedListing(
+    and(eq(listings.slug, slug), eq(listings.trainerId, trainerId)),
+  );
 }
+
+export type ListingMeta = Pick<
+  Listing,
+  "title" | "slug" | "description" | "imageUrl"
+>;
+
+/**
+ * Columns for `generateMetadata`, and nothing else.
+ *
+ * That hook used to call `getListingDetail`, which fetches tags, states and
+ * dates the `<head>` never uses — and did so as a *second* full fetch, because
+ * the page's own call passes a viewer and so shares nothing with it. This is
+ * one narrow query, request-cached, applying the same public-visibility rule
+ * the old call got implicitly by passing no viewer.
+ */
+export const getListingMeta = cache(
+  async (slug: string): Promise<ListingMeta | null> => {
+    const [row] = await db
+      .select({
+        title: listings.title,
+        slug: listings.slug,
+        description: listings.description,
+        imageUrl: listings.imageUrl,
+      })
+      .from(listings)
+      .innerJoin(profiles, eq(profiles.id, listings.trainerId))
+      .where(
+        and(
+          eq(listings.slug, slug),
+          eq(listings.status, "approved"),
+          eq(listings.active, true),
+          eq(profiles.accountStatus, "active"),
+        ),
+      )
+      .limit(1);
+
+    return row ?? null;
+  },
+);
 
 export type ListingDetail = Listing & {
   trainerName: string | null;
@@ -206,9 +287,17 @@ export type ListingDetail = Listing & {
  * Listing for the public detail page. Visible if approved+active, OR if the
  * viewer owns it / is an admin (so trainers can preview pending listings).
  */
+export type ListingViewer = { id: string; isAdmin: boolean } | null;
+
 export async function getListingDetail(
   slug: string,
-  viewer?: { id: string; isAdmin: boolean } | null,
+  /**
+   * Accepts a promise so the caller can start the viewer lookup and the
+   * listing fetch together — the viewer is only needed for the visibility
+   * check below, which happens after the row is in hand, so making the caller
+   * await it first was a wasted round-trip.
+   */
+  viewer?: ListingViewer | Promise<ListingViewer>,
 ): Promise<ListingDetail | null> {
   const [row] = await db
     .select({
@@ -218,12 +307,29 @@ export async function getListingDetail(
       trainerBio: profiles.bio,
       trainerWebsite: profiles.websiteUrl,
       trainerAccountStatus: profiles.accountStatus,
+      tagList: sql<
+        { id: string; name: string; category: string }[]
+      >`coalesce((
+        select json_agg(
+          json_build_object('id', t.id, 'name', t.name, 'category', t.category)
+          order by t.name
+        )
+        from ${listingTags} lt
+        join ${tags} t on t.id = lt.tag_id
+        where lt.listing_id = ${outerListingId}
+      ), '[]'::json)`,
+      states: stateCodesJson,
+      dates: datesJson,
     })
     .from(listings)
     .innerJoin(profiles, eq(profiles.id, listings.trainerId))
     .where(eq(listings.slug, slug))
     .limit(1);
 
+  // Settled before the early return below, so a caller-supplied promise is
+  // never left floating on the not-found path. Both queries are already in
+  // flight by now, so this costs nothing.
+  const v = await viewer;
   if (!row) return null;
 
   const isPublic =
@@ -231,22 +337,8 @@ export async function getListingDetail(
     row.listing.active &&
     row.trainerAccountStatus === "active";
   const canView =
-    isPublic ||
-    (viewer && (viewer.isAdmin || viewer.id === row.listing.trainerId));
+    isPublic || (v && (v.isAdmin || v.id === row.listing.trainerId));
   if (!canView) return null;
-
-  const tagList = await db
-    .select({ id: tags.id, name: tags.name, category: tags.category })
-    .from(listingTags)
-    .innerJoin(tags, eq(tags.id, listingTags.tagId))
-    .where(eq(listingTags.listingId, row.listing.id));
-
-  const stateRows = await db
-    .select({ stateCode: listingStates.stateCode })
-    .from(listingStates)
-    .where(eq(listingStates.listingId, row.listing.id));
-
-  const dateRows = await selectDatesFor([row.listing.id]);
 
   return {
     ...row.listing,
@@ -254,11 +346,8 @@ export async function getListingDetail(
     trainerCredentials: row.trainerCredentials,
     trainerBio: row.trainerBio,
     trainerWebsite: row.trainerWebsite,
-    tagList,
-    states: stateRows.map((s) => s.stateCode),
-    dates: dateRows.map((d) => ({
-      startDate: d.startDate,
-      endDate: d.endDate,
-    })),
+    tagList: row.tagList,
+    states: row.states,
+    dates: row.dates,
   };
 }
