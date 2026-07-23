@@ -18,6 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { DESCRIPTION_MAX, LISTING_FORMATS } from "@/lib/constants";
 import {
   addDays,
+  dateOverlapError,
+  effectiveEnd,
   END_DATE_ORDER_ERROR,
   MAX_LISTING_DATES,
   START_DATE_PAST_ERROR,
@@ -87,6 +89,79 @@ const blankRow = (): DateRow => ({
 function toDateRows(ranges: readonly DateRange[] | undefined): DateRow[] {
   if (!ranges?.length) return [blankRow()];
   return ranges.map((r) => ({ ...r, key: nextRowKey++ }));
+}
+
+/** Per-row verdict: the two messages to show, and the `min` for the start input. */
+type RowCheck = {
+  start: string | null;
+  end: string | null;
+  minStart: string | undefined;
+};
+
+/**
+ * The same rules the server enforces, checked per row as the trainer types.
+ * ISO date strings (yyyy-mm-dd) compare correctly as plain strings.
+ *
+ * A run that's already saved keeps its date even once it's past — only a new or
+ * edited one has to be in the future. The rows also have to run in sequence:
+ * each start comes after the last day every earlier row claims, which is that
+ * row's end date, or its start date when it has none.
+ *
+ * @param today the trainer's local date, or "" before hydration.
+ * @param savedStarts start dates already on the listing, exempt from both rules.
+ */
+function checkDateRows(
+  rows: readonly DateRow[],
+  {
+    onDemand,
+    today,
+    savedStarts,
+  }: { onDemand: boolean; today: string; savedStarts: ReadonlySet<string> },
+): RowCheck[] {
+  // Running maximum across the rows above, and whether it belongs to a run the
+  // trainer hasn't touched — two untouched runs keep the order they were saved
+  // with, so an old listing with overlapping dates stays editable.
+  let latestEnd: string | null = null;
+  let latestEndSaved = false;
+
+  return rows.map((row) => {
+    if (onDemand) return { start: null, end: null, minStart: undefined };
+
+    const saved = savedStarts.has(row.startDate);
+    const nextFree = latestEnd ? addDays(latestEnd, 1) : "";
+    // The earliest this row may start: after everything before it, and not in
+    // the past. A saved date stays as-is even if it now breaks either rule.
+    const minStart = saved
+      ? undefined
+      : [today, nextFree].sort().at(-1) || undefined;
+
+    let start: string | null = null;
+    if (row.startDate && !saved && today && row.startDate < today) {
+      start = START_DATE_PAST_ERROR;
+    } else if (
+      row.startDate &&
+      latestEnd &&
+      row.startDate <= latestEnd &&
+      !(saved && latestEndSaved)
+    ) {
+      start = dateOverlapError(latestEnd);
+    }
+
+    const end =
+      row.startDate && row.endDate && row.endDate < addDays(row.startDate, 1)
+        ? END_DATE_ORDER_ERROR
+        : null;
+
+    if (row.startDate) {
+      const rowEnd = effectiveEnd(row);
+      if (!latestEnd || rowEnd > latestEnd) {
+        latestEnd = rowEnd;
+        latestEndSaved = saved;
+      }
+    }
+
+    return { start, end, minStart };
+  });
 }
 
 function FieldError({ messages }: { messages?: string[] }) {
@@ -240,27 +315,10 @@ export function ListingForm({
   const showStates =
     (format === "In-Person" || format === "Hybrid") && !isOnline;
 
-  /**
-   * The same two rules the server enforces, checked per row as the trainer
-   * types. ISO date strings (yyyy-mm-dd) compare correctly as plain strings.
-   *
-   * A run that's already saved keeps its date even once it's past — only a new
-   * or edited one has to be in the future.
-   */
-  const rowErrors = dateRows.map((row) => {
-    if (onDemand) return { start: null, end: null };
-    const start =
-      row.startDate &&
-      today &&
-      !savedStartSet.has(row.startDate) &&
-      row.startDate < today
-        ? START_DATE_PAST_ERROR
-        : null;
-    const end =
-      row.startDate && row.endDate && row.endDate < addDays(row.startDate, 1)
-        ? END_DATE_ORDER_ERROR
-        : null;
-    return { start, end };
+  const rowErrors = checkDateRows(dateRows, {
+    onDemand,
+    today,
+    savedStarts: savedStartSet,
   });
 
   const hasRowError = rowErrors.some((e) => e.start || e.end);
@@ -404,10 +462,9 @@ export function ListingForm({
             {dateRows.map((row, i) => {
               const errors = rowErrors[i];
               // A saved date stays editable even if it's past; a fresh row is
-              // held to today, matching what the server accepts.
-              const minStart = savedStartSet.has(row.startDate)
-                ? undefined
-                : today || undefined;
+              // held to the day after the previous run — or to today when it's
+              // the first — matching what the server accepts.
+              const minStart = errors.minStart;
 
               return (
                 <div

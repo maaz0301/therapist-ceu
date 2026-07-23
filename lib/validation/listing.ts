@@ -3,7 +3,9 @@ import { z } from "zod";
 import { DESCRIPTION_MAX, LISTING_FORMATS, US_STATES } from "@/lib/constants";
 import {
   addDays,
+  dateOverlapError,
   earliestAcceptableStart,
+  effectiveEnd,
   END_DATE_ORDER_ERROR,
   MAX_LISTING_DATES,
   START_DATE_PAST_ERROR,
@@ -155,6 +157,15 @@ export function buildListingSchema(originalStartDates?: readonly string[] | null
       // instead. The form also checks these live, per row, as you type.
       const earliest = earliestAcceptableStart();
       const seen = new Set<string>();
+      // The last day any earlier row already claims, so the next run can be
+      // held to starting after it. Tracked as a running maximum rather than
+      // just the previous row's end, so a row typed out of order is still
+      // measured against the whole schedule before it.
+      let latestEnd: string | null = null;
+      // Whether that day comes from a run the trainer hasn't touched. Two
+      // untouched runs keep whatever ordering they were saved with — this rule
+      // is for what's being added now, not a reason to block an unrelated edit.
+      let latestEndSaved = false;
 
       rows.forEach((row, i) => {
         const label = rows.length > 1 ? `Date ${i + 1}: ` : "";
@@ -187,14 +198,32 @@ export function buildListingSchema(originalStartDates?: readonly string[] | null
           });
         }
 
+        const rowSaved = saved.has(row.startDate);
+
         if (seen.has(row.startDate)) {
           ctx.addIssue({
             code: "custom",
             path: ["dates"],
             message: `${label}this start date is already listed.`,
           });
+        } else if (
+          latestEnd &&
+          row.startDate <= latestEnd &&
+          !(rowSaved && latestEndSaved)
+        ) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["dates"],
+            message: `${label}${dateOverlapError(latestEnd)}`,
+          });
         }
         seen.add(row.startDate);
+
+        const end = effectiveEnd(row);
+        if (!latestEnd || end > latestEnd) {
+          latestEnd = end;
+          latestEndSaved = rowSaved;
+        }
       });
     }
 

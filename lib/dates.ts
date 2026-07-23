@@ -37,6 +37,18 @@ export const END_DATE_ORDER_ERROR =
   "End date must be at least one day after the start date.";
 
 /**
+ * A run can't begin before the one before it has finished. `previousEnd` is the
+ * last day an earlier row already claims — its end date, or its start date when
+ * no end was given (see {@link effectiveEnd}).
+ */
+export function dateOverlapError(previousEnd: string): string {
+  return `Start date must be after the previous date ends (${formatDateRange({
+    startDate: previousEnd,
+    endDate: null,
+  })}).`;
+}
+
+/**
  * Upper bound on how many runs one listing may schedule. High enough for a
  * monthly cohort booked two years out, low enough that a scripted submit can't
  * push thousands of rows through the form.
