@@ -11,6 +11,9 @@ import { PaymentFailedEmail } from "@/lib/email/templates/payment-failed";
 import { AccountDeactivatedEmail } from "@/lib/email/templates/account-deactivated";
 import { RenewalReminderEmail } from "@/lib/email/templates/renewal-reminder";
 import { TrainerInviteEmail } from "@/lib/email/templates/trainer-invite";
+import { ConfirmEmail } from "@/lib/email/templates/confirm-email";
+import { MagicLinkEmail } from "@/lib/email/templates/magic-link";
+import { ResetPasswordEmail } from "@/lib/email/templates/reset-password";
 
 /** Looks up a user's login email by profile/user id via the service role. */
 export async function getUserEmail(userId: string): Promise<string | null> {
@@ -207,6 +210,40 @@ export async function sendRenewalReminderEmail(
       renewalDate: args.renewalDate,
       billingUrl: `${await getBaseUrl()}/billing`,
     }),
+  });
+}
+
+export async function sendConfirmEmail(
+  to: string,
+  confirmUrl: string,
+  name?: string | null,
+) {
+  return sendEmail({
+    to,
+    subject: "Confirm your email address for TherapistCEU",
+    react: ConfirmEmail({ name, confirmUrl }),
+  });
+}
+
+export async function sendMagicLinkEmail(
+  to: string,
+  magicLinkUrl: string,
+) {
+  return sendEmail({
+    to,
+    subject: "Your TherapistCEU login link",
+    react: MagicLinkEmail({ magicLinkUrl }),
+  });
+}
+
+export async function sendResetPasswordEmail(
+  to: string,
+  resetUrl: string,
+) {
+  return sendEmail({
+    to,
+    subject: "Reset your TherapistCEU password",
+    react: ResetPasswordEmail({ resetUrl }),
   });
 }
 

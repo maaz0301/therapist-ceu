@@ -19,20 +19,22 @@ export function AccountDeactivatedEmail({
 
   return (
     <EmailLayout preview="Your TherapistCEU listings have been deactivated">
-      <Text style={emailStyles.heading}>Your listings have been deactivated</Text>
+      <Text style={emailStyles.heading}>Your listings have been deactivated ⏸️</Text>
       <Text style={emailStyles.paragraph}>
         Hi{firstName ? ` ${firstName}` : ""}, your subscription has lapsed, so
-        your training listings are no longer visible in the public directory.
+        your training listings are currently hidden from the public directory.
       </Text>
-      <Text style={emailStyles.muted}>
-        Your listings haven&apos;t been deleted — resubscribe anytime and
-        they&apos;ll go right back up.
+      <Text style={emailStyles.warningBox}>
+        Your listings have not been deleted — resubscribe anytime to instantly reactivate them.
       </Text>
       <Section style={emailStyles.ctaSection}>
         <Link href={billingUrl} style={emailButton}>
-          Resubscribe
+          Reactivate listings
         </Link>
       </Section>
+      <Text style={emailStyles.muted}>
+        Questions? Just reply to this email — we&apos;re happy to help.
+      </Text>
     </EmailLayout>
   );
 }

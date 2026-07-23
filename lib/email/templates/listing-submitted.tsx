@@ -21,12 +21,12 @@ export function ListingSubmittedEmail({
 
   return (
     <EmailLayout preview={`We received your listing: ${listingTitle}`}>
-      <Text style={emailStyles.heading}>Listing submitted for review</Text>
+      <Text style={emailStyles.heading}>Listing submitted for review 📝</Text>
       <Text style={emailStyles.paragraph}>
         Hi{firstName ? ` ${firstName}` : ""}, thanks for submitting your
-        training. We&apos;ve received it and our team will review it shortly.
+        training listing. We&apos;ve received it and our team will review it shortly.
       </Text>
-      <Text style={emailStyles.quote}>{listingTitle}</Text>
+      <Text style={emailStyles.cardBox}>{listingTitle}</Text>
       <Text style={emailStyles.muted}>
         Most listings are reviewed within one business day. We&apos;ll email you
         as soon as it&apos;s approved and live in the directory.
@@ -36,6 +36,9 @@ export function ListingSubmittedEmail({
           View your listings
         </Link>
       </Section>
+      <Text style={emailStyles.muted}>
+        Questions? Just reply to this email — we&apos;re happy to help.
+      </Text>
     </EmailLayout>
   );
 }

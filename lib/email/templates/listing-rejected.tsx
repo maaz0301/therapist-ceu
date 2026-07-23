@@ -23,25 +23,28 @@ export function ListingRejectedEmail({
 
   return (
     <EmailLayout preview={`Action needed on your listing: ${listingTitle}`}>
-      <Text style={emailStyles.heading}>Your listing needs a few changes</Text>
+      <Text style={emailStyles.heading}>Action needed on your listing ✏️</Text>
       <Text style={emailStyles.paragraph}>
         Hi{firstName ? ` ${firstName}` : ""}, thanks for submitting your
-        training. Before we can publish it, we need a few adjustments.
+        training. Before we can publish it, a few quick adjustments are needed:
       </Text>
-      <Text style={emailStyles.quote}>{listingTitle}</Text>
-      <Text style={{ ...emailStyles.paragraph, fontWeight: 600 }}>
-        What to update:
+      <Text style={emailStyles.cardBox}>{listingTitle}</Text>
+      <Text style={{ ...emailStyles.paragraph, fontWeight: 600, marginBottom: "8px" }}>
+        Feedback from our team:
       </Text>
-      <Text style={emailStyles.quote}>{reason}</Text>
+      <Text style={emailStyles.warningBox}>{reason}</Text>
       <Text style={emailStyles.muted}>
-        Make the changes and resubmit — editing your listing automatically sends
-        it back to us for another review.
+        Make the required updates and resubmit — saving your edits automatically sends
+        the listing back to our team for a fast review.
       </Text>
       <Section style={emailStyles.ctaSection}>
         <Link href={editUrl} style={emailButton}>
-          Edit and resubmit
+          Edit &amp; resubmit listing
         </Link>
       </Section>
+      <Text style={emailStyles.muted}>
+        Questions? Just reply to this email — we&apos;re happy to help.
+      </Text>
     </EmailLayout>
   );
 }

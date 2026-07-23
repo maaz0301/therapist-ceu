@@ -19,21 +19,26 @@ export function PaymentFailedEmail({
 
   return (
     <EmailLayout preview="We couldn't process your TherapistCEU payment">
-      <Text style={emailStyles.heading}>We couldn&apos;t process your payment</Text>
+      <Text style={emailStyles.heading}>Payment update required ⚠️</Text>
       <Text style={emailStyles.paragraph}>
-        Hi{firstName ? ` ${firstName}` : ""}, your most recent subscription
-        payment for TherapistCEU didn&apos;t go through. Please update your
-        billing details to keep your listings live.
+        Hi{firstName ? ` ${firstName}` : ""}, your recent subscription
+        payment for TherapistCEU could not be processed.
+      </Text>
+      <Text style={emailStyles.alertBox}>
+        Please update your payment method to keep your training listings live and active in the directory.
       </Text>
       <Text style={emailStyles.muted}>
-        If this isn&apos;t resolved, your listings will be automatically
-        deactivated when your subscription lapses.
+        If your payment details are not updated, your listings will be automatically
+        deactivated when your grace period ends.
       </Text>
       <Section style={emailStyles.ctaSection}>
         <Link href={billingUrl} style={emailButton}>
           Update billing details
         </Link>
       </Section>
+      <Text style={emailStyles.muted}>
+        Questions? Just reply to this email — we&apos;re happy to help.
+      </Text>
     </EmailLayout>
   );
 }

@@ -20,20 +20,20 @@ export function WelcomeEmail({
   return (
     <EmailLayout preview="Welcome to TherapistCEU — let's get your trainings in front of therapists.">
       <Text style={emailStyles.heading}>
-        Welcome{firstName ? `, ${firstName}` : ""}!
+        Welcome{firstName ? `, ${firstName}` : ""}! 🎉
       </Text>
       <Text style={emailStyles.paragraph}>
         Thanks for joining TherapistCEU. You can now create listings for your
-        CEU and professional trainings and reach therapists who are actively
+        CEU and professional trainings to reach therapists who are actively
         searching for continuing education.
       </Text>
       <Text style={emailStyles.paragraph}>
-        Here&apos;s how to get started:
+        <strong>Here&apos;s how to get started:</strong>
       </Text>
       <Text style={emailStyles.muted}>
         1. Create your first listing with dates, format, price, and CE details.
         <br />
-        2. Our team reviews it (usually within a day).
+        2. Our team reviews it (usually within 1 business day).
         <br />
         3. Once approved, it goes live in the public directory.
       </Text>

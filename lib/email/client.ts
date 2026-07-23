@@ -42,7 +42,9 @@ function getSmtpTransport(): Transporter | null {
 
   const port = Number(process.env.SMTP_PORT ?? 587);
   const user = process.env.SMTP_USER ?? process.env.SMTP_FROM_EMAIL;
-  const pass = process.env.SMTP_PASS;
+  const pass = process.env.SMTP_PASS
+    ? process.env.SMTP_PASS.replace(/^["']|["']$/g, "").replace(/\s+/g, "")
+    : undefined;
 
   smtp = nodemailer.createTransport({
     host,
@@ -50,6 +52,9 @@ function getSmtpTransport(): Transporter | null {
     // 465 is implicit TLS; 587/25 start plaintext and upgrade via STARTTLS.
     secure: port === 465,
     auth: user && pass ? { user, pass } : undefined,
+    connectionTimeout: 10000,
+    greetingTimeout: 5000,
+    socketTimeout: 10000,
   });
   return smtp;
 }

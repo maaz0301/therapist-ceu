@@ -21,21 +21,26 @@ export function RenewalReminderEmail({
 
   return (
     <EmailLayout preview={`Your TherapistCEU subscription renews on ${renewalDate}`}>
-      <Text style={emailStyles.heading}>Your subscription renews soon</Text>
+      <Text style={emailStyles.heading}>Your subscription renews soon 📅</Text>
       <Text style={emailStyles.paragraph}>
-        Hi{firstName ? ` ${firstName}` : ""}, just a heads-up — your
-        TherapistCEU subscription will renew on{" "}
-        <strong>{renewalDate}</strong>.
+        Hi{firstName ? ` ${firstName}` : ""}, just a quick heads-up that your
+        TherapistCEU subscription is scheduled to auto-renew soon.
+      </Text>
+      <Text style={emailStyles.cardBox}>
+        Renewal Date: {renewalDate}
       </Text>
       <Text style={emailStyles.muted}>
-        No action needed if everything looks good. You can review or change
-        your plan anytime from your billing page.
+        No action is required if everything looks good. You can review your details or modify
+        your subscription anytime from your billing page.
       </Text>
       <Section style={emailStyles.ctaSection}>
         <Link href={billingUrl} style={emailButton}>
           Manage subscription
         </Link>
       </Section>
+      <Text style={emailStyles.muted}>
+        Questions? Just reply to this email — we&apos;re happy to help.
+      </Text>
     </EmailLayout>
   );
 }
