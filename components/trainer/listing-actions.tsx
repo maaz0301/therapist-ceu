@@ -4,6 +4,7 @@ import { Eye, Pencil, Power, PowerOff, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
+import { LinkPendingIcon } from "@/components/ui/link-pending-icon";
 import { deleteListing, setListingActive } from "@/lib/actions/listings";
 
 export function ListingActions({
@@ -19,14 +20,24 @@ export function ListingActions({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <ButtonLink variant="outline" size="sm" href={`/listings/${slug}/edit`}>
-        <Pencil data-icon="inline-start" />
+      <ButtonLink
+        variant="outline"
+        size="sm"
+        href={`/listings/${slug}/edit`}
+        prefetch
+      >
+        <LinkPendingIcon icon={Pencil} />
         Edit
       </ButtonLink>
 
       {canPreview ? (
-        <ButtonLink variant="ghost" size="sm" href={`/listings/${slug}`}>
-          <Eye data-icon="inline-start" />
+        <ButtonLink
+          variant="ghost"
+          size="sm"
+          href={`/listings/${slug}`}
+          prefetch
+        >
+          <LinkPendingIcon icon={Eye} />
           Preview
         </ButtonLink>
       ) : null}
