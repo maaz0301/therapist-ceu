@@ -9,11 +9,11 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { Sheet, SheetTrigger, SheetContent, SheetHeader } from "@/components/ui/sheet";
 import { signOutAction } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
-import {
-  getDashboardIcon,
-  type DashboardNavItem,
-  type DashboardAccount,
-} from "@/components/dashboard-shell";
+import { DashboardNav } from "@/components/dashboard-nav";
+import type {
+  DashboardNavItem,
+  DashboardAccount,
+} from "@/components/dashboard-nav-items";
 
 export function DashboardMobileNav({
   areaLabel,
@@ -58,24 +58,7 @@ export function DashboardMobileNav({
             {areaLabel}
           </span>
         </div>
-        <nav className="flex flex-1 flex-col gap-1 px-3">
-          {navItems.map((item) => {
-            const Icon = getDashboardIcon(item.iconName);
-            return (
-              <ButtonLink
-                key={item.href}
-                variant="ghost"
-                size="sm"
-                className="justify-start hover:bg-clay/10 hover:text-clay-deep"
-                href={item.href}
-                onClick={() => setOpen(false)}
-              >
-                <Icon data-icon="inline-start" className="mr-2 size-4" />
-                {item.label}
-              </ButtonLink>
-            );
-          })}
-        </nav>
+        <DashboardNav navItems={navItems} onNavigate={() => setOpen(false)} />
         <div className="flex flex-col gap-1 border-t border-border p-3 mt-auto bg-card">
           {account ? (
             <div className="px-2 pt-1 pb-2">

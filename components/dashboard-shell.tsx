@@ -1,51 +1,21 @@
-import {
-  LogOut,
-  LayoutDashboard,
-  ListChecks,
-  BarChart3,
-  CreditCard,
-  ClipboardCheck,
-  Users,
-  Tags,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { signOutAction } from "@/lib/actions/auth";
 import { DashboardMobileNav } from "@/components/dashboard-mobile-nav";
+import { DashboardNav } from "@/components/dashboard-nav";
+import type {
+  DashboardAccount,
+  DashboardNavItem,
+} from "@/components/dashboard-nav-items";
 
-export type DashboardNavItem = {
-  href: string;
-  label: string;
-  iconName: string;
-};
-
-export type DashboardAccount = {
-  name: string;
-  email: string;
-};
-
-export function getDashboardIcon(iconName: string) {
-  switch (iconName) {
-    case "dashboard":
-      return LayoutDashboard;
-    case "listings":
-      return ListChecks;
-    case "analytics":
-      return BarChart3;
-    case "billing":
-      return CreditCard;
-    case "admin-listings":
-      return ClipboardCheck;
-    case "trainers":
-      return Users;
-    case "tags":
-      return Tags;
-    default:
-      return LayoutDashboard;
-  }
-}
+export { getDashboardIcon } from "@/components/dashboard-nav-items";
+export type {
+  DashboardAccount,
+  DashboardNavItem,
+} from "@/components/dashboard-nav-items";
 
 export function DashboardShell({
   areaLabel,
@@ -69,33 +39,7 @@ export function DashboardShell({
             {areaLabel}
           </span>
         </div>
-        <nav className="flex flex-1 flex-col gap-1 px-3">
-          {navItems.map((item) => {
-            const Icon = getDashboardIcon(item.iconName);
-            return (
-              <ButtonLink
-                key={item.href}
-                variant="ghost"
-                size="sm"
-                className="justify-start hover:bg-clay/10 hover:text-clay-deep"
-                href={item.href}
-                /**
-                 * These are dynamic routes, so the default prefetch stops at
-                 * the `loading.tsx` boundary — enough to show a spinner
-                 * instantly, but the queries still only start on click. A full
-                 * prefetch warms the data too, so switching tabs renders from
-                 * the router cache instead of waiting on the round-trip that
-                 * made the dashboard feel slow. There are only a handful of
-                 * tabs, and `staleTimes.dynamic` keeps them from refetching.
-                 */
-                prefetch
-              >
-                <Icon data-icon="inline-start" />
-                {item.label}
-              </ButtonLink>
-            );
-          })}
-        </nav>
+        <DashboardNav navItems={navItems} />
         <div className="flex flex-col gap-1 border-t border-border p-3">
           {account ? (
             <div className="px-2 pt-1 pb-2">
