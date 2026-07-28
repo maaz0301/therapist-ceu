@@ -59,7 +59,7 @@ const BANNERS: Record<string, { tone: "success" | "warn"; text: React.ReactNode 
     tone: "warn",
     text: (
       <>
-        Listing saved as a draft — you've reached your plan's active listing limit.{" "}
+        Listing saved as a draft — you&apos;ve reached your plan&apos;s active listing limit.{" "}
         <Link href="/billing" className="underline font-medium hover:text-clay">
           Upgrade to Pro
         </Link>{" "}
@@ -72,7 +72,7 @@ const BANNERS: Record<string, { tone: "success" | "warn"; text: React.ReactNode 
     tone: "warn",
     text: (
       <>
-        You've reached your active listing limit.{" "}
+        You&apos;ve reached your active listing limit.{" "}
         <Link href="/billing" className="underline font-medium hover:text-clay">
           Upgrade to Pro
         </Link>{" "}
