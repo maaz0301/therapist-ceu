@@ -214,7 +214,7 @@ const LISTINGS: SeedListing[] = [
     ceCount: 6,
     accreditingBody: "APT",
     tagSlugs: [
-      slugify("Play therapy (CCPT, sand tray, filial)"),
+      slugify("Play therapy (CCPT, sand tray)"),
       slugify("Children (under 12)"),
     ],
   },
@@ -288,7 +288,7 @@ const LISTINGS: SeedListing[] = [
     hasCeu: true,
     ceCount: 12,
     accreditingBody: "ASWB",
-    tagSlugs: [slugify("IFS/Parts work"), slugify("Trauma")],
+    tagSlugs: [slugify("IFS/Parts work/Ego states"), slugify("Trauma")],
   },
 ];
 

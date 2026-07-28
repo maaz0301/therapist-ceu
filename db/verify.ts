@@ -5,6 +5,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
 import * as schema from "@/db/schema";
+import { TAG_TAXONOMY } from "@/lib/constants";
 
 /**
  * Phase 1 smoke test: confirms seed data exists (via the elevated Drizzle
@@ -44,17 +45,19 @@ async function main() {
     .select("id", { count: "exact", head: true });
   const anonTags = await anon
     .from("tags")
-    .select("id", { count: "exact", head: true });
+    .select("id", { count: "exact", head: true })
+    .is("suggested_by", null);
 
   console.log("\n— Anonymous (RLS-enforced) counts —");
   console.log(`  listings visible: ${anonListings.count} (expect 6)`);
   console.log(`  profiles visible: ${anonProfiles.count} (expect 0)`);
-  console.log(`  tags visible:     ${anonTags.count} (expect 50)`);
+  const expectedTagCount = Object.values(TAG_TAXONOMY).flat().length;
+  console.log(`  tags visible:     ${anonTags.count} (expect ${expectedTagCount})`);
 
   const ok =
     anonListings.count === 6 &&
     anonProfiles.count === 0 &&
-    anonTags.count === 50;
+    anonTags.count === expectedTagCount;
   console.log(`\nRLS check: ${ok ? "PASS ✅" : "FAIL ❌"}`);
 
   await client.end();
