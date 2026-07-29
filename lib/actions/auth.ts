@@ -7,8 +7,9 @@ import { z } from "zod";
 import { profiles } from "@/db/schema";
 import { db } from "@/lib/db";
 import { getBaseUrl } from "@/lib/site-url";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { sendWelcomeEmail } from "@/lib/email/send";
+import { sendMagicLinkEmail, sendWelcomeEmail } from "@/lib/email/send";
 
 export type AuthActionState = {
   error?: string;
@@ -173,15 +174,40 @@ export async function signInWithMagicLinkAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid email." };
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signInWithOtp({
-    email: parsed.data,
-    options: {
-      emailRedirectTo: `${await getBaseUrl()}/auth/callback?next=/dashboard`,
-    },
-  });
+  const email = parsed.data;
 
-  if (error) return { error: error.message };
+  try {
+    const adminSupabase = createSupabaseAdminClient();
+    const { data, error } = await adminSupabase.auth.admin.generateLink({
+      type: "magiclink",
+      email,
+      options: {
+        redirectTo: `${await getBaseUrl()}/auth/callback?next=/dashboard`,
+      },
+    });
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    const actionLink = data.properties?.action_link;
+    if (actionLink) {
+      await sendMagicLinkEmail(email, actionLink);
+    }
+  } catch (e) {
+    console.error("[signInWithMagicLinkAction] Error generating magic link:", e);
+    // Fallback to standard Supabase OTP if admin client fails
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${await getBaseUrl()}/auth/callback?next=/dashboard`,
+      },
+    });
+
+    if (error) return { error: error.message };
+  }
+
   return { success: "Check your email for a magic login link." };
 }
 
