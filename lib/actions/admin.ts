@@ -82,7 +82,7 @@ export async function approveListing(id: string): Promise<ActionResult> {
     .set({ status: "approved", active: true, rejectionReason: null })
     .where(eq(listings.id, id));
 
-  // Don't make the admin wait on a name lookup + the Resend round-trip.
+  // Don't make the admin wait on a name lookup + the SendGrid round-trip.
   after(async () => {
     await sendListingApprovedEmail(listing.trainerId, {
       name: await trainerName(listing.trainerId),

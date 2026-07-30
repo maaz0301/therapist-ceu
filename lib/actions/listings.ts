@@ -109,7 +109,7 @@ export async function createListing(
 
     await replaceListingRelations(created.id, data, usableTagIds);
 
-    // Two third-party round-trips (user lookup + Resend). Run them after the
+    // Two third-party round-trips (user lookup + SendGrid). Run them after the
     // response so the trainer isn't held on the "Create listing" spinner.
     after(async () => {
       await sendListingSubmittedEmail(profile.id, {

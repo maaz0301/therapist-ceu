@@ -2,7 +2,7 @@ import "server-only";
 
 import { render } from "@react-email/components";
 import nodemailer, { type Transporter } from "nodemailer";
-import { Resend } from "resend";
+import sgMail from "@sendgrid/mail";
 import type { ReactElement } from "react";
 
 /**
@@ -11,7 +11,7 @@ import type { ReactElement } from "react";
  * Two providers are supported, picked in this order:
  *   1. SMTP  — set SMTP_HOST (+ SMTP_USER / SMTP_PASS). Works with Gmail,
  *      Fastmail, SES, or any relay.
- *   2. Resend — set RESEND_API_KEY.
+ *   2. SendGrid — set SENDGRID_API_KEY.
  *
  * - No-ops gracefully (logs) when neither is configured, so local dev and
  *   preview environments work without sending real mail.
@@ -29,9 +29,10 @@ function formatFrom(name: string | undefined, address: string): string {
 }
 
 function resolveFrom(): string {
+  if (process.env.EMAIL_FROM) return process.env.EMAIL_FROM;
   const address = process.env.SMTP_FROM_EMAIL ?? process.env.SMTP_USER;
   if (address) return formatFrom(process.env.SMTP_FROM_NAME, address);
-  return process.env.EMAIL_FROM ?? "TherapistCEU <onboarding@resend.dev>";
+  return "TherapistCEU <Therapistceu@gmail.com>";
 }
 
 let smtp: Transporter | null = null;
@@ -59,17 +60,20 @@ function getSmtpTransport(): Transporter | null {
   return smtp;
 }
 
-let resend: Resend | null = null;
-function getResendClient(): Resend | null {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return null;
-  if (!resend) resend = new Resend(key);
-  return resend;
+let sendgridConfigured = false;
+function setupSendGrid(): boolean {
+  const key = process.env.SENDGRID_API_KEY;
+  if (!key) return false;
+  if (!sendgridConfigured) {
+    sgMail.setApiKey(key);
+    sendgridConfigured = true;
+  }
+  return true;
 }
 
 /** True when a mail provider is wired up and sends will actually go out. */
 export function isEmailConfigured(): boolean {
-  return Boolean(process.env.SMTP_HOST || process.env.RESEND_API_KEY);
+  return Boolean(process.env.SMTP_HOST || process.env.SENDGRID_API_KEY);
 }
 
 export type SendEmailArgs = {
@@ -110,30 +114,33 @@ export async function sendEmail({
     }
   }
 
-  const client = getResendClient();
+  const isSendGridReady = setupSendGrid();
 
-  if (!client) {
+  if (!isSendGridReady) {
     console.warn(
-      `[email] no mail provider configured (set SMTP_HOST or RESEND_API_KEY) — skipping "${subject}" to ${to}`,
+      `[email] no mail provider configured (set SMTP_HOST or SENDGRID_API_KEY) — skipping "${subject}" to ${to}`,
     );
     return { ok: false, skipped: true };
   }
 
   try {
-    const { error } = await client.emails.send({
+    const [html, text] = await Promise.all([
+      render(react),
+      render(react, { plainText: true }),
+    ]);
+
+    await sgMail.send({
       from: resolveFrom(),
       to,
       subject,
-      react,
-      replyTo,
+      html,
+      text,
+      replyTo: replyTo || undefined,
     });
-    if (error) {
-      console.error(`[email] failed to send "${subject}" to ${to}:`, error);
-      return { ok: false };
-    }
     return { ok: true };
   } catch (err) {
-    console.error(`[email] threw sending "${subject}" to ${to}:`, err);
+    console.error(`[email] SendGrid send of "${subject}" to ${to} failed:`, err);
     return { ok: false };
   }
 }
+

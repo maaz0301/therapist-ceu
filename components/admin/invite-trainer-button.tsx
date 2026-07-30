@@ -135,7 +135,7 @@ export function InviteTrainerButton() {
                 <p className="text-xs text-muted-foreground">
                   This link is single-use and expires. To send invitations
                   automatically, configure <code>SMTP_HOST</code> (or{" "}
-                  <code>RESEND_API_KEY</code>) in the environment.
+                  <code>SENDGRID_API_KEY</code>) in the environment.
                 </p>
               </div>
 
