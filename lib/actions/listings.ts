@@ -43,6 +43,7 @@ export async function createListing(
   _prev: ListingFormState,
   formData: FormData,
 ): Promise<ListingFormState> {
+  let willActivate = false;
   try {
     const profile = await requireTrainer();
 
@@ -75,7 +76,7 @@ export async function createListing(
     // Tier gating: auto-publish if there is room, otherwise save as a draft.
     const subscription = getSubscriptionState(profile);
     const activeCount = await getActiveListingCount(profile.id);
-    const willActivate = canPublishMore(subscription, activeCount);
+    willActivate = canPublishMore(subscription, activeCount);
 
     let imageUrl: string | null = null;
     if (file) imageUrl = await uploadImage(file, profile.id);
@@ -120,12 +121,13 @@ export async function createListing(
 
     revalidatePath("/listings");
     revalidatePath("/dashboard");
-    redirect(`/listings?new=${willActivate ? "published" : "limit"}`);
   } catch (err: unknown) {
     if (err instanceof Error && err.message === "NEXT_REDIRECT") throw err;
     console.error("[createListing] failed:", err);
     throw err;
   }
+  
+  redirect(`/listings?new=${willActivate ? "published" : "limit"}`);
 }
 
 export async function updateListing(
