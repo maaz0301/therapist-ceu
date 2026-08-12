@@ -181,18 +181,24 @@ export async function signInWithMagicLinkAction(
     const { data, error } = await adminSupabase.auth.admin.generateLink({
       type: "magiclink",
       email,
-      options: {
-        redirectTo: `${await getBaseUrl()}/auth/callback?next=/dashboard`,
-      },
     });
 
     if (error) {
       return { error: error.message };
     }
 
-    const actionLink = data.properties?.action_link;
-    if (actionLink) {
-      await sendMagicLinkEmail(email, actionLink);
+    // Same reasoning as sendTrainerInviteEmail: this link is generated
+    // server-side via the admin client, so the signing-in browser has no
+    // PKCE code_verifier cookie. Route through /auth/confirm's stateless
+    // token_hash + verifyOtp instead of /auth/callback's code exchange,
+    // which would always fail with "link may have expired".
+    const hashedToken = data.properties?.hashed_token;
+    if (hashedToken) {
+      const magicLinkUrl =
+        `${await getBaseUrl()}/auth/confirm` +
+        `?token_hash=${encodeURIComponent(hashedToken)}` +
+        `&type=magiclink&next=${encodeURIComponent("/dashboard")}`;
+      await sendMagicLinkEmail(email, magicLinkUrl);
     }
   } catch (e) {
     console.error("[signInWithMagicLinkAction] Error generating magic link:", e);

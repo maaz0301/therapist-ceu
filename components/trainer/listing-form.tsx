@@ -39,6 +39,7 @@ type ListingAction = (
 
 // Visual order of the fields, used to focus the first one that fails.
 const FIELD_ORDER = [
+  "trainerId",
   "title",
   "description",
   "presenterNames",
@@ -174,11 +175,14 @@ export function ListingForm({
   groups,
   listing,
   submitLabel,
+  trainerOptions,
 }: {
   action: ListingAction;
   groups: GroupedTags;
   listing?: OwnedListing;
   submitLabel: string;
+  /** Admin-create mode: renders a trainer picker so the listing can be authored on their behalf. */
+  trainerOptions?: { id: string; name: string | null }[];
 }) {
   const [state, formAction] = useActionState(action, null);
 
@@ -238,7 +242,9 @@ export function ListingForm({
 
     // Land the trainer on the first problem rather than leaving them to hunt
     // for it — the form is long enough that errors can be off-screen.
-    const first = FIELD_ORDER.find((name) => fieldErrors[name]?.length);
+    const first = FIELD_ORDER.find(
+      (name) => (fieldErrors as Record<string, string[] | undefined>)[name]?.length,
+    );
     if (!first) return;
     const inputName = FIELD_INPUT_NAMES[first] ?? first;
     const el = form.querySelector<HTMLElement>(`[name="${inputName}"]`);
@@ -336,6 +342,28 @@ export function ListingForm({
       {/* Basics */}
       <Card className="space-y-4 p-6">
         <h2 className="font-heading text-lg font-semibold">Training details</h2>
+
+        {trainerOptions ? (
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="trainerId">Trainer</Label>
+            <NativeSelect
+              id="trainerId"
+              name="trainerId"
+              defaultValue={initial("trainerId")}
+              selectSize="sm"
+              className="w-full"
+              required
+            >
+              <option value="">Select a trainer…</option>
+              {trainerOptions.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name ?? "Unnamed trainer"}
+                </option>
+              ))}
+            </NativeSelect>
+            <FieldError messages={errorsFor("trainerId")} />
+          </div>
+        ) : null}
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="title">Title</Label>
