@@ -23,7 +23,7 @@ function parseUrlEnv(url: string | undefined, fallback: string) {
 }
 
 export const env = {
-  appUrl: parseUrlEnv(process.env.NEXT_PUBLIC_APP_URL, "https://therapist-ceu.vercel.app"),
+  appUrl: parseUrlEnv(process.env.NEXT_PUBLIC_APP_URL, "https://www.therapistceu.com"),
   // Fallback to placeholder to prevent Next.js static generation from crashing
   // when @supabase/ssr does new URL() during the build step.
   supabaseUrl: parseUrlEnv(process.env.NEXT_PUBLIC_SUPABASE_URL, "https://placeholder.supabase.co"),
