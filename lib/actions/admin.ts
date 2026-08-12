@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { redirect } from "next/navigation";
-import { eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { listings, listingTags, profiles, tags } from "@/db/schema";
@@ -15,10 +15,12 @@ import {
   sendTrainerInviteEmail,
 } from "@/lib/email/send";
 import {
+  generateUniqueSlug,
   getImageFile,
   parseListingForm,
   replaceListingRelations,
   submittedDates,
+  submittedValues,
   uploadImage,
   validateImageFile,
 } from "@/lib/listings/form-helpers";
@@ -171,6 +173,93 @@ export async function deleteListingAdmin(id: string): Promise<ActionResult> {
   await db.delete(listings).where(eq(listings.id, id));
   revalidateAdminListings();
   return { ok: true };
+}
+
+export async function adminCreateListing(
+  _prev: ListingFormState,
+  formData: FormData,
+): Promise<ListingFormState> {
+  await requireAdmin();
+
+  const values = submittedValues(formData);
+  const dates = submittedDates(formData);
+
+  const trainerId = String(formData.get("trainerId") ?? "");
+  const [trainer] = await db
+    .select({ id: profiles.id })
+    .from(profiles)
+    .where(and(eq(profiles.id, trainerId), eq(profiles.role, "trainer")))
+    .limit(1);
+  if (!trainer) {
+    return { fieldErrors: { trainerId: ["Choose a trainer."] }, values, dates };
+  }
+
+  const parsed = parseListingForm(formData);
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors, values, dates };
+  }
+  const data = parsed.data;
+
+  // Admin may attach any existing tag.
+  let usableTagIds: string[] = [];
+  if (data.tagIds.length > 0) {
+    const rows = await db
+      .select({ id: tags.id })
+      .from(tags)
+      .where(inArray(tags.id, data.tagIds));
+    usableTagIds = rows.map((r) => r.id);
+  }
+  if (usableTagIds.length === 0) {
+    return {
+      fieldErrors: { tagIds: ["Choose at least one valid topic tag."] },
+      values,
+      dates,
+    };
+  }
+
+  const file = getImageFile(formData);
+  if (file) {
+    const imageError = validateImageFile(file);
+    if (imageError) {
+      return { fieldErrors: { image: [imageError.error] }, values, dates };
+    }
+  }
+
+  let imageUrl: string | null = null;
+  if (file) imageUrl = await uploadImage(file, trainerId);
+
+  const slug = await generateUniqueSlug(data.title);
+
+  // Admin-authored listings skip the review queue — the admin is the reviewer.
+  const [created] = await db
+    .insert(listings)
+    .values({
+      trainerId,
+      slug,
+      status: "approved",
+      active: true,
+      title: data.title,
+      description: data.description,
+      presenterNames: data.presenterNames,
+      credentials: data.credentials,
+      format: data.format,
+      isOnline: data.isOnline,
+      onDemand: data.onDemand,
+      durationHours: data.durationHours ? String(data.durationHours) : null,
+      price: String(data.price),
+      registrationUrl: data.registrationUrl,
+      hasCeu: data.hasCeu,
+      ceCount: data.hasCeu ? data.ceCount : null,
+      accreditingBody: data.hasCeu ? data.accreditingBody : null,
+      websiteUrl: data.websiteUrl,
+      imageUrl,
+    })
+    .returning({ id: listings.id });
+
+  await replaceListingRelations(created.id, data, usableTagIds);
+
+  revalidateAdminListings();
+  redirect("/admin?created=1");
 }
 
 export async function adminUpdateListing(

@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/empty-state";
 import { FormatBadge } from "@/components/format-badge";
 import { ListingStatusBadge } from "@/components/listing-status-badge";
 import { Badge } from "@/components/ui/badge";
+import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ClearQueryParams } from "@/components/clear-query-params";
@@ -66,20 +67,25 @@ export default async function AdminListingsPage({
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6">
-      <div>
-        <h1 className="font-heading text-2xl font-bold text-foreground">
-          Listing queue
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Review, approve, and manage trainer listings.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-2xl font-bold text-foreground">
+            Listing queue
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Review, approve, and manage trainer listings.
+          </p>
+        </div>
+        <ButtonLink href="/admin/listings/new" variant="clay">
+          Add listing
+        </ButtonLink>
       </div>
 
-      {sp.updated ? (
+      {sp.updated || sp.created ? (
         <>
-          <ClearQueryParams params={["updated"]} />
+          <ClearQueryParams params={["updated", "created"]} />
           <div className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">
-            Listing updated.
+            {sp.created ? "Listing created." : "Listing updated."}
           </div>
         </>
       ) : null}
