@@ -1,0 +1,1 @@
+ALTER TABLE "listings" ALTER COLUMN "ce_count" SET DATA TYPE numeric;

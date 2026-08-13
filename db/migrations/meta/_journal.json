@@ -29,6 +29,13 @@
       "when": 1784638310448,
       "tag": "0003_naive_prism",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786638860205,
+      "tag": "0004_fresh_meltdown",
+      "breakpoints": true
     }
   ]
 }

@@ -4,7 +4,6 @@ import {
   customType,
   date,
   index,
-  integer,
   numeric,
   pgEnum,
   pgTable,
@@ -141,7 +140,7 @@ export const listings = pgTable(
     registrationUrl: text("registration_url").notNull(),
 
     hasCeu: boolean("has_ceu").notNull().default(false),
-    ceCount: integer("ce_count"),
+    ceCount: numeric("ce_count"),
     accreditingBody: text("accrediting_body"),
 
     websiteUrl: text("website_url"),

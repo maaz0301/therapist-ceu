@@ -13,7 +13,7 @@ export type ListingCardData = {
   trainerName: string;
   credentials?: string | null;
   format: ListingFormat;
-  ceCount?: number | null;
+  ceCount?: string | null;
   hasCeu: boolean;
   price: number;
   location: string;

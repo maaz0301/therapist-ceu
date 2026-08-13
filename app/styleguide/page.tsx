@@ -127,7 +127,7 @@ export default function StyleguidePage() {
           <Badge variant="secondary">Secondary</Badge>
           <Badge variant="outline">Outline</Badge>
           <Badge variant="destructive">Destructive</Badge>
-          <CeuBadge ceCount={6} />
+          <CeuBadge ceCount="6" />
           {LISTING_FORMATS.map((f) => (
             <FormatBadge key={f} format={f} />
           ))}

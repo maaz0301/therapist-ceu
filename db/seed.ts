@@ -107,7 +107,7 @@ type SeedListing = {
   price: string;
   registrationUrl: string;
   hasCeu: boolean;
-  ceCount: number | null;
+  ceCount: string | null;
   accreditingBody: string | null;
   tagSlugs: string[];
 };
@@ -132,7 +132,7 @@ const LISTINGS: SeedListing[] = [
     price: "499.00",
     registrationUrl: "https://example.com/register/emdr-foundations",
     hasCeu: true,
-    ceCount: 18,
+    ceCount: "18",
     accreditingBody: "EMDRIA",
     tagSlugs: ["emdr", slugify("Trauma"), slugify("Adults")],
   },
@@ -155,7 +155,7 @@ const LISTINGS: SeedListing[] = [
     price: "79.00",
     registrationUrl: "https://example.com/register/ethics-law",
     hasCeu: true,
-    ceCount: 3,
+    ceCount: "3",
     accreditingBody: "APA",
     tagSlugs: [slugify("Ethics and Law"), slugify("Documentation and Notes")],
   },
@@ -178,7 +178,7 @@ const LISTINGS: SeedListing[] = [
     price: "350.00",
     registrationUrl: "https://example.com/register/perinatal-certificate",
     hasCeu: true,
-    ceCount: 14,
+    ceCount: "14",
     accreditingBody: "Postpartum Support International",
     tagSlugs: [
       slugify("Perinatal Mental Health"),
@@ -211,7 +211,7 @@ const LISTINGS: SeedListing[] = [
     price: "150.00",
     registrationUrl: "https://example.com/register/play-therapy",
     hasCeu: true,
-    ceCount: 6,
+    ceCount: "6",
     accreditingBody: "APT",
     tagSlugs: [
       slugify("Play therapy (CCPT, sand tray)"),
@@ -237,7 +237,7 @@ const LISTINGS: SeedListing[] = [
     price: "275.00",
     registrationUrl: "https://example.com/register/dbt-intensive",
     hasCeu: true,
-    ceCount: 12,
+    ceCount: "12",
     accreditingBody: "ASWB",
     tagSlugs: [
       slugify("DBT"),
@@ -286,7 +286,7 @@ const LISTINGS: SeedListing[] = [
     price: "320.00",
     registrationUrl: "https://example.com/register/advanced-ifs",
     hasCeu: true,
-    ceCount: 12,
+    ceCount: "12",
     accreditingBody: "ASWB",
     tagSlugs: [slugify("IFS/Parts work/Ego states"), slugify("Trauma")],
   },
