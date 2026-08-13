@@ -190,7 +190,7 @@ export function ListingForm({
     plan: string;
     totalListings: number;
     activeListings: number;
-    atLimit: boolean;
+    blockReason: "no_subscription" | "over_limit" | null;
   }[];
   /** Trainer to preselect — the trainer the admin started this flow from, or the listing's current owner. */
   defaultTrainerId?: string;
@@ -276,6 +276,15 @@ export function ListingForm({
     initial("trainerId", listing?.trainerId ?? defaultTrainerId),
   );
   const selectedTrainer = trainerOptions?.find((t) => t.id === trainerId);
+
+  // Only a *new* active listing for the selected trainer is actually blocked:
+  // creating one outright, or reassigning an existing one onto them. Leaving
+  // an already-active listing on its current trainer never changes anyone's
+  // count, even if that trainer happens to be at their cap because of it.
+  const isReassignment = trainerId !== (listing?.trainerId ?? "");
+  const blocksSubmit = Boolean(
+    trainerOptions && selectedTrainer?.blockReason && isReassignment,
+  );
 
   const [format, setFormat] = useState<string>(
     listing?.format ?? "Live Virtual",
@@ -387,11 +396,17 @@ export function ListingForm({
                 {selectedTrainer.activeListings} live
               </p>
             ) : null}
-            {selectedTrainer?.atLimit ? (
+            {selectedTrainer?.blockReason && isReassignment ? (
+              <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {selectedTrainer.blockReason === "no_subscription"
+                  ? "This trainer has no active subscription, so they can't have a live listing. Update their subscription first."
+                  : "This trainer is already at their plan's active listing limit. Unpublish one of their listings or upgrade their plan first."}
+              </p>
+            ) : selectedTrainer?.blockReason ? (
               <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-400">
-                This trainer is already at their plan&apos;s active listing
-                limit. Publishing here bypasses that limit — the listing will
-                still go live immediately.
+                {selectedTrainer.blockReason === "no_subscription"
+                  ? "This trainer has no active subscription. This listing stays live because it already did."
+                  : "This trainer is at their plan's active listing limit, including this listing."}
               </p>
             ) : null}
           </div>
@@ -748,7 +763,7 @@ export function ListingForm({
           variant="clay"
           size="lg"
           pendingLabel="Saving…"
-          disabled={hasRowError}
+          disabled={hasRowError || blocksSubmit}
         >
           {submitLabel}
         </SubmitButton>

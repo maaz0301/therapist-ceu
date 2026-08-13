@@ -6,7 +6,7 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { adminUpdateListing } from "@/lib/actions/admin";
 import { getAdminTrainers, getAnyListingForEdit } from "@/lib/queries/admin";
 import { getGroupedTags } from "@/lib/queries/tags";
-import { canPublishMore, getSubscriptionState, tierLabel } from "@/lib/subscription";
+import { getSubscriptionState, publishBlockReason, tierLabel } from "@/lib/subscription";
 
 export const metadata = { title: "Edit listing" };
 export const dynamic = "force-dynamic";
@@ -53,7 +53,10 @@ export default async function AdminEditListingPage({
           plan: `${tierLabel(t.subscriptionTier)} · ${t.subscriptionStatus}`,
           totalListings: t.totalListings,
           activeListings: t.activeListings,
-          atLimit: !canPublishMore(getSubscriptionState(t), t.activeListings),
+          blockReason: publishBlockReason(
+            getSubscriptionState(t),
+            t.activeListings,
+          ),
         }))}
       />
     </div>

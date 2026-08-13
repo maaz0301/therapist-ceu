@@ -24,8 +24,9 @@ import {
   uploadImage,
   validateImageFile,
 } from "@/lib/listings/form-helpers";
-import { getListingStartDates } from "@/lib/queries/listings";
+import { getActiveListingCount, getListingStartDates } from "@/lib/queries/listings";
 import { slugify } from "@/lib/slug";
+import { canPublishMore, getSubscriptionState } from "@/lib/subscription";
 import { TAG_CATEGORIES, type TagCategory } from "@/lib/constants";
 import type { ListingFormState } from "@/lib/actions/listings";
 
@@ -56,6 +57,9 @@ function revalidateAdminListings() {
   revalidatePath("/dashboard");
   revalidatePath("/listings");
 }
+
+const LISTING_LIMIT_ERROR =
+  "This trainer can't take another active listing — they're either at their plan's limit or have no active subscription. Adjust their subscription or free up a slot first.";
 
 async function trainerName(trainerId: string): Promise<string | null> {
   const [row] = await db
@@ -187,12 +191,24 @@ export async function adminCreateListing(
 
   const trainerId = String(formData.get("trainerId") ?? "");
   const [trainer] = await db
-    .select({ id: profiles.id })
+    .select({
+      id: profiles.id,
+      subscriptionTier: profiles.subscriptionTier,
+      subscriptionStatus: profiles.subscriptionStatus,
+    })
     .from(profiles)
     .where(and(eq(profiles.id, trainerId), eq(profiles.role, "trainer")))
     .limit(1);
   if (!trainer) {
     return { fieldErrors: { trainerId: ["Choose a trainer."] }, values, dates };
+  }
+
+  // Admin-created listings publish immediately, so they're gated by the same
+  // subscription cap a trainer's own publish action respects — the trainer
+  // picker warns about this, but the server is the real enforcement.
+  const activeCount = await getActiveListingCount(trainerId);
+  if (!canPublishMore(getSubscriptionState(trainer), activeCount)) {
+    return { fieldErrors: { trainerId: [LISTING_LIMIT_ERROR] }, values, dates };
   }
 
   const parsed = parseListingForm(formData);
@@ -287,15 +303,34 @@ export async function adminUpdateListing(
 
   let trainerId = existing.trainerId;
   const trainerIdRaw = formData.get("trainerId");
-  if (typeof trainerIdRaw === "string" && trainerIdRaw) {
+  if (
+    typeof trainerIdRaw === "string" &&
+    trainerIdRaw &&
+    trainerIdRaw !== existing.trainerId
+  ) {
     const [trainer] = await db
-      .select({ id: profiles.id })
+      .select({
+        id: profiles.id,
+        subscriptionTier: profiles.subscriptionTier,
+        subscriptionStatus: profiles.subscriptionStatus,
+      })
       .from(profiles)
       .where(and(eq(profiles.id, trainerIdRaw), eq(profiles.role, "trainer")))
       .limit(1);
     if (!trainer) {
       return { fieldErrors: { trainerId: ["Choose a trainer."] } };
     }
+
+    // Reassigning an already-active listing hands the new trainer a live
+    // slot, so it's gated the same way creating one is. Reassigning a
+    // draft/inactive listing doesn't change anyone's active count.
+    if (existing.active) {
+      const activeCount = await getActiveListingCount(trainerIdRaw);
+      if (!canPublishMore(getSubscriptionState(trainer), activeCount)) {
+        return { fieldErrors: { trainerId: [LISTING_LIMIT_ERROR] } };
+      }
+    }
+
     trainerId = trainerIdRaw;
   }
 

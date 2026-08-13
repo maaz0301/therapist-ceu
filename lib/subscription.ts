@@ -49,6 +49,22 @@ export function canPublishMore(
   return currentActiveCount < state.maxActiveListings;
 }
 
+export type PublishBlockReason = "no_subscription" | "over_limit";
+
+/**
+ * Why a trainer can't take another active listing, or null if they can.
+ * Distinguishes "never subscribed / lapsed" from "subscribed but at their
+ * numeric cap" so callers can show an accurate message instead of a generic
+ * "at your limit" that's wrong for someone with zero listings and no plan.
+ */
+export function publishBlockReason(
+  state: SubscriptionState,
+  currentActiveCount: number,
+): PublishBlockReason | null {
+  if (canPublishMore(state, currentActiveCount)) return null;
+  return state.isActive ? "over_limit" : "no_subscription";
+}
+
 /** Tier required to publish a given number of active listings. */
 export function requiredTierFor(activeListingCount: number): SubscriptionTier {
   return activeListingCount > SUBSCRIPTION_TIERS.basic.maxActiveListings!
