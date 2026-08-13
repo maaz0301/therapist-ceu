@@ -4,8 +4,9 @@ import { ArrowLeft } from "lucide-react";
 import { ListingForm } from "@/components/trainer/listing-form";
 import { ButtonLink } from "@/components/ui/button-link";
 import { adminUpdateListing } from "@/lib/actions/admin";
-import { getAnyListingForEdit } from "@/lib/queries/admin";
+import { getAdminTrainers, getAnyListingForEdit } from "@/lib/queries/admin";
 import { getGroupedTags } from "@/lib/queries/tags";
+import { canPublishMore, getSubscriptionState, tierLabel } from "@/lib/subscription";
 
 export const metadata = { title: "Edit listing" };
 export const dynamic = "force-dynamic";
@@ -16,9 +17,10 @@ export default async function AdminEditListingPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [listing, groups] = await Promise.all([
+  const [listing, groups, trainers] = await Promise.all([
     getAnyListingForEdit(id),
     getGroupedTags(),
+    getAdminTrainers(),
   ]);
   if (!listing) notFound();
 
@@ -44,6 +46,15 @@ export default async function AdminEditListingPage({
         groups={groups}
         listing={listing}
         submitLabel="Update Changes"
+        trainerOptions={trainers.map((t) => ({
+          id: t.id,
+          name: t.fullName,
+          email: t.contactEmail,
+          plan: `${tierLabel(t.subscriptionTier)} · ${t.subscriptionStatus}`,
+          totalListings: t.totalListings,
+          activeListings: t.activeListings,
+          atLimit: !canPublishMore(getSubscriptionState(t), t.activeListings),
+        }))}
       />
     </div>
   );

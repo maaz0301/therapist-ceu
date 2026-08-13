@@ -55,3 +55,8 @@ export function requiredTierFor(activeListingCount: number): SubscriptionTier {
     ? "pro"
     : "basic";
 }
+
+export function tierLabel(tier: SubscriptionTier | null): string {
+  if (!tier) return "No plan";
+  return SUBSCRIPTION_TIERS[tier].label;
+}

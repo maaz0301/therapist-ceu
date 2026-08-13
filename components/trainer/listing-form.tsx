@@ -66,7 +66,7 @@ const FIELD_INPUT_NAMES: Record<string, string> = { dates: "dateStart" };
 let cachedToday: string | null = null;
 const getToday = () => (cachedToday ??= todayIso());
 const getServerToday = () => "";
-const subscribeNever = () => () => {};
+const subscribeNever = () => () => { };
 
 /**
  * A schedule row. `key` is a stable React identity so removing the middle row
@@ -176,13 +176,24 @@ export function ListingForm({
   listing,
   submitLabel,
   trainerOptions,
+  defaultTrainerId,
 }: {
   action: ListingAction;
   groups: GroupedTags;
   listing?: OwnedListing;
   submitLabel: string;
-  /** Admin-create mode: renders a trainer picker so the listing can be authored on their behalf. */
-  trainerOptions?: { id: string; name: string | null }[];
+  /** Admin-create/edit mode: renders a trainer picker so the listing can be authored on their behalf. */
+  trainerOptions?: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    plan: string;
+    totalListings: number;
+    activeListings: number;
+    atLimit: boolean;
+  }[];
+  /** Trainer to preselect — the trainer the admin started this flow from, or the listing's current owner. */
+  defaultTrainerId?: string;
 }) {
   const [state, formAction] = useActionState(action, null);
 
@@ -260,6 +271,11 @@ export function ListingForm({
    */
   const initial = (field: string, fallback?: string | number | null) =>
     state?.values?.[field] ?? (fallback == null ? "" : String(fallback));
+
+  const [trainerId, setTrainerId] = useState<string>(
+    initial("trainerId", listing?.trainerId ?? defaultTrainerId),
+  );
+  const selectedTrainer = trainerOptions?.find((t) => t.id === trainerId);
 
   const [format, setFormat] = useState<string>(
     listing?.format ?? "Live Virtual",
@@ -349,7 +365,8 @@ export function ListingForm({
             <NativeSelect
               id="trainerId"
               name="trainerId"
-              defaultValue={initial("trainerId")}
+              value={trainerId}
+              onChange={(e) => setTrainerId(e.target.value)}
               selectSize="sm"
               className="w-full"
               required
@@ -362,6 +379,21 @@ export function ListingForm({
               ))}
             </NativeSelect>
             <FieldError messages={errorsFor("trainerId")} />
+            {selectedTrainer ? (
+              <p className="text-sm text-muted-foreground">
+                {selectedTrainer.email ?? "No email on file"} ·{" "}
+                {selectedTrainer.plan} · {selectedTrainer.totalListings}{" "}
+                listing{selectedTrainer.totalListings === 1 ? "" : "s"} ·{" "}
+                {selectedTrainer.activeListings} live
+              </p>
+            ) : null}
+            {selectedTrainer?.atLimit ? (
+              <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-400">
+                This trainer is already at their plan&apos;s active listing
+                limit. Publishing here bypasses that limit — the listing will
+                still go live immediately.
+              </p>
+            ) : null}
           </div>
         ) : null}
 
@@ -698,7 +730,7 @@ export function ListingForm({
           groups={groups}
           defaultSelected={listing?.tagIds ?? []}
           error={errorsFor("tagIds")?.[0]}
-              onSelectionChange={() => markTouched("tagIds")}
+          onSelectionChange={() => markTouched("tagIds")}
         />
       </Card>
 

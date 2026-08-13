@@ -2,22 +2,23 @@ import { Users } from "lucide-react";
 
 import { TrainerActions } from "@/components/admin/trainer-actions";
 import { InviteTrainerButton } from "@/components/admin/invite-trainer-button";
+import { ClearQueryParams } from "@/components/clear-query-params";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
+import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
 import { getAdminTrainers } from "@/lib/queries/admin";
-import { SUBSCRIPTION_TIERS } from "@/lib/constants";
+import { tierLabel } from "@/lib/subscription";
 
 export const metadata = { title: "Trainers" };
 export const dynamic = "force-dynamic";
 
-function tierLabel(tier: "basic" | "pro" | null) {
-  if (!tier) return "No plan";
-  return SUBSCRIPTION_TIERS[tier].label;
-}
-
-export default async function AdminTrainersPage() {
-  const trainers = await getAdminTrainers();
+export default async function AdminTrainersPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const [sp, trainers] = await Promise.all([searchParams, getAdminTrainers()]);
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6">
@@ -32,6 +33,15 @@ export default async function AdminTrainersPage() {
         </div>
         <InviteTrainerButton />
       </div>
+
+      {sp.created ? (
+        <>
+          <ClearQueryParams params={["created"]} />
+          <div className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">
+            Listing created.
+          </div>
+        </>
+      ) : null}
 
       {trainers.length === 0 ? (
         <EmptyState
@@ -71,6 +81,13 @@ export default async function AdminTrainersPage() {
                     </span>
                   </div>
                 </div>
+                <ButtonLink
+                  href={`/admin/listings/new?trainerId=${t.id}`}
+                  variant="outline"
+                  size="sm"
+                >
+                  Create listing
+                </ButtonLink>
               </div>
               <div className="border-t border-border pt-3">
                 <TrainerActions

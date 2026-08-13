@@ -51,6 +51,7 @@ type SubscriptionStatusValue = (typeof SUBSCRIPTION_STATUSES)[number];
 
 function revalidateAdminListings() {
   revalidatePath("/admin");
+  revalidatePath("/admin/trainers");
   revalidatePath("/directory");
   revalidatePath("/dashboard");
   revalidatePath("/listings");
@@ -258,8 +259,16 @@ export async function adminCreateListing(
 
   await replaceListingRelations(created.id, data, usableTagIds);
 
+  after(async () => {
+    await sendListingApprovedEmail(trainerId, {
+      name: await trainerName(trainerId),
+      listingTitle: data.title,
+      slug,
+    });
+  });
+
   revalidateAdminListings();
-  redirect("/admin?created=1");
+  redirect("/admin/trainers?created=1");
 }
 
 export async function adminUpdateListing(
@@ -275,6 +284,20 @@ export async function adminUpdateListing(
     .where(eq(listings.id, id))
     .limit(1);
   if (!existing) return { error: "Listing not found." };
+
+  let trainerId = existing.trainerId;
+  const trainerIdRaw = formData.get("trainerId");
+  if (typeof trainerIdRaw === "string" && trainerIdRaw) {
+    const [trainer] = await db
+      .select({ id: profiles.id })
+      .from(profiles)
+      .where(and(eq(profiles.id, trainerIdRaw), eq(profiles.role, "trainer")))
+      .limit(1);
+    if (!trainer) {
+      return { fieldErrors: { trainerId: ["Choose a trainer."] } };
+    }
+    trainerId = trainerIdRaw;
+  }
 
   const parsed = parseListingForm(
     formData,
@@ -306,12 +329,13 @@ export async function adminUpdateListing(
   if (file) {
     const imageError = validateImageFile(file);
     if (imageError) return { fieldErrors: { image: [imageError.error] } };
-    imageUrl = await uploadImage(file, existing.trainerId);
+    imageUrl = await uploadImage(file, trainerId);
   }
 
   await db
     .update(listings)
     .set({
+      trainerId,
       title: data.title,
       description: data.description,
       presenterNames: data.presenterNames,
