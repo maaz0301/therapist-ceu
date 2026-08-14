@@ -97,7 +97,7 @@ function buildWhere(filters: DirectoryFilters): SQL | undefined {
         // "Association for Play Therapy"), so match the acronym on word
         // boundaries — a bare %APT% would also hit "adapted" and "chapter".
         providerConds.push(
-          sql`${listings.accreditingBody} ~* '\mAPT\M'`,
+          sql`${listings.accreditingBody} ~* '\\mAPT\\M'`,
           ilike(listings.accreditingBody, "%Association for Play Therapy%"),
         );
       } else if (p === "Non-CE") {
