@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
@@ -52,6 +53,7 @@ export default function RootLayout({
       <body className="flex min-h-full flex-col">
         <TooltipProvider delay={200}>{children}</TooltipProvider>
         <Toaster richColors position="top-center" />
+        <Analytics />
       </body>
     </html>
   );
