@@ -20,11 +20,11 @@ export function RenewalReminderEmail({
   const firstName = name?.split(" ")[0];
 
   return (
-    <EmailLayout preview={`Your TherapistCEU subscription renews on ${renewalDate}`}>
+    <EmailLayout preview={`Your Skillhive subscription renews on ${renewalDate}`}>
       <Text style={emailStyles.heading}>Your subscription renews soon 📅</Text>
       <Text style={emailStyles.paragraph}>
         Hi{firstName ? ` ${firstName}` : ""}, just a quick heads-up that your
-        TherapistCEU subscription is scheduled to auto-renew soon.
+        Skillhive subscription is scheduled to auto-renew soon.
       </Text>
       <Text style={emailStyles.cardBox}>
         Renewal Date: {renewalDate}

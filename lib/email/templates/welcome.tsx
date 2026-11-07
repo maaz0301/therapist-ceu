@@ -18,12 +18,12 @@ export function WelcomeEmail({
   const firstName = name?.split(" ")[0];
 
   return (
-    <EmailLayout preview="Welcome to TherapistCEU — let's get your trainings in front of therapists.">
+    <EmailLayout preview="Welcome to Skillhive — let's get your trainings in front of therapists.">
       <Text style={emailStyles.heading}>
         Welcome{firstName ? `, ${firstName}` : ""}! 🎉
       </Text>
       <Text style={emailStyles.paragraph}>
-        Thanks for joining TherapistCEU. You can now create listings for your
+        Thanks for joining Skillhive. You can now create listings for your
         CEU and professional trainings to reach therapists who are actively
         searching for continuing education.
       </Text>

@@ -18,7 +18,7 @@ export function AccountDeactivatedEmail({
   const firstName = name?.split(" ")[0];
 
   return (
-    <EmailLayout preview="Your TherapistCEU listings have been deactivated">
+    <EmailLayout preview="Your Skillhive listings have been deactivated">
       <Text style={emailStyles.heading}>Your listings have been deactivated ⏸️</Text>
       <Text style={emailStyles.paragraph}>
         Hi{firstName ? ` ${firstName}` : ""}, your subscription has lapsed, so

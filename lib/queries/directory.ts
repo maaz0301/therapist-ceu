@@ -47,13 +47,13 @@ export type DirectoryResult = {
  * which is what makes a listing roll on to its next date by itself: the run
  * that just finished stops matching, and the following one becomes first.
  */
-const isUpcomingRun = sql`
+export const isUpcomingRun = sql`
   ${listingDates.listingId} = ${listings.id}
   and coalesce(${listingDates.endDate}, ${listingDates.startDate}) >= current_date
 `;
 
 /** Reads one column off the soonest of a listing's upcoming runs. */
-function fromNextRun(column: SQLWrapper) {
+export function fromNextRun(column: SQLWrapper) {
   return sql`(
     select ${column} from ${listingDates}
     where ${isUpcomingRun}
@@ -62,7 +62,7 @@ function fromNextRun(column: SQLWrapper) {
   )`;
 }
 
-function buildWhere(filters: DirectoryFilters): SQL | undefined {
+export function buildWhere(filters: DirectoryFilters): SQL | undefined {
   const conditions: SQL[] = [
     eq(listings.status, "approved"),
     eq(listings.active, true),
@@ -221,7 +221,7 @@ function formatSchedule(row: {
  * Shared by the directory and the landing page's featured strip, so the latter
  * doesn't have to run a full paginated search to get a handful of rows.
  */
-async function fetchListingPage(
+export async function fetchListingPage(
   where: ReturnType<typeof buildWhere>,
   limit: number,
   offset: number,

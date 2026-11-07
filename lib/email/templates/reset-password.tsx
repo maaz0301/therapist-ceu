@@ -14,12 +14,12 @@ export function ResetPasswordEmail({
   resetUrl: string;
 }) {
   return (
-    <EmailLayout preview="Reset your TherapistCEU password">
+    <EmailLayout preview="Reset your Skillhive password">
       <Text style={emailStyles.heading}>
         Reset your password 🔒
       </Text>
       <Text style={emailStyles.paragraph}>
-        We received a request to reset the password for your TherapistCEU account. Click the button below to choose a new password:
+        We received a request to reset the password for your Skillhive account. Click the button below to choose a new password:
       </Text>
       <Section style={emailStyles.ctaSection}>
         <Link href={resetUrl} style={emailButton}>

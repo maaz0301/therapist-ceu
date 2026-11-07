@@ -18,12 +18,12 @@ export function TrainerInviteEmail({
   const firstName = name?.split(" ")[0];
 
   return (
-    <EmailLayout preview="You've been invited to list your trainings on TherapistCEU.">
+    <EmailLayout preview="You've been invited to list your trainings on Skillhive.">
       <Text style={emailStyles.heading}>
         You&apos;re invited{firstName ? `, ${firstName}` : ""}!
       </Text>
       <Text style={emailStyles.paragraph}>
-        The TherapistCEU team has set up a trainer account for you. Accept the
+        The Skillhive team has set up a trainer account for you. Accept the
         invitation to choose a password, then you can start listing your CEU and
         professional trainings for therapists who are actively searching for
         continuing education.

@@ -69,7 +69,7 @@ export default function StyleguidePage() {
             Design system
           </h1>
           <p className="text-sm text-muted-foreground">
-            TherapyDen-inspired tokens and components for TherapistCEU.com.
+            TherapyDen-inspired tokens and components for Skillhive.
           </p>
         </div>
       </header>

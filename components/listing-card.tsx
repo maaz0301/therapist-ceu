@@ -4,6 +4,7 @@ import { CalendarDays, MapPin } from "lucide-react";
 import { FormatBadge } from "@/components/format-badge";
 import { CeuBadge } from "@/components/ceu-badge";
 import { Card } from "@/components/ui/card";
+import { CompareToggle } from "@/components/compare/compare-store";
 import { cn } from "@/lib/utils";
 import type { ListingFormat } from "@/lib/constants";
 
@@ -86,9 +87,12 @@ export function ListingCard({
         <span className="text-base font-semibold text-foreground">
           {formatPrice(listing.price)}
         </span>
-        <span className="text-sm font-medium text-clay group-hover:underline">
-          View details
-        </span>
+        <div className="flex items-center gap-3">
+          <CompareToggle slug={listing.slug} title={listing.title} />
+          <span className="text-sm font-medium text-clay group-hover:underline">
+            View details
+          </span>
+        </div>
       </div>
     </Card>
   );

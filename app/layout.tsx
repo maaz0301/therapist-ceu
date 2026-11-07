@@ -24,19 +24,19 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://therapistceu.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: {
-    default: "TherapistCEU.com — Find CEU trainings for therapists",
-    template: "%s · TherapistCEU.com",
+    default: "Skillhive — Find CEU trainings for therapists",
+    template: "%s · Skillhive",
   },
   description:
     "Search a clean, modern directory of CEU and professional trainings for licensed mental health therapists — by topic, format, state, price, and accreditation.",
   openGraph: {
     type: "website",
-    siteName: "TherapistCEU.com",
-    title: "TherapistCEU.com — Find CEU trainings for therapists",
+    siteName: "Skillhive",
+    title: "Skillhive — Find CEU trainings for therapists",
     description:
-      "Search a clean, modern directory of CEU and professional trainings for licensed mental health therapists.",
+      "Search a clean, modern directory of professional courses and trainings.",
   },
 };
 

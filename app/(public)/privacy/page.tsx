@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | TherapistCEU.com",
-  description: "Learn about how TherapistCEU collects, uses, and safeguards your information.",
+  title: "Privacy Policy | Skillhive",
+  description: "Learn about how Skillhive collects, uses, and safeguards your information.",
 };
 
 export default function PrivacyPage() {
@@ -21,7 +21,7 @@ export default function PrivacyPage() {
         <section className="space-y-3">
           <h2 className="text-2xl font-bold text-foreground">1. Introduction</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Welcome to TherapistCEU.com. We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about our policy, or our practices with regards to your personal information, please contact us at support@therapistceu.com.
+            Welcome to Skillhive. We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about our policy, or our practices with regards to your personal information, please contact us at support@skillhive.app.
           </p>
         </section>
 
@@ -73,10 +73,10 @@ export default function PrivacyPage() {
             If you have questions or comments about this policy, you may email us at:
           </p>
           <a
-            href="mailto:support@therapistceu.com"
+            href="mailto:support@skillhive.app"
             className="inline-block text-primary font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md"
           >
-            support@therapistceu.com
+            support@skillhive.app
           </a>
         </section>
       </div>

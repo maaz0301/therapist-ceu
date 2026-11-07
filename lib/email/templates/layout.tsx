@@ -85,7 +85,7 @@ export function EmailLayout({
   preview: string;
   children: ReactNode;
 }) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://therapistceu.com";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   return (
     <Html>
@@ -104,7 +104,7 @@ export function EmailLayout({
             }}
           />
           <Text style={footer}>
-            TherapistCEU.com — the directory of CEU &amp; professional trainings
+            Skillhive — the directory of CEU &amp; professional trainings
             for licensed mental health therapists.
           </Text>
           <Text style={footer}>
