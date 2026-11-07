@@ -23,8 +23,31 @@ const mono = JetBrains_Mono({
   display: "swap",
 });
 
+/**
+ * Absolute origin for metadata. An env var that exists but is empty (easy to
+ * do in the Vercel UI) must not crash the build, so blank and malformed values
+ * fall through to VERCEL_URL and then localhost.
+ */
+function siteOrigin(): string {
+  const candidates = [
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_URL,
+  ];
+  for (const raw of candidates) {
+    const v = raw?.trim().replace(/^["']|["']$/g, "");
+    if (!v) continue;
+    try {
+      return new URL(/^https?:\/\//.test(v) ? v : `https://${v}`).origin;
+    } catch {
+      /* try the next candidate */
+    }
+  }
+  return "http://localhost:3000";
+}
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(siteOrigin()),
   title: {
     default: "Skillhive — Find CEU trainings for therapists",
     template: "%s · Skillhive",
