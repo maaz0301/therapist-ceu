@@ -14,16 +14,16 @@ export function MagicLinkEmail({
   magicLinkUrl: string;
 }) {
   return (
-    <EmailLayout preview="Your magic login link for TherapistCEU">
+    <EmailLayout preview="Your magic login link for Skillhive">
       <Text style={emailStyles.heading}>
         Your login link 🪄
       </Text>
       <Text style={emailStyles.paragraph}>
-        Click the button below to log in to your TherapistCEU account without entering a password.
+        Click the button below to log in to your Skillhive account without entering a password.
       </Text>
       <Section style={emailStyles.ctaSection}>
         <Link href={magicLinkUrl} style={emailButton}>
-          Log in to TherapistCEU
+          Log in to Skillhive
         </Link>
       </Section>
       <Text style={emailStyles.muted}>

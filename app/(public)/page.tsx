@@ -75,16 +75,16 @@ export default async function HomePage() {
         <div className="mx-auto w-full max-w-6xl px-4 pt-20 pb-16 text-center sm:px-6 sm:pt-28">
           <Badge className="mx-auto bg-clay/10 text-clay border border-clay/20 hover:bg-clay/20 transition-colors">
             <Sparkles className="size-3.5 mr-1" />
-            For licensed mental health therapists
+            For every kind of professional
           </Badge>
           <h1 className="mx-auto mt-5 max-w-3xl text-4xl leading-[1.1] font-bold text-foreground sm:text-5xl">
-            Find the right CEU training,{" "}
+            Find the right training,{" "}
             <span className="text-clay">without the endless search.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground">
-            One clean, searchable directory of CEU and professional trainings —
-            filter by topic, format, state, price, and accreditation to find
-            exactly what your license needs.
+            One clean, searchable directory of professional courses and trainings —
+            filter by topic, format, location, price and accreditation to find
+            exactly what your career needs.
           </p>
 
           <form
@@ -96,7 +96,7 @@ export default async function HomePage() {
               <input
                 name="q"
                 type="search"
-                placeholder="Try “EMDR”, “eating disorders”, “ethics”…"
+                placeholder="Try “leadership”, “data analysis”, “ethics”…"
                 className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                 aria-label="Search trainings"
               />
@@ -107,11 +107,11 @@ export default async function HomePage() {
           </form>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <span>Free for therapists</span>
+            <span>Free for learners</span>
             <span className="hidden sm:inline">·</span>
             <span>No account required</span>
             <span className="hidden sm:inline">·</span>
-            <span>CEU &amp; non-CEU trainings</span>
+            <span>Credit &amp; non-credit trainings</span>
           </div>
         </div>
       </section>
@@ -155,7 +155,7 @@ export default async function HomePage() {
                 Featured trainings
               </h2>
               <p className="mt-3 text-muted-foreground">
-                A preview of the trainings therapists are discovering right now.
+                A preview of the trainings learners are discovering right now.
               </p>
             </div>
             <ButtonLink
@@ -191,11 +191,11 @@ export default async function HomePage() {
               id="pricing"
               className="mt-4 text-2xl font-bold text-foreground sm:text-3xl"
             >
-              Get your trainings in front of the right therapists
+              Get your trainings in front of the right learners
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Stop relying on a social following. List your CEU and professional
-              trainings where therapists are already searching.
+              Stop relying on a social following. List your professional
+              trainings where learners are already searching.
             </p>
           </div>
 
@@ -263,7 +263,7 @@ export default async function HomePage() {
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-primary-foreground/80">
             Search the directory free — or list your own trainings and reach
-            therapists actively looking for CEUs.
+            learners actively looking to grow.
           </p>
           <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <ButtonLink variant="clay" size="xl" href="/directory">

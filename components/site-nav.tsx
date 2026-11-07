@@ -5,7 +5,9 @@ import { useSyncExternalStore } from "react";
 import { ButtonLink } from "@/components/ui/button-link";
 
 const NAV_LINKS = [
-  { href: "/directory", label: "Browse trainings" },
+  { href: "/directory", label: "Browse courses" },
+  { href: "/calendar", label: "Calendar" },
+  { href: "/saved", label: "Saved" },
   { href: "/#how-it-works", label: "How it works" },
   { href: "/#for-trainers", label: "For trainers" },
 ];

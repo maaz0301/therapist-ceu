@@ -74,7 +74,7 @@ export async function sendTrainerInviteEmail(
 
   const sent = await sendEmail({
     to,
-    subject: "You're invited to list your trainings on TherapistCEU",
+    subject: "You're invited to list your trainings on Skillhive",
     react: TrainerInviteEmail({ name, inviteUrl }),
   });
 
@@ -102,7 +102,7 @@ export async function sendTrainerInviteEmail(
 export async function sendWelcomeEmail(to: string, name?: string | null) {
   return sendEmail({
     to,
-    subject: "Welcome to TherapistCEU",
+    subject: "Welcome to Skillhive",
     react: WelcomeEmail({ name, dashboardUrl: `${await getBaseUrl()}/dashboard` }),
   });
 }
@@ -132,7 +132,7 @@ export async function sendListingApprovedEmail(
   if (!to) return { ok: false, skipped: true };
   return sendEmail({
     to,
-    subject: "Your listing is live on TherapistCEU",
+    subject: "Your listing is live on Skillhive",
     react: ListingApprovedEmail({
       name: args.name,
       listingTitle: args.listingTitle,
@@ -220,7 +220,7 @@ export async function sendConfirmEmail(
 ) {
   return sendEmail({
     to,
-    subject: "Confirm your email address for TherapistCEU",
+    subject: "Confirm your email address for Skillhive",
     react: ConfirmEmail({ name, confirmUrl }),
   });
 }
@@ -231,7 +231,7 @@ export async function sendMagicLinkEmail(
 ) {
   return sendEmail({
     to,
-    subject: "Your TherapistCEU login link",
+    subject: "Your Skillhive login link",
     react: MagicLinkEmail({ magicLinkUrl }),
   });
 }
@@ -242,8 +242,31 @@ export async function sendResetPasswordEmail(
 ) {
   return sendEmail({
     to,
-    subject: "Reset your TherapistCEU password",
+    subject: "Reset your Skillhive password",
     react: ResetPasswordEmail({ resetUrl }),
   });
 }
 
+
+export async function sendSearchAlertEmail(
+  userId: string,
+  args: { query: string; courses: { title: string; slug: string; schedule: string }[] },
+) {
+  const to = await getUserEmail(userId);
+  if (!to) return { ok: false as const };
+  const base = await getBaseUrl();
+  const { SearchAlertEmail } = await import("@/lib/email/templates/search-alert");
+  return sendEmail({
+    to,
+    subject: `New courses matching "${args.query}"`,
+    react: SearchAlertEmail({
+      query: args.query,
+      courses: args.courses.map((c) => ({
+        title: c.title,
+        url: `${base}/listings/${c.slug}`,
+        schedule: c.schedule,
+      })),
+      savedUrl: `${base}/saved`,
+    }),
+  });
+}

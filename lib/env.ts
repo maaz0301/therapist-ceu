@@ -23,11 +23,11 @@ function parseUrlEnv(url: string | undefined, fallback: string) {
 }
 
 export const env = {
-  appUrl: parseUrlEnv(process.env.NEXT_PUBLIC_APP_URL, "https://www.therapistceu.com"),
+  appUrl: parseUrlEnv(process.env.NEXT_PUBLIC_APP_URL, "http://localhost:3000"),
   // Fallback to placeholder to prevent Next.js static generation from crashing
   // when @supabase/ssr does new URL() during the build step.
   supabaseUrl: parseUrlEnv(process.env.NEXT_PUBLIC_SUPABASE_URL, "https://placeholder.supabase.co"),
-  supabaseAnonKey: (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder").replace(/^["']|["']$/g, "").trim(),
+  supabaseAnonKey: ((process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder")).replace(/^["']|["']$/g, "").trim(),
 };
 
 export function assertSupabaseEnv() {
@@ -37,7 +37,7 @@ export function assertSupabaseEnv() {
     env.supabaseUrl === "https://placeholder.supabase.co"
   ) {
     throw new Error(
-      "Missing Supabase env vars. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your environment.",
+      "Missing Supabase env vars. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in your environment.",
     );
   }
 }

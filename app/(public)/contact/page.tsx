@@ -2,8 +2,8 @@ import { Mail } from "lucide-react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact Us | TherapistCEU.com",
-  description: "Get in touch with the TherapistCEU team.",
+  title: "Contact Us | Skillhive",
+  description: "Get in touch with the Skillhive team.",
 };
 
 export default function ContactPage() {
@@ -29,10 +29,10 @@ export default function ContactPage() {
               For support, feedback, or any other inquiries, please reach out to us at:
             </p>
             <a
-              href="mailto:support@therapistceu.com"
+              href="mailto:support@skillhive.app"
               className="mt-4 inline-block text-lg font-medium text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md"
             >
-              support@therapistceu.com
+              support@skillhive.app
             </a>
           </div>
         </div>

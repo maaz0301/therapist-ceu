@@ -1,6 +1,8 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
+  integer,
   customType,
   date,
   index,
@@ -310,6 +312,81 @@ export const analyticsEvents = pgTable(
 );
 
 // ---------------------------------------------------------------------------
+// saved_listings (learner bookmarks)
+// ---------------------------------------------------------------------------
+
+export const savedListings = pgTable(
+  "saved_listings",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => listings.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.listingId] }),
+    index("saved_listings_listing_idx").on(table.listingId),
+  ],
+);
+
+// ---------------------------------------------------------------------------
+// search_alerts (email me when new courses match this search)
+// ---------------------------------------------------------------------------
+
+export const searchAlerts = pgTable(
+  "search_alerts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    /** Free-text keywords, matched the same way as the directory search box. */
+    query: text("query").notNull(),
+    lastNotifiedAt: timestamp("last_notified_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("search_alerts_user_idx").on(table.userId)],
+);
+
+// ---------------------------------------------------------------------------
+// reviews (one per learner per listing, with an optional trainer reply)
+// ---------------------------------------------------------------------------
+
+export const reviews = pgTable(
+  "reviews",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => listings.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    rating: integer("rating").notNull(),
+    body: text("body").notNull(),
+    trainerReply: text("trainer_reply"),
+    trainerRepliedAt: timestamp("trainer_replied_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("reviews_listing_user_idx").on(table.listingId, table.userId),
+    index("reviews_listing_created_idx").on(table.listingId, table.createdAt.desc()),
+    check("reviews_rating_range", sql`${table.rating} between 1 and 5`),
+  ],
+);
+
+// ---------------------------------------------------------------------------
 // Inferred types
 // ---------------------------------------------------------------------------
 
@@ -321,3 +398,5 @@ export type ListingDate = typeof listingDates.$inferSelect;
 export type Tag = typeof tags.$inferSelect;
 export type NewTag = typeof tags.$inferInsert;
 export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
+export type Review = typeof reviews.$inferSelect;
+export type SearchAlert = typeof searchAlerts.$inferSelect;

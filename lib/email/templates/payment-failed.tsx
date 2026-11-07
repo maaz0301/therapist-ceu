@@ -18,11 +18,11 @@ export function PaymentFailedEmail({
   const firstName = name?.split(" ")[0];
 
   return (
-    <EmailLayout preview="We couldn't process your TherapistCEU payment">
+    <EmailLayout preview="We couldn't process your Skillhive payment">
       <Text style={emailStyles.heading}>Payment update required ⚠️</Text>
       <Text style={emailStyles.paragraph}>
         Hi{firstName ? ` ${firstName}` : ""}, your recent subscription
-        payment for TherapistCEU could not be processed.
+        payment for Skillhive could not be processed.
       </Text>
       <Text style={emailStyles.alertBox}>
         Please update your payment method to keep your training listings live and active in the directory.

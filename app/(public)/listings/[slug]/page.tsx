@@ -23,6 +23,13 @@ import {
 } from "@/lib/queries/listings";
 import { formatDateRange, upcomingRanges } from "@/lib/dates";
 import { US_STATES } from "@/lib/constants";
+import { SaveButton } from "@/components/engagement/save-button";
+import { ReviewsSection } from "@/components/engagement/reviews-section";
+import {
+  getRatingSummary,
+  getReviews,
+  isListingSaved,
+} from "@/lib/queries/engagement";
 
 const STATE_NAMES = new Map<string, string>(
   US_STATES.map((s) => [s.code, s.name]),
@@ -87,7 +94,7 @@ function courseJsonLd(listing: ListingDetail) {
     description: listing.description,
     provider: {
       "@type": "Organization",
-      name: listing.trainerName ?? "TherapistCEU",
+      name: listing.trainerName ?? "Skillhive",
     },
     offers: {
       "@type": "Offer",
@@ -127,6 +134,13 @@ export default async function ListingDetailPage({
 
   const listing = await getListingDetail(slug, viewer);
   if (!listing) notFound();
+
+  const viewerProfile = await viewer;
+  const [reviewList, ratingSummary, alreadySaved] = await Promise.all([
+    getReviews(listing.id),
+    getRatingSummary(listing.id),
+    viewerProfile ? isListingSaved(viewerProfile.id, listing.id) : false,
+  ]);
 
   const isPublic = listing.status === "approved" && listing.active;
   const upcoming = upcomingDates(listing);
@@ -283,6 +297,7 @@ export default async function ListingDetailPage({
           Register on trainer&apos;s site
           <ExternalLink data-icon="inline-end" />
         </a>
+        <SaveButton listingId={listing.id} initialSaved={alreadySaved} />
         {listing.trainerWebsite ? (
           <a
             href={listing.trainerWebsite}
@@ -311,6 +326,14 @@ export default async function ListingDetailPage({
           </p>
         </Card>
       ) : null}
+
+      <ReviewsSection
+        listingId={listing.id}
+        reviews={reviewList}
+        summary={ratingSummary}
+        viewer={viewerProfile}
+        ownerId={listing.trainerId}
+      />
     </article>
   );
 }

@@ -32,7 +32,7 @@ function resolveFrom(): string {
   if (process.env.EMAIL_FROM) return process.env.EMAIL_FROM;
   const address = process.env.SMTP_FROM_EMAIL ?? process.env.SMTP_USER;
   if (address) return formatFrom(process.env.SMTP_FROM_NAME, address);
-  return "TherapistCEU <Therapistceu@gmail.com>";
+  return "Skillhive <no-reply@skillhive.app>";
 }
 
 let smtp: Transporter | null = null;

@@ -262,3 +262,32 @@ create policy analytics_owner_read on public.analytics_events
       where l.id = listing_id and (l.trainer_id = auth.uid() or public.is_admin())
     )
   );
+
+-- ===========================================================================
+-- Engagement tables: saved_listings, search_alerts, reviews
+-- Owners manage their own rows; reviews are publicly readable.
+-- ===========================================================================
+
+alter table public.saved_listings enable row level security;
+drop policy if exists "saved_owner_all" on public.saved_listings;
+create policy "saved_owner_all" on public.saved_listings
+  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+alter table public.search_alerts enable row level security;
+drop policy if exists "alerts_owner_all" on public.search_alerts;
+create policy "alerts_owner_all" on public.search_alerts
+  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+alter table public.reviews enable row level security;
+drop policy if exists "reviews_public_read" on public.reviews;
+create policy "reviews_public_read" on public.reviews
+  for select using (true);
+drop policy if exists "reviews_author_write" on public.reviews;
+create policy "reviews_author_write" on public.reviews
+  for insert with check (user_id = auth.uid());
+drop policy if exists "reviews_author_update" on public.reviews;
+create policy "reviews_author_update" on public.reviews
+  for update using (user_id = auth.uid()) with check (user_id = auth.uid());
+drop policy if exists "reviews_author_or_admin_delete" on public.reviews;
+create policy "reviews_author_or_admin_delete" on public.reviews
+  for delete using (user_id = auth.uid() or public.is_admin());

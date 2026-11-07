@@ -5,7 +5,7 @@ import { getCurrentProfile } from "@/lib/auth";
 
 const FOOTER_SECTIONS = [
   {
-    title: "Therapists",
+    title: "Learners",
     links: [
       { href: "/directory", label: "Browse trainings" },
       { href: "/directory?ceu=Yes", label: "CEU trainings" },
@@ -68,7 +68,7 @@ export async function SiteFooter() {
             <Logo />
             <p className="max-w-xs text-sm text-muted-foreground">
               The clean, modern directory of CEU and professional trainings for
-              licensed mental health therapists.
+              professionals in every field.
             </p>
           </div>
 
@@ -94,7 +94,7 @@ export async function SiteFooter() {
         </div>
 
         <div className="mt-10 border-t border-border pt-6 text-sm text-muted-foreground">
-          © {new Date().getFullYear()} TherapistCEU.com LLC. All rights reserved.
+          © {new Date().getFullYear()} Skillhive. All rights reserved.
         </div>
       </div>
     </footer>

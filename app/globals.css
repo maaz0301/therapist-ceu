@@ -57,109 +57,94 @@
 }
 
 /*
- * TherapistCEU.com brand palette — grounded, earthy, low-glare.
- *
- * Core swatches:
- *   Iron grey (primary dark) .... #374446
- *   Sage (secondary green) ...... #768E7C
- *   Terracotta clay (accent/CTA)  #9D6858
- *   Clay soil (deep accent) ..... #6B4135
- *   Off-white (page background) . #F7F8F5
- *
- * Sage is darkened to #5F7A68 wherever it carries white text (buttons,
- * badges) so small type clears WCAG AA; the pure #768E7C is kept for
- * focus rings, borders, and chart fills where contrast isn't required.
- *
- * The three semantic tokens (destructive/warning/success) are deliberately
- * desaturated to sit inside the earthy range rather than using stock
- * red/amber/green — they still read as danger/caution/confirmation, but
- * without the glare. Status *surfaces* (badges, notice banners) use clay
- * and sage tints instead; destructive is reserved for genuine danger
- * (delete actions, validation errors).
+ * Skillhive brand palette — confident indigo with a warm amber accent.
+ * Token names (clay/sage) are kept so existing components keep working:
+ *   clay  -> amber accent / CTA     sage -> soft indigo tint
+ * Text-bearing fills are checked for WCAG AA against white.
  */
 :root {
-  --background: #F7F8F5;
-  --foreground: #374446;
+  --background: #FAFAFD;
+  --foreground: #1B1B2F;
   --card: #FFFFFF;
-  --card-foreground: #374446;
+  --card-foreground: #1B1B2F;
   --popover: #FFFFFF;
-  --popover-foreground: #374446;
-  --primary: #5F7A68;
+  --popover-foreground: #1B1B2F;
+  --primary: #4F46E5;
   --primary-foreground: #FFFFFF;
-  --secondary: #EDEFE8;
-  --secondary-foreground: #374446;
-  --muted: #EAEDE5;
-  --muted-foreground: #5E6E70;
-  --accent: #E7EDE7;
-  --accent-foreground: #374446;
-  --destructive: #8C4034;
-  --clay: #9D6858;
+  --secondary: #EEEEF8;
+  --secondary-foreground: #1B1B2F;
+  --muted: #ECECF6;
+  --muted-foreground: #5B5B78;
+  --accent: #E8E7FB;
+  --accent-foreground: #1B1B2F;
+  --destructive: #B3261E;
+  --clay: #B45309;
   --clay-foreground: #FFFFFF;
-  --clay-deep: #6B4135;
-  --sage: #768E7C;
-  --success: #4F7059;
+  --clay-deep: #7C3A06;
+  --sage: #8B85F0;
+  --success: #1F7A54;
   --success-foreground: #FFFFFF;
-  --warning: #8A6A2F;
+  --warning: #92610A;
   --warning-foreground: #FFFFFF;
-  --border: #DCE0D7;
-  --input: #DCE0D7;
-  --ring: #768E7C;
-  --chart-1: #5F7A68;
-  --chart-2: #9D6858;
-  --chart-3: #374446;
-  --chart-4: #768E7C;
-  --chart-5: #6B4135;
-  --radius: 0.875rem;
-  --sidebar: #F1F3EC;
-  --sidebar-foreground: #374446;
-  --sidebar-primary: #5F7A68;
+  --border: #DFDFEE;
+  --input: #DFDFEE;
+  --ring: #6C63F0;
+  --chart-1: #4F46E5;
+  --chart-2: #B45309;
+  --chart-3: #1B1B2F;
+  --chart-4: #8B85F0;
+  --chart-5: #1F7A54;
+  --radius: 1rem;
+  --sidebar: #F3F3FB;
+  --sidebar-foreground: #1B1B2F;
+  --sidebar-primary: #4F46E5;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #E1E6DD;
-  --sidebar-accent-foreground: #374446;
-  --sidebar-border: #DCE0D7;
-  --sidebar-ring: #768E7C;
+  --sidebar-accent: #E3E2F7;
+  --sidebar-accent-foreground: #1B1B2F;
+  --sidebar-border: #DFDFEE;
+  --sidebar-ring: #6C63F0;
 }
 
 .dark {
-  --background: #222B2C;
-  --foreground: #F7F8F5;
-  --card: #2C3739;
-  --card-foreground: #F7F8F5;
-  --popover: #2C3739;
-  --popover-foreground: #F7F8F5;
-  --primary: #8FA894;
-  --primary-foreground: #1E2627;
-  --secondary: #2C3739;
-  --secondary-foreground: #F7F8F5;
-  --muted: #2C3739;
-  --muted-foreground: #A6B2AC;
-  --accent: #354143;
-  --accent-foreground: #F7F8F5;
-  --destructive: #C4796B;
-  --clay: #C08574;
-  --clay-foreground: #26170F;
-  --clay-deep: #9D6858;
-  --sage: #8FA894;
-  --success: #86A891;
-  --success-foreground: #1E2627;
-  --warning: #C09A62;
-  --warning-foreground: #1E2627;
-  --border: #3E4A4C;
-  --input: #3E4A4C;
-  --ring: #8FA894;
-  --chart-1: #8FA894;
-  --chart-2: #C08574;
-  --chart-3: #F7F8F5;
-  --chart-4: #768E7C;
-  --chart-5: #9D6858;
-  --sidebar: #1E2627;
-  --sidebar-foreground: #F7F8F5;
-  --sidebar-primary: #8FA894;
-  --sidebar-primary-foreground: #1E2627;
-  --sidebar-accent: #2C3739;
-  --sidebar-accent-foreground: #F7F8F5;
-  --sidebar-border: #3E4A4C;
-  --sidebar-ring: #8FA894;
+  --background: #12121F;
+  --foreground: #F4F4FB;
+  --card: #1B1B2E;
+  --card-foreground: #F4F4FB;
+  --popover: #1B1B2E;
+  --popover-foreground: #F4F4FB;
+  --primary: #9A94FF;
+  --primary-foreground: #14142A;
+  --secondary: #1B1B2E;
+  --secondary-foreground: #F4F4FB;
+  --muted: #1B1B2E;
+  --muted-foreground: #A9A9C6;
+  --accent: #26264A;
+  --accent-foreground: #F4F4FB;
+  --destructive: #F28B82;
+  --clay: #F0A04B;
+  --clay-foreground: #2A1604;
+  --clay-deep: #F0A04B;
+  --sage: #9A94FF;
+  --success: #6FD3A4;
+  --success-foreground: #0E2A1D;
+  --warning: #E6B85C;
+  --warning-foreground: #2A1F04;
+  --border: #2E2E4D;
+  --input: #2E2E4D;
+  --ring: #9A94FF;
+  --chart-1: #9A94FF;
+  --chart-2: #F0A04B;
+  --chart-3: #F4F4FB;
+  --chart-4: #6C63F0;
+  --chart-5: #6FD3A4;
+  --sidebar: #0E0E1A;
+  --sidebar-foreground: #F4F4FB;
+  --sidebar-primary: #9A94FF;
+  --sidebar-primary-foreground: #14142A;
+  --sidebar-accent: #1B1B2E;
+  --sidebar-accent-foreground: #F4F4FB;
+  --sidebar-border: #2E2E4D;
+  --sidebar-ring: #9A94FF;
 }
 
 @layer base {

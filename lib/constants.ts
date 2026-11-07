@@ -1,5 +1,5 @@
 /**
- * Shared domain constants for TherapistCEU.com.
+ * Shared domain constants for Skillhive.
  * These mirror the Phase 1 scope and are reused across the directory,
  * trainer portal, and admin. Keep this the single source of truth.
  */

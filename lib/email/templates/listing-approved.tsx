@@ -24,7 +24,7 @@ export function ListingApprovedEmail({
       <Text style={emailStyles.heading}>Your listing is approved 🎉</Text>
       <Text style={emailStyles.paragraph}>
         Great news{firstName ? `, ${firstName}` : ""} — your training has been
-        approved and is now live in the TherapistCEU directory!
+        approved and is now live in the Skillhive directory!
       </Text>
       <Text style={emailStyles.cardBox}>{listingTitle}</Text>
       <Text style={emailStyles.muted}>

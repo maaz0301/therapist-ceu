@@ -18,12 +18,12 @@ export function ConfirmEmail({
   const firstName = name?.split(" ")[0];
 
   return (
-    <EmailLayout preview="Confirm your email address for TherapistCEU">
+    <EmailLayout preview="Confirm your email address for Skillhive">
       <Text style={emailStyles.heading}>
         Confirm your email address ✉️
       </Text>
       <Text style={emailStyles.paragraph}>
-        Hi{firstName ? ` ${firstName}` : ""}, thanks for signing up for TherapistCEU!
+        Hi{firstName ? ` ${firstName}` : ""}, thanks for signing up for Skillhive!
         Please confirm your email address to complete your account setup and start listing your trainings.
       </Text>
       <Section style={emailStyles.ctaSection}>
@@ -32,7 +32,7 @@ export function ConfirmEmail({
         </Link>
       </Section>
       <Text style={emailStyles.muted}>
-        If you didn&apos;t create a TherapistCEU account, you can safely ignore this email.
+        If you didn&apos;t create a Skillhive account, you can safely ignore this email.
       </Text>
       <Text style={emailStyles.muted}>
         Questions? Just reply to this email — we&apos;re happy to help.
