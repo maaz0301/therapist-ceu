@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { CalendarDays, MapPin } from "lucide-react";
+import { ArrowUpRight, CalendarDays, MapPin } from "lucide-react";
 
 import { FormatBadge } from "@/components/format-badge";
 import { CeuBadge } from "@/components/ceu-badge";
-import { Card } from "@/components/ui/card";
 import { CompareToggle } from "@/components/compare/compare-store";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { ListingFormat } from "@/lib/constants";
 
@@ -27,6 +27,15 @@ function formatPrice(price: number) {
   return `$${price % 1 === 0 ? price : price.toFixed(2)}`;
 }
 
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join("");
+}
+
 export function ListingCard({
   listing,
   className,
@@ -37,19 +46,20 @@ export function ListingCard({
   return (
     <Card
       className={cn(
-        "group relative flex h-full flex-col gap-4 p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/30 overflow-hidden",
+        "group relative flex h-full flex-col gap-4 overflow-hidden border border-border/60 p-5 ring-0 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10",
         className,
       )}
     >
-      <div className="absolute top-0 right-0 h-2 w-full bg-gradient-to-l from-clay/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-      
-      <div className="flex flex-wrap items-center gap-2">
+      {/* accent edge */}
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary/60 to-clay opacity-70 transition-opacity group-hover:opacity-100" />
+
+      <div className="flex flex-wrap items-center gap-2 pt-1">
         <FormatBadge format={listing.format} />
         {listing.hasCeu ? <CeuBadge ceCount={listing.ceCount} /> : null}
       </div>
 
-      <div className="space-y-1.5">
-        <h3 className="text-base leading-snug font-semibold text-foreground transition-colors group-hover:text-primary">
+      <div className="space-y-2">
+        <h3 className="font-heading text-lg leading-snug font-semibold text-foreground transition-colors group-hover:text-primary">
           <Link
             href={`/listings/${listing.slug}`}
             className="after:absolute after:inset-0"
@@ -57,40 +67,49 @@ export function ListingCard({
             {listing.title}
           </Link>
         </h3>
-        <p className="text-sm text-muted-foreground">
-          {listing.trainerName}
-          {listing.credentials ? (
-            <span className="text-muted-foreground/80">
-              {" "}
-              · {listing.credentials}
-            </span>
-          ) : null}
-        </p>
+        <div className="flex items-center gap-2.5">
+          <span
+            aria-hidden="true"
+            className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/12 text-[0.65rem] font-semibold text-primary"
+          >
+            {initials(listing.trainerName)}
+          </span>
+          <p className="min-w-0 truncate text-sm text-muted-foreground">
+            {listing.trainerName}
+            {listing.credentials ? (
+              <span className="text-muted-foreground/70">
+                {" "}
+                · {listing.credentials}
+              </span>
+            ) : null}
+          </p>
+        </div>
       </div>
 
-      <p className="line-clamp-2 text-sm text-muted-foreground">
+      <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
         {listing.excerpt}
       </p>
 
-      <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-        <span className="inline-flex items-center gap-1">
-          <MapPin className="size-3.5" />
+      <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5">
+          <MapPin className="size-3.5 text-primary/70" />
           {listing.location}
         </span>
-        <span className="inline-flex items-center gap-1">
-          <CalendarDays className="size-3.5" />
+        <span className="inline-flex items-center gap-1.5">
+          <CalendarDays className="size-3.5 text-primary/70" />
           {listing.schedule}
         </span>
       </div>
 
-      <div className="flex items-center justify-between border-t border-border pt-3">
-        <span className="text-base font-semibold text-foreground">
+      <div className="flex items-center justify-between border-t border-border/70 pt-3">
+        <span className="rounded-full bg-primary/10 px-3 py-1 font-heading text-sm font-semibold text-primary">
           {formatPrice(listing.price)}
         </span>
         <div className="flex items-center gap-3">
           <CompareToggle slug={listing.slug} title={listing.title} />
-          <span className="text-sm font-medium text-clay group-hover:underline">
-            View details
+          <span className="inline-flex items-center gap-0.5 text-sm font-medium text-clay transition-all group-hover:gap-1.5">
+            Details
+            <ArrowUpRight className="size-4" />
           </span>
         </div>
       </div>

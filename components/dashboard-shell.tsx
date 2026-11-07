@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { signOutAction } from "@/lib/actions/auth";
 import { DashboardMobileNav } from "@/components/dashboard-mobile-nav";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export type DashboardNavItem = {
   href: string;
@@ -61,8 +62,9 @@ export function DashboardShell({
   return (
     <div className="flex min-h-full flex-1">
       <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-sidebar md:fixed md:inset-y-0 md:left-0 md:z-20 md:flex">
-        <div className="flex h-16 items-center border-b border-border px-5">
+        <div className="flex h-16 items-center justify-between border-b border-border px-5">
           <Logo />
+          <ThemeToggle className="size-8" />
         </div>
         <div className="px-3 py-2">
           <span className="px-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
