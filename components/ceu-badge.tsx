@@ -14,7 +14,7 @@ export function CeuBadge({
   return (
     <Badge className={cn("bg-clay text-clay-foreground hover:bg-clay/90", className)}>
       <GraduationCap data-icon="inline-start" />
-      {ceCount ? `${ceCount} CE${Number(ceCount) === 1 ? "" : "s"}` : "CEU"}
+      {ceCount ? `${Number(ceCount)} credit${Number(ceCount) === 1 ? "" : "s"}` : "Credits"}
     </Badge>
   );
 }

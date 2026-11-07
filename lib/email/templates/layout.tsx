@@ -94,7 +94,7 @@ export function EmailLayout({
       <Body style={main}>
         <Container style={container}>
           <Text style={brand}>
-            Therapist<span style={brandAccent}>CEU</span>
+            Skill<span style={brandAccent}>hive</span>
           </Text>
           {children}
           <Hr
@@ -104,8 +104,8 @@ export function EmailLayout({
             }}
           />
           <Text style={footer}>
-            Skillhive — the directory of CEU &amp; professional trainings
-            for licensed mental health therapists.
+            Skillhive — the directory of professional courses &amp; trainings
+            for professionals in every field.
           </Text>
           <Text style={footer}>
             <Link href={appUrl} style={{ color: COLORS.muted }}>

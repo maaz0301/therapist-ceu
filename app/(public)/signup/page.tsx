@@ -17,7 +17,7 @@ export default function SignupPage() {
             Create your trainer account
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            List your trainings and reach therapists searching for CEUs.
+            List your trainings and reach learners searching for courses.
           </p>
         </div>
         <SignupForm />

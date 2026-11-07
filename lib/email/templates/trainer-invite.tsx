@@ -24,9 +24,9 @@ export function TrainerInviteEmail({
       </Text>
       <Text style={emailStyles.paragraph}>
         The Skillhive team has set up a trainer account for you. Accept the
-        invitation to choose a password, then you can start listing your CEU and
-        professional trainings for therapists who are actively searching for
-        continuing education.
+        invitation to choose a password, then you can start listing your
+        courses and trainings for learners who are actively searching for
+        their next step.
       </Text>
       <Section style={emailStyles.ctaSection}>
         <Link href={inviteUrl} style={emailButton}>

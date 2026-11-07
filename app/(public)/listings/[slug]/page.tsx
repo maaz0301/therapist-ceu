@@ -241,7 +241,7 @@ export default async function ListingDetailPage({
       </div>
 
       {/* The card above only has room for the next date; a training that
-          repeats lists every remaining run here so a therapist who can't make
+          repeats lists every remaining run here so a learner who can't make
           the first one can see what else is coming. */}
       {laterRuns.length > 0 ? (
         <div className="mt-8 space-y-3">

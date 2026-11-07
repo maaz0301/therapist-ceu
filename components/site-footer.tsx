@@ -8,8 +8,10 @@ const FOOTER_SECTIONS = [
     title: "Learners",
     links: [
       { href: "/directory", label: "Browse trainings" },
-      { href: "/directory?ceu=Yes", label: "CEU trainings" },
+      { href: "/directory?ceu=Yes", label: "Credit-eligible courses" },
       { href: "/directory?format=On-Demand", label: "On-demand" },
+      { href: "/calendar", label: "Calendar" },
+      { href: "/saved", label: "Saved & alerts" },
     ],
   },
   {
@@ -67,7 +69,7 @@ export async function SiteFooter() {
           <div className="space-y-3">
             <Logo />
             <p className="max-w-xs text-sm text-muted-foreground">
-              The clean, modern directory of CEU and professional trainings for
+              The clean, modern directory of professional courses and trainings for
               professionals in every field.
             </p>
           </div>

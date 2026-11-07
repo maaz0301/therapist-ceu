@@ -18,7 +18,7 @@ import { getGroupedTags } from "@/lib/queries/tags";
 export const metadata = {
   title: "Browse trainings",
   description:
-    "Search and filter CEU and professional trainings for therapists by topic, format, price, location, and accreditation.",
+    "Search and filter professional courses and trainings by topic, format, price, location, and accreditation.",
 };
 
 export default async function DirectoryPage({
@@ -46,7 +46,7 @@ export default async function DirectoryPage({
           Browse trainings
         </h1>
         <p className="text-muted-foreground">
-          Find CEU and professional trainings — filter by topic, format, price,
+          Find professional courses and trainings — filter by topic, format, price,
           location, and accreditation. No account needed.
         </p>
       </div>

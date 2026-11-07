@@ -151,7 +151,7 @@ export default async function ListingsPage({
         <EmptyState
           icon={ListChecks}
           title="No listings yet"
-          description="Create your first training listing to start reaching therapists searching for CEUs."
+          description="Create your first training listing to start reaching learners searching for courses."
           action={
             <ButtonLink variant="clay" href="/listings/new">
               Create a listing

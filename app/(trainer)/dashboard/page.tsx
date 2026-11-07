@@ -93,7 +93,7 @@ export default async function TrainerDashboardPage() {
           <EmptyState
             icon={ListChecks}
             title="No listings yet"
-            description="Create your first training listing to start reaching therapists."
+            description="Create your first training listing to start reaching learners."
             action={
               <ButtonLink variant="clay" href="/listings/new">
                 Create a listing

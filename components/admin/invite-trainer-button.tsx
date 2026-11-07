@@ -152,7 +152,7 @@ export function InviteTrainerButton() {
                 <Input
                   id="invite-fullName"
                   type="text"
-                  placeholder="Jane Doe, LCSW"
+                  placeholder="Jane Doe"
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
