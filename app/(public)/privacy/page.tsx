@@ -35,7 +35,7 @@ export default function PrivacyPage() {
               <strong>Account Data:</strong> For trainers, we collect name, email address, password, billing details (via Stripe), and training listing details.
             </li>
             <li>
-              <strong>Directory Usage:</strong> For therapists, we do not require account creation. We only collect anonymous searching behavior to optimize results.
+              <strong>Directory Usage:</strong> For learners browsing the directory, we do not require account creation. We only collect anonymous searching behavior to optimize results.
             </li>
           </ul>
         </section>

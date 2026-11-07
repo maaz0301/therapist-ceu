@@ -456,7 +456,7 @@ export function ListingForm({
               id="credentials"
               name="credentials"
               defaultValue={initial("credentials", listing?.credentials)}
-              placeholder="LCSW, RPT-S"
+              placeholder="e.g. PhD, PMP, CPA"
               required
             />
             <FieldError messages={errorsFor("credentials")} />
@@ -695,7 +695,7 @@ export function ListingForm({
 
       {/* CEU */}
       <Card className="space-y-4 p-6">
-        <h2 className="font-heading text-lg font-semibold">Continuing education</h2>
+        <h2 className="font-heading text-lg font-semibold">Credits &amp; accreditation</h2>
 
         <label className="flex items-center gap-2 text-sm">
           <Switch
@@ -739,7 +739,7 @@ export function ListingForm({
       <Card className="space-y-4 p-6">
         <h2 className="font-heading text-lg font-semibold">Topic tags</h2>
         <p className="text-sm text-muted-foreground">
-          Choose every topic that applies so therapists can find your training.
+          Choose every topic that applies so learners can find your training.
         </p>
         <TagMultiselect
           groups={groups}

@@ -65,7 +65,7 @@ export function SiteNav() {
   const hash = useSyncExternalStore(subscribeToHash, getHash, getServerHash);
 
   return (
-    <nav className="hidden items-center gap-1 md:flex">
+    <nav className="hidden items-center gap-1 lg:flex">
       {NAV_LINKS.map((link) => {
         let isActive = false;
 

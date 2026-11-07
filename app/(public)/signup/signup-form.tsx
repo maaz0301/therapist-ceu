@@ -29,7 +29,7 @@ export function SignupForm() {
           autoComplete="name"
           defaultValue={state?.values?.fullName ?? ""}
           required
-          placeholder="Jane Doe, LCSW"
+          placeholder="Jane Doe"
         />
       </div>
       <div className="flex flex-col gap-1.5">

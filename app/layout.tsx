@@ -49,15 +49,15 @@ function siteOrigin(): string {
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin()),
   title: {
-    default: "Skillhive — Find CEU trainings for therapists",
+    default: "Skillhive — Find the right professional training",
     template: "%s · Skillhive",
   },
   description:
-    "Search a clean, modern directory of CEU and professional trainings for licensed mental health therapists — by topic, format, state, price, and accreditation.",
+    "Search a clean, modern directory of professional courses and trainings — by topic, format, location, price and accreditation.",
   openGraph: {
     type: "website",
     siteName: "Skillhive",
-    title: "Skillhive — Find CEU trainings for therapists",
+    title: "Skillhive — Find the right professional training",
     description:
       "Search a clean, modern directory of professional courses and trainings.",
   },

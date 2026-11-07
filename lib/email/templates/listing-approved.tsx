@@ -28,7 +28,7 @@ export function ListingApprovedEmail({
       </Text>
       <Text style={emailStyles.cardBox}>{listingTitle}</Text>
       <Text style={emailStyles.muted}>
-        Therapists can now find your training when they search and filter. You can track
+        Learners can now find your training when they search and filter. You can track
         pageviews and registration link clicks anytime from your analytics dashboard.
       </Text>
       <Section style={emailStyles.ctaSection}>

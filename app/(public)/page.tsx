@@ -22,7 +22,7 @@ const HOW_IT_WORKS = [
     icon: Search,
     title: "Search by what matters",
     description:
-      "Filter by topic, format, state, price, and CEU accreditation to find trainings that fit your license — in seconds.",
+      "Filter by topic, format, state, price and accreditation to find trainings that fit your goals — in seconds.",
     colorClass: "bg-primary/8 text-primary border border-primary/15",
   },
   {
@@ -124,7 +124,7 @@ export default async function HomePage() {
               How it works
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Finding the right continuing education shouldn&apos;t take an hour
+              Finding the right training shouldn&apos;t take an hour
               of Googling. Here&apos;s the whole flow.
             </p>
           </div>
