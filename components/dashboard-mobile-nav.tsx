@@ -9,8 +9,8 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { Sheet, SheetTrigger, SheetContent, SheetHeader } from "@/components/ui/sheet";
 import { signOutAction } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
+import { getDashboardIcon } from "@/components/dashboard-icons";
 import {
-  getDashboardIcon,
   type DashboardNavItem,
   type DashboardAccount,
 } from "@/components/dashboard-shell";

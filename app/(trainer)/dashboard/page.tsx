@@ -1,17 +1,10 @@
-import {
-  BarChart3,
-  Eye,
-  ListChecks,
-  MousePointerClick,
-  Plus,
-} from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, Check, ListChecks, Plus } from "lucide-react";
 
 import { EmptyState } from "@/components/empty-state";
 import { ListingStatusBadge } from "@/components/listing-status-badge";
-import { StatCard } from "@/components/analytics/stat-card";
 import { SubscriptionBanner } from "@/components/subscription-banner";
 import { ButtonLink } from "@/components/ui/button-link";
-import { Card } from "@/components/ui/card";
 import { requireTrainer, requireUser } from "@/lib/auth";
 import { getTrainerAnalytics } from "@/lib/queries/analytics";
 import {
@@ -21,6 +14,11 @@ import {
 import { getSubscriptionState } from "@/lib/subscription";
 
 export const metadata = { title: "Dashboard" };
+
+function greeting() {
+  const h = new Date().getHours();
+  return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+}
 
 export default async function TrainerDashboardPage() {
   // `requireUser` verifies the JWT locally, so the trainer's id is available
@@ -36,22 +34,36 @@ export default async function TrainerDashboardPage() {
     getRecentTrainerListings(user.id, 5),
   ]);
   const subscription = getSubscriptionState(profile);
-  // `counts` already reports the active total; a second count query for the
-  // same table was a wasted round-trip.
   const activeCount = counts.active;
+  const firstName = profile.fullName?.split(" ")[0];
+
+  const stats = [
+    { label: "Active", value: activeCount, hint: `${counts.pending} pending review` },
+    { label: "Views", value: analytics.totals.views, hint: "all time" },
+    { label: "Clicks", value: analytics.totals.clicks, hint: "to your page" },
+    { label: "Listings", value: counts.total, hint: "total created" },
+  ];
+
+  const checklist = [
+    { done: Boolean(profile.bio && profile.websiteUrl), label: "Complete your profile", href: "/settings" },
+    { done: subscription.isActive, label: "Choose a plan", href: "/billing" },
+    { done: counts.total > 0, label: "Create your first listing", href: "/listings/new" },
+    { done: activeCount > 0, label: "Publish a listing", href: "/listings" },
+  ];
+  const doneCount = checklist.filter((c) => c.done).length;
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Greeting */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-bold text-foreground">
-            Welcome{profile.fullName ? `, ${profile.fullName}` : ""}
+          <p className="text-xs font-bold tracking-widest text-clay uppercase">Trainer dashboard</p>
+          <h1 className="mt-2 font-heading text-4xl font-semibold text-foreground sm:text-5xl">
+            {greeting()}
+            {firstName ? `, ${firstName}` : ""}.
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Manage your trainings and track their performance.
-          </p>
         </div>
-        <ButtonLink variant="clay" href="/listings/new">
+        <ButtonLink variant="clay" size="lg" href="/listings/new">
           <Plus data-icon="inline-start" />
           New listing
         </ButtonLink>
@@ -59,80 +71,98 @@ export default async function TrainerDashboardPage() {
 
       <SubscriptionBanner subscription={subscription} activeCount={activeCount} />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Active listings"
-          value={activeCount}
-          icon={ListChecks}
-          hint={`${counts.pending} pending review`}
-        />
-        <StatCard label="Total views" value={analytics.totals.views} icon={Eye} />
-        <StatCard
-          label="Link clicks"
-          value={analytics.totals.clicks}
-          icon={MousePointerClick}
-        />
-        <StatCard
-          label="Total listings"
-          value={counts.total}
-          icon={BarChart3}
-        />
+      {/* Stat ledger */}
+      <div className="hard grid grid-cols-2 gap-[2px] overflow-hidden rounded-xl bg-foreground sm:grid-cols-4">
+        {stats.map((s) => (
+          <div key={s.label} className="bg-card p-5">
+            <p className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+              {s.label}
+            </p>
+            <p className="mt-2 font-heading text-5xl font-semibold text-primary">{s.value}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{s.hint}</p>
+          </div>
+        ))}
       </div>
 
-      <Card className="p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-heading text-lg font-semibold">Recent listings</h2>
-          {counts.total > 0 ? (
-            <ButtonLink variant="ghost" size="sm" href="/listings">
-              View all
-            </ButtonLink>
-          ) : null}
-        </div>
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Recent listings */}
+        <section className="hard rounded-xl bg-card lg:col-span-2">
+          <div className="flex items-center justify-between border-b-2 border-foreground px-5 py-3">
+            <h2 className="font-heading text-xl font-semibold">Recent listings</h2>
+            {counts.total > 0 ? (
+              <Link href="/listings" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                View all <ArrowUpRight className="size-4" />
+              </Link>
+            ) : null}
+          </div>
 
-        {recent.length === 0 ? (
-          <EmptyState
-            icon={ListChecks}
-            title="No listings yet"
-            description="Create your first training listing to start reaching learners."
-            action={
-              <ButtonLink variant="clay" href="/listings/new">
-                Create a listing
-              </ButtonLink>
-            }
-          />
-        ) : (
-          <ul className="divide-y divide-border">
-            {recent.map((listing) => (
-              <li
-                key={listing.id}
-                className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
-              >
-                <div className="min-w-0">
-                  <p className="truncate font-medium text-foreground">
-                    {listing.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {listing.format}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <ListingStatusBadge
-                    status={listing.status}
-                    active={listing.active}
-                  />
-                  <ButtonLink
-                    variant="outline"
-                    size="sm"
-                    href={`/listings/${listing.slug}/edit`}
-                  >
-                    Edit
+          {recent.length === 0 ? (
+            <div className="p-5">
+              <EmptyState
+                icon={ListChecks}
+                title="No listings yet"
+                description="Create your first training listing to start reaching learners."
+                action={
+                  <ButtonLink variant="clay" href="/listings/new">
+                    Create a listing
                   </ButtonLink>
-                </div>
+                }
+              />
+            </div>
+          ) : (
+            <ul className="divide-y-2 divide-foreground/15">
+              {recent.map((listing) => (
+                <li
+                  key={listing.id}
+                  className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-foreground">{listing.title}</p>
+                    <p className="text-xs text-muted-foreground">{listing.format}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <ListingStatusBadge status={listing.status} active={listing.active} />
+                    <ButtonLink variant="outline" size="sm" href={`/listings/${listing.slug}/edit`}>
+                      Edit
+                    </ButtonLink>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {/* Getting started */}
+        <section className="hard self-start rounded-xl bg-card">
+          <div className="flex items-center justify-between border-b-2 border-foreground px-5 py-3">
+            <h2 className="font-heading text-xl font-semibold">Getting started</h2>
+            <span className="rounded-md border-2 border-foreground bg-clay px-2 py-0.5 text-xs font-bold text-clay-foreground">
+              {doneCount}/{checklist.length}
+            </span>
+          </div>
+          <ul className="divide-y-2 divide-foreground/15">
+            {checklist.map((c) => (
+              <li key={c.label}>
+                <Link
+                  href={c.href}
+                  className="flex items-center gap-3 px-5 py-3.5 text-sm transition-colors hover:bg-accent"
+                >
+                  <span
+                    className={`flex size-5 shrink-0 items-center justify-center rounded border-2 border-foreground ${
+                      c.done ? "bg-primary text-primary-foreground" : "bg-background"
+                    }`}
+                  >
+                    {c.done ? <Check className="size-3.5" /> : null}
+                  </span>
+                  <span className={c.done ? "text-muted-foreground line-through" : "font-medium"}>
+                    {c.label}
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>
-        )}
-      </Card>
+        </section>
+      </div>
     </div>
   );
 }
