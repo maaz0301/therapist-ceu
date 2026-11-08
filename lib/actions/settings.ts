@@ -7,7 +7,10 @@ import { z } from "zod";
 import { profiles } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { redirect } from "next/navigation";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getSubscriptionState } from "@/lib/subscription";
 
 export type SettingsState = { error?: string; success?: string } | null;
 
@@ -81,4 +84,51 @@ export async function changePasswordAction(
   const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
   if (error) return { error: error.message };
   return { success: "Password updated." };
+}
+
+export async function updateNotificationsAction(
+  _prev: SettingsState,
+  formData: FormData,
+): Promise<SettingsState> {
+  const user = await requireUser();
+  await db
+    .update(profiles)
+    .set({
+      notifyAlerts: formData.get("notifyAlerts") === "on",
+      notifyProduct: formData.get("notifyProduct") === "on",
+      updatedAt: new Date(),
+    })
+    .where(eq(profiles.id, user.id));
+  revalidatePath("/settings");
+  return { success: "Email preferences saved." };
+}
+
+/**
+ * Permanently deletes the signed-in account and everything it owns. The user
+ * must type DELETE, and an active subscription must be cancelled first so
+ * nobody keeps being billed for an account that no longer exists.
+ */
+export async function deleteAccountAction(
+  _prev: SettingsState,
+  formData: FormData,
+): Promise<SettingsState> {
+  const user = await requireUser();
+  if (String(formData.get("confirm") ?? "").trim() !== "DELETE") {
+    return { error: "Type DELETE to confirm." };
+  }
+
+  const [profile] = await db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1);
+  if (profile && getSubscriptionState(profile).isActive) {
+    return { error: "Cancel your subscription in Billing before deleting your account." };
+  }
+
+  // Profile first: listings, saved courses, alerts and reviews cascade from it.
+  await db.delete(profiles).where(eq(profiles.id, user.id));
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin.auth.admin.deleteUser(user.id);
+  if (error) return { error: "Could not finish deleting your account. Please contact support." };
+
+  const supabase = await createSupabaseServerClient();
+  await supabase.auth.signOut();
+  redirect("/?deleted=1");
 }

@@ -86,6 +86,9 @@ export const profiles = pgTable(
   bio: text("bio"),
   websiteUrl: text("website_url"),
   contactEmail: text("contact_email"),
+  // Email preferences (Settings page).
+  notifyAlerts: boolean("notify_alerts").notNull().default(true),
+  notifyProduct: boolean("notify_product").notNull().default(true),
   // Subscription state — plain columns now; Stripe drives them in Phase 5.
   stripeCustomerId: text("stripe_customer_id"),
   subscriptionStatus: subscriptionStatus("subscription_status")

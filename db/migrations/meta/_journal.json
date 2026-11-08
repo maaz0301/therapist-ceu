@@ -43,6 +43,13 @@
       "when": 1794052756650,
       "tag": "0005_serious_sunspot",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794142491735,
+      "tag": "0006_polite_demogoblin",
+      "breakpoints": true
     }
   ]
 }

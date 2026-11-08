@@ -3,7 +3,13 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { requireTrainer, requireUser } from "@/lib/auth";
 import { getSubscriptionState } from "@/lib/subscription";
-import { PasswordForm, ProfileForm, ThemePicker } from "./settings-forms";
+import {
+  DeleteAccountForm,
+  NotificationsForm,
+  PasswordForm,
+  ProfileForm,
+  ThemePicker,
+} from "./settings-forms";
 
 export const metadata = { title: "Settings" };
 
@@ -55,6 +61,12 @@ export default async function SettingsPage() {
         />
       </Section>
 
+      <Section title="Email notifications" description="Choose which emails you receive.">
+        <NotificationsForm
+          defaults={{ notifyAlerts: profile.notifyAlerts, notifyProduct: profile.notifyProduct }}
+        />
+      </Section>
+
       <Section title="Appearance" description="Choose a theme. System follows your device.">
         <ThemePicker />
       </Section>
@@ -88,6 +100,16 @@ export default async function SettingsPage() {
           </div>
         </dl>
       </Section>
+
+      <Card className="gap-5 border-destructive/40 p-6">
+        <div>
+          <h2 className="font-heading text-lg font-semibold text-destructive">Delete account</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Permanently removes your profile, courses, saved items and alerts. This cannot be undone.
+          </p>
+        </div>
+        <DeleteAccountForm />
+      </Card>
     </div>
   );
 }

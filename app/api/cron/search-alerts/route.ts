@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 
-import { searchAlerts } from "@/db/schema";
+import { profiles, searchAlerts } from "@/db/schema";
 import { db } from "@/lib/db";
 import { sendSearchAlertEmail } from "@/lib/email/send";
 import { findAlertMatches } from "@/lib/queries/engagement";
@@ -23,7 +23,14 @@ export async function GET(request: Request) {
     }
   }
 
-  const alerts = await db.select().from(searchAlerts);
+  // Only learners who have not switched alert emails off in Settings.
+  const alerts = (
+    await db
+      .select({ alert: searchAlerts })
+      .from(searchAlerts)
+      .innerJoin(profiles, eq(profiles.id, searchAlerts.userId))
+      .where(eq(profiles.notifyAlerts, true))
+  ).map((r) => r.alert);
   const startedAt = new Date();
   let sent = 0;
 

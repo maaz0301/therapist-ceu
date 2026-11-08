@@ -9,8 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   changePasswordAction,
+  deleteAccountAction,
+  updateNotificationsAction,
   updateProfileAction,
   type SettingsState,
 } from "@/lib/actions/settings";
@@ -141,5 +144,72 @@ export function ThemePicker() {
         );
       })}
     </div>
+  );
+}
+
+export function NotificationsForm({
+  defaults,
+}: {
+  defaults: { notifyAlerts: boolean; notifyProduct: boolean };
+}) {
+  const [state, action, pending] = useActionState<SettingsState, FormData>(
+    updateNotificationsAction,
+    null,
+  );
+  const rows = [
+    {
+      name: "notifyAlerts",
+      title: "Keyword alerts",
+      text: "Email me when a new course matches one of my saved alerts.",
+      on: defaults.notifyAlerts,
+    },
+    {
+      name: "notifyProduct",
+      title: "Product news",
+      text: "Occasional updates about new Skillhive features.",
+      on: defaults.notifyProduct,
+    },
+  ];
+  return (
+    <form action={action} className="space-y-4">
+      <ul className="divide-y divide-border rounded-xl border border-border">
+        {rows.map((r) => (
+          <li key={r.name} className="flex items-center justify-between gap-4 p-4">
+            <div>
+              <p className="text-sm font-medium text-foreground">{r.title}</p>
+              <p className="text-sm text-muted-foreground">{r.text}</p>
+            </div>
+            <Switch name={r.name} defaultChecked={r.on} aria-label={r.title} />
+          </li>
+        ))}
+      </ul>
+      <div className="flex items-center gap-3">
+        <Button type="submit" disabled={pending}>
+          {pending ? "Saving…" : "Save preferences"}
+        </Button>
+        <Status state={state} />
+      </div>
+    </form>
+  );
+}
+
+export function DeleteAccountForm() {
+  const [state, action, pending] = useActionState<SettingsState, FormData>(
+    deleteAccountAction,
+    null,
+  );
+  return (
+    <form action={action} className="space-y-3">
+      <div className="space-y-1.5">
+        <Label htmlFor="confirm-delete">Type DELETE to confirm</Label>
+        <Input id="confirm-delete" name="confirm" autoComplete="off" className="max-w-xs" />
+      </div>
+      <div className="flex items-center gap-3">
+        <Button type="submit" variant="destructive" disabled={pending}>
+          {pending ? "Deleting…" : "Delete my account"}
+        </Button>
+        <Status state={state} />
+      </div>
+    </form>
   );
 }
