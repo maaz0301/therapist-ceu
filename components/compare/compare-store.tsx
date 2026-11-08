@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { GitCompareArrows, X } from "lucide-react";
 
+import { COMPARE_MAX } from "@/lib/compare";
+
 const KEY = "skillhive:compare";
 const EVENT = "skillhive:compare-change";
-export const COMPARE_MAX = 3;
 
 export type CompareItem = { slug: string; title: string };
 

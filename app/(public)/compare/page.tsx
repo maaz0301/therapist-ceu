@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ButtonLink } from "@/components/ui/button-link";
-import { COMPARE_MAX } from "@/components/compare/compare-store";
+import { COMPARE_MAX } from "@/lib/compare";
 import { getListingsForCompare } from "@/lib/queries/discover";
 import { formatDateRange } from "@/lib/dates";
 
