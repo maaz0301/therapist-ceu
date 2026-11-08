@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,10 +12,11 @@ const sans = Inter({
   display: "swap",
 });
 
-const heading = Plus_Jakarta_Sans({
+const heading = Fraunces({
   variable: "--font-heading",
   subsets: ["latin"],
   display: "swap",
+  axes: ["opsz"],
 });
 
 const mono = JetBrains_Mono({

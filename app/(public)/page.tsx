@@ -1,35 +1,22 @@
 import {
-  Search,
-  ListChecks,
-  CalendarCheck,
-  Check,
-  Sparkles,
   ArrowRight,
-  GitCompareArrows,
-  CalendarDays,
+  ArrowUpRight,
   BellRing,
+  CalendarDays,
+  GitCompareArrows,
+  Search,
   Star,
-  ShieldCheck,
-  MousePointerClick,
-  Briefcase,
-  Code2,
-  HeartPulse,
-  Scale,
-  Megaphone,
-  Palette,
-  Clock,
-  Users,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ListingCard } from "@/components/listing-card";
 import { getFeaturedListings } from "@/lib/queries/directory";
 import { SUBSCRIPTION_TIERS } from "@/lib/constants";
-import { brand } from "@/lib/brand";
+
+export const dynamic = "force-dynamic";
 
 const QUICK_FILTERS = [
   { label: "Live online", href: "/directory?formats=Live%20Virtual" },
@@ -38,83 +25,83 @@ const QUICK_FILTERS = [
   { label: "Hybrid", href: "/directory?formats=Hybrid" },
 ];
 
-const CATEGORIES = [
-  { icon: Briefcase, label: "Leadership & management", q: "leadership" },
-  { icon: Code2, label: "Tech & data", q: "data" },
-  { icon: HeartPulse, label: "Health & wellbeing", q: "health" },
-  { icon: Scale, label: "Compliance & ethics", q: "ethics" },
-  { icon: Megaphone, label: "Sales & marketing", q: "marketing" },
-  { icon: Palette, label: "Design & creative", q: "design" },
+const TOPICS = [
+  "Leadership",
+  "Data & analytics",
+  "Project management",
+  "Marketing",
+  "Design",
+  "Finance",
+  "Ethics & compliance",
+  "Wellbeing",
+  "Public speaking",
+  "Product",
+  "Sales",
+  "AI",
 ];
 
-const STATS = [
-  { icon: Clock, value: "60 sec", label: "to a shortlist" },
-  { icon: Users, value: "Free", label: "for every learner" },
-  { icon: ShieldCheck, value: "0", label: "middlemen or booking fees" },
+const LEDGER = [
+  { value: "60s", label: "from search to shortlist" },
+  { value: "3", label: "courses compared side by side" },
+  { value: "$0", label: "cost to learners, always" },
 ];
 
-const HOW_IT_WORKS = [
+const STEPS = [
   {
-    icon: Search,
-    title: "Tell us what you need",
-    description:
-      "Type a skill or pick a topic, then narrow by format, location, price and credits.",
+    title: "Search what you need",
+    text: "Type a skill, then narrow by format, location, price and credits.",
   },
   {
-    icon: ListChecks,
     title: "Shortlist and compare",
-    description:
-      "Save the ones you like and line up to three side by side: price, dates, format and credits.",
+    text: "Save favourites and line up to three in one table: price, dates, format, credits.",
   },
   {
-    icon: CalendarCheck,
     title: "Sign up with the trainer",
-    description:
-      "Go straight to their registration page. You pay the trainer, never us.",
+    text: "Go straight to their registration page. You pay the trainer, never us.",
   },
 ];
 
-const FEATURES = [
+const TOOLS = [
   {
     icon: GitCompareArrows,
-    title: "Side-by-side compare",
-    description: "Put three courses in one table and see the real differences.",
+    title: "Compare",
+    text: "Three courses, one table, real differences.",
     href: "/compare",
-    cta: "Open compare",
+    tone: "bg-primary text-primary-foreground",
   },
   {
     icon: CalendarDays,
-    title: "Month-view calendar",
-    description: "See every upcoming session by date and plan around your week.",
+    title: "Calendar",
+    text: "Every upcoming session laid out by month.",
     href: "/calendar",
-    cta: "View calendar",
+    tone: "bg-card text-foreground",
   },
   {
     icon: BellRing,
-    title: "Keyword alerts",
-    description: "Tell us what you are after and we email you when a match appears.",
+    title: "Alerts",
+    text: "Get an email when a new course matches your keywords.",
     href: "/saved",
-    cta: "Create an alert",
+    tone: "bg-clay text-clay-foreground",
   },
   {
     icon: Star,
-    title: "Reviews that reply",
-    description: "Ratings from past learners, with answers from the trainers themselves.",
+    title: "Reviews",
+    text: "Honest ratings, with replies from the trainers.",
     href: "/directory",
-    cta: "Read reviews",
+    tone: "bg-card text-foreground",
   },
 ];
 
 const PRICING = [
   {
     ...SUBSCRIPTION_TIERS.basic,
-    blurb: "Perfect for getting started.",
+    blurb: "For trainers just getting started.",
     features: ["Up to 2 active listings", "Listing analytics", "Self-serve billing"],
     highlighted: false,
   },
   {
     ...SUBSCRIPTION_TIERS.pro,
-    blurb: "For trainers with a full catalog.",
+    blurb: "For trainers with a full catalogue.",
     features: [
       "Unlimited active listings",
       "Listing analytics",
@@ -125,8 +112,6 @@ const PRICING = [
   },
 ];
 
-export const dynamic = "force-dynamic";
-
 export default async function HomePage() {
   // The home page must still render if the database is briefly unreachable.
   const featured = await getFeaturedListings(4).catch(() => []);
@@ -134,32 +119,24 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative isolate overflow-hidden">
-        <div className="bg-grid pointer-events-none absolute inset-0 -z-10" />
-        <div className="pointer-events-none absolute -top-32 -left-24 -z-10 h-[28rem] w-[34rem] rounded-full bg-primary/15 blur-[110px]" />
-        <div className="pointer-events-none absolute top-20 -right-24 -z-10 h-80 w-80 rounded-full bg-clay/20 blur-[100px]" />
-
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pt-16 pb-20 sm:px-6 sm:pt-24 lg:grid-cols-[1.15fr_0.85fr]">
-          <div>
-            <Badge className="rise-in gap-1.5 border border-primary/25 bg-primary/10 px-3 py-1 text-primary hover:bg-primary/15">
-              <Sparkles className="size-3.5" />
-              Training for every profession
-            </Badge>
-
-            <h1 className="rise-in mt-6 font-heading text-4xl leading-[1.05] font-bold tracking-tight text-foreground [animation-delay:60ms] sm:text-6xl">
-              Learn the next thing{" "}
-              <span className="gradient-text">in minutes, not hours.</span>
+      <section className="paper-dots border-b-2 border-foreground">
+        <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-12 lg:gap-14">
+          <div className="lg:col-span-7">
+            <p className="inline-block rounded-md border-2 border-foreground bg-card px-2.5 py-1 text-xs font-bold tracking-widest uppercase">
+              The training directory
+            </p>
+            <h1 className="mt-6 font-heading text-5xl leading-[0.98] font-semibold text-foreground sm:text-7xl">
+              Training worth <span className="gradient-text">your time.</span>
             </h1>
-
-            <p className="rise-in mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground [animation-delay:120ms]">
-              {brand.name} gathers courses and workshops from independent
-              trainers into one place. Search, compare and sign up, all without
-              creating an account.
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+              Courses and workshops from independent trainers, gathered in one
+              place. Search, compare and sign up in minutes, with no account
+              needed.
             </p>
 
             <form
               action="/directory"
-              className="rise-in glass mt-8 flex w-full max-w-xl items-center gap-2 rounded-2xl border border-border p-2 shadow-xl shadow-primary/10 transition-shadow [animation-delay:180ms] focus-within:shadow-2xl focus-within:shadow-primary/20"
+              className="hard mt-8 flex w-full max-w-xl items-center gap-2 rounded-xl bg-card p-2"
             >
               <div className="flex flex-1 items-center gap-3 pl-3">
                 <Search className="size-5 shrink-0 text-muted-foreground" />
@@ -172,17 +149,16 @@ export default async function HomePage() {
                 />
               </div>
               <Button type="submit" variant="clay" size="xl">
-                Find courses
+                Search
               </Button>
             </form>
 
-            <div className="rise-in mt-5 flex flex-wrap items-center gap-2 [animation-delay:240ms]">
-              <span className="mr-1 text-sm text-muted-foreground">Browse:</span>
+            <div className="mt-5 flex flex-wrap items-center gap-2">
               {QUICK_FILTERS.map((f) => (
                 <Link
                   key={f.label}
                   href={f.href}
-                  className="rounded-full border border-border bg-card/70 px-3.5 py-1.5 text-sm text-foreground/80 backdrop-blur transition-colors hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
+                  className="rounded-md border-2 border-foreground bg-background px-3 py-1 text-sm font-medium transition-colors hover:bg-foreground hover:text-background"
                 >
                   {f.label}
                 </Link>
@@ -190,252 +166,203 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Stat stack */}
-          <div className="rise-in grid gap-4 [animation-delay:200ms]">
-            {STATS.map((s, i) => (
-              <div
-                key={s.label}
-                className={
-                  "glass flex items-center gap-4 rounded-2xl border border-border p-5 shadow-lg shadow-primary/5 " +
-                  (i % 2 === 1 ? "lg:ml-6" : "")
-                }
-              >
-                <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-md shadow-primary/25">
-                  <s.icon className="size-6" />
-                </span>
-                <div>
-                  <p className="font-heading text-2xl font-bold text-foreground">{s.value}</p>
-                  <p className="text-sm text-muted-foreground">{s.label}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Ledger */}
+          <aside className="hard self-center rounded-xl bg-card lg:col-span-5">
+            <p className="border-b-2 border-foreground px-5 py-3 text-xs font-bold tracking-widest uppercase">
+              Why it&apos;s faster
+            </p>
+            <ul className="divide-y-2 divide-foreground">
+              {LEDGER.map((l) => (
+                <li key={l.label} className="flex items-baseline gap-4 px-5 py-5">
+                  <span className="font-heading text-5xl font-semibold text-primary">
+                    {l.value}
+                  </span>
+                  <span className="text-sm text-muted-foreground">{l.label}</span>
+                </li>
+              ))}
+            </ul>
+          </aside>
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="border-y border-border bg-card/60">
-        <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6">
-          <h2 className="font-heading text-2xl font-bold text-foreground sm:text-3xl">
-            Start with a topic
-          </h2>
-          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-            {CATEGORIES.map((c) => (
-              <Link
-                key={c.label}
-                href={`/directory?q=${encodeURIComponent(c.q)}`}
-                className="group flex flex-col items-start gap-3 rounded-2xl border border-border bg-background p-4 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10"
-              >
-                <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                  <c.icon className="size-5" />
-                </span>
-                <span className="text-sm font-medium text-foreground">{c.label}</span>
-              </Link>
+      {/* Topic strip */}
+      <section className="border-b-2 border-foreground bg-foreground text-background">
+        <div className="mx-auto no-scrollbar flex w-full max-w-6xl items-center gap-6 overflow-x-auto px-4 py-4 sm:px-6">
+          <span className="shrink-0 text-xs font-bold tracking-widest uppercase text-clay">
+            Browse by topic
+          </span>
+          <ul className="flex items-center gap-6 whitespace-nowrap text-sm font-medium">
+            {TOPICS.map((t) => (
+              <li key={t}>
+                <Link
+                  href={`/directory?q=${encodeURIComponent(t.split(" ")[0].toLowerCase())}`}
+                  className="underline-offset-4 hover:text-clay hover:underline"
+                >
+                  {t}
+                </Link>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="border-y border-border bg-card/60">
-        <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-sm font-semibold tracking-wide text-primary uppercase">
-              How it works
-            </p>
-            <h2 className="mt-2 font-heading text-3xl font-bold text-foreground sm:text-4xl">
-              Three steps from curious to enrolled
+      <section id="how-it-works" className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6">
+        <div className="grid gap-10 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <p className="text-xs font-bold tracking-widest text-clay uppercase">How it works</p>
+            <h2 className="mt-3 font-heading text-4xl leading-tight font-semibold sm:text-5xl">
+              Three steps. No tab overload.
             </h2>
-            <p className="mt-3 text-muted-foreground">
-              No more twenty open tabs. Here is the whole journey.
-            </p>
           </div>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {HOW_IT_WORKS.map((step, i) => (
-              <Card
-                key={step.title}
-                className="relative p-7 transition-transform duration-300 hover:-translate-y-1"
+          <ol className="lg:col-span-8">
+            {STEPS.map((s, i) => (
+              <li
+                key={s.title}
+                className="grid grid-cols-[4rem_1fr] items-baseline gap-4 border-t-2 border-foreground py-7 last:border-b-2 sm:grid-cols-[6rem_1fr]"
               >
-                <span className="absolute top-5 right-6 font-heading text-5xl font-bold text-foreground/[0.06]">
-                  0{i + 1}
+                <span className="font-heading text-5xl font-semibold text-primary sm:text-6xl">
+                  {i + 1}
                 </span>
-                <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-lg shadow-primary/25">
-                  <step.icon className="size-6" />
+                <div>
+                  <h3 className="font-heading text-2xl font-semibold">{s.title}</h3>
+                  <p className="mt-1.5 max-w-lg text-muted-foreground">{s.text}</p>
                 </div>
-                <h3 className="mt-5 font-heading text-lg font-semibold text-foreground">
-                  {step.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {step.description}
-                </p>
-              </Card>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
-      {/* Featured trainings */}
+      {/* Featured */}
       {featured.length > 0 ? (
-        <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6">
-          <div className="flex items-end justify-between gap-4">
-            <div className="max-w-2xl">
-              <p className="text-sm font-semibold tracking-wide text-primary uppercase">
-                Featured
-              </p>
-              <h2 className="mt-2 font-heading text-3xl font-bold text-foreground sm:text-4xl">
-                Fresh from our trainers
-              </h2>
+        <section className="border-y-2 border-foreground bg-secondary/60">
+          <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold tracking-widest text-clay uppercase">Featured</p>
+                <h2 className="mt-3 font-heading text-4xl font-semibold sm:text-5xl">
+                  Fresh from our trainers
+                </h2>
+              </div>
+              <ButtonLink variant="outline" size="lg" className="hidden shrink-0 sm:inline-flex" href="/directory">
+                See all
+                <ArrowRight data-icon="inline-end" />
+              </ButtonLink>
             </div>
-            <ButtonLink
-              variant="outline"
-              size="lg"
-              className="hidden shrink-0 sm:inline-flex"
-              href="/directory"
-            >
-              Browse all
-              <ArrowRight data-icon="inline-end" />
-            </ButtonLink>
-          </div>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {featured.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
-            ))}
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {featured.map((listing) => (
+                <ListingCard key={listing.id} listing={listing} />
+              ))}
+            </div>
           </div>
         </section>
       ) : null}
 
-      {/* Feature grid */}
-      <section className="border-t border-border bg-secondary/40">
-        <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-sm font-semibold tracking-wide text-primary uppercase">
-              Why learners stay
-            </p>
-            <h2 className="mt-2 font-heading text-3xl font-bold text-foreground sm:text-4xl">
-              Tools that make choosing easy
-            </h2>
-          </div>
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURES.map((f) => (
-              <Link
-                key={f.title}
-                href={f.href}
-                className="group glass flex flex-col rounded-2xl border border-border p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10"
-              >
-                <div className="flex size-11 items-center justify-center rounded-xl bg-clay/12 text-clay transition-colors group-hover:bg-clay group-hover:text-clay-foreground">
-                  <f.icon className="size-5" />
-                </div>
-                <h3 className="mt-4 font-heading text-base font-semibold text-foreground">
-                  {f.title}
-                </h3>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                  {f.description}
-                </p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary transition-all group-hover:gap-2">
-                  {f.cta}
-                  <ArrowRight className="size-4" />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* For trainers / pricing */}
-      <section id="for-trainers" className="border-t border-border">
-        <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6">
-          <div className="mx-auto max-w-2xl text-center">
-            <Badge className="mx-auto gap-1.5 border border-clay/25 bg-clay/10 text-clay hover:bg-clay/15">
-              <MousePointerClick data-icon="inline-start" />
-              For {brand.terms.providers.toLowerCase()}
-            </Badge>
-            <h2
-              id="pricing"
-              className="mt-4 font-heading text-3xl font-bold text-foreground sm:text-4xl"
+      {/* Tools bento */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6">
+        <p className="text-xs font-bold tracking-widest text-clay uppercase">Built for learners</p>
+        <h2 className="mt-3 max-w-2xl font-heading text-4xl font-semibold sm:text-5xl">
+          Tools that make choosing easy
+        </h2>
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {TOOLS.map((t) => (
+            <Link
+              key={t.title}
+              href={t.href}
+              className={`hard hard-hover group flex min-h-48 flex-col justify-between rounded-xl p-6 ${t.tone}`}
             >
-              Reach people who are ready to enrol
-            </h2>
-            <p className="mt-3 text-muted-foreground">
-              Skip the ad spend. Put your courses where learners are already looking.
-            </p>
-          </div>
-
-          <div className="mx-auto mt-12 grid max-w-3xl gap-6 sm:grid-cols-2">
-            {PRICING.map((tier) => (
-              <Card
-                key={tier.id}
-                className={
-                  tier.highlighted
-                    ? "relative flex h-full flex-col overflow-visible border-2 border-primary bg-gradient-to-b from-primary/[0.07] to-card p-7 shadow-xl shadow-primary/15"
-                    : "flex h-full flex-col p-7"
-                }
-              >
-                {tier.highlighted ? (
-                  <Badge className="absolute -top-3 right-6 bg-clay text-clay-foreground shadow-md">
-                    Most popular
-                  </Badge>
-                ) : null}
-                <h3 className="font-heading text-lg font-semibold text-foreground">
-                  {tier.label}
-                </h3>
-                <p className="mt-1 text-sm text-muted-foreground">{tier.blurb}</p>
-                <div className="mt-5 flex items-baseline gap-1">
-                  <span className="font-heading text-5xl font-bold text-foreground">
-                    ${tier.price}
-                  </span>
-                  <span className="text-sm text-muted-foreground">/month</span>
-                </div>
-                <ul className="mt-6 space-y-3">
-                  {tier.features.map((feature) => (
-                    <li
-                      key={feature}
-                      className="flex items-center gap-2.5 text-sm text-foreground"
-                    >
-                      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-success/15 text-success">
-                        <Check className="size-3.5" />
-                      </span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-auto pt-7">
-                  <ButtonLink
-                    variant={tier.highlighted ? "clay" : "outline"}
-                    size="lg"
-                    className="w-full"
-                    href="/signup"
-                  >
-                    Start free trial
-                  </ButtonLink>
-                </div>
-              </Card>
-            ))}
-          </div>
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            30-day free trial · cancel anytime · founding members get 60 days.
-          </p>
+              <div className="flex items-start justify-between">
+                <t.icon className="size-7" />
+                <ArrowUpRight className="size-5 opacity-60 transition-opacity group-hover:opacity-100" />
+              </div>
+              <div>
+                <h3 className="font-heading text-2xl font-semibold">{t.title}</h3>
+                <p className="mt-1 text-sm opacity-80">{t.text}</p>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="mx-auto w-full max-w-6xl px-4 pb-24 sm:px-6">
-        <div className="relative isolate overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-[color-mix(in_oklab,var(--primary),var(--clay)_45%)] p-10 text-center text-primary-foreground shadow-2xl shadow-primary/25 sm:p-16">
-          <div className="pointer-events-none absolute -top-20 -right-16 -z-10 size-72 rounded-full bg-white/15 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 -left-10 -z-10 size-72 rounded-full bg-clay/40 blur-3xl" />
-          <h2 className="mx-auto max-w-2xl font-heading text-3xl font-bold sm:text-4xl">
-            Your next skill is a search away
+      {/* Trainers / pricing */}
+      <section id="for-trainers" className="border-t-2 border-foreground bg-secondary/60">
+        <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6">
+          <div className="grid gap-12 lg:grid-cols-12">
+            <div className="lg:col-span-5">
+              <p className="text-xs font-bold tracking-widest text-clay uppercase">For trainers</p>
+              <h2 id="pricing" className="mt-3 font-heading text-4xl leading-tight font-semibold sm:text-5xl">
+                Reach people ready to enrol.
+              </h2>
+              <p className="mt-4 max-w-md text-muted-foreground">
+                Skip the ad spend. List your courses where learners are already
+                looking, and keep every booking for yourself.
+              </p>
+              <p className="mt-6 text-sm font-medium">
+                30-day free trial · cancel anytime · founding members get 60 days.
+              </p>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2 lg:col-span-7">
+              {PRICING.map((tier) => (
+                <div
+                  key={tier.id}
+                  className={`hard flex h-full flex-col rounded-xl p-7 ${
+                    tier.highlighted ? "bg-clay text-clay-foreground" : "bg-card"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-heading text-2xl font-semibold">{tier.label}</h3>
+                    {tier.highlighted ? (
+                      <span className="rounded-md border-2 border-current px-2 py-0.5 text-xs font-bold uppercase">
+                        Popular
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="mt-1 text-sm opacity-80">{tier.blurb}</p>
+                  <div className="mt-5 flex items-baseline gap-1">
+                    <span className="font-heading text-6xl font-semibold">${tier.price}</span>
+                    <span className="text-sm opacity-80">/month</span>
+                  </div>
+                  <ul className="mt-6 space-y-2.5 text-sm">
+                    {tier.features.map((f) => (
+                      <li key={f} className="flex items-center gap-2.5">
+                        <Check className="size-4 shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-auto pt-7">
+                    <ButtonLink
+                      variant={tier.highlighted ? "default" : "outline"}
+                      size="lg"
+                      className="w-full"
+                      href="/signup"
+                    >
+                      Start free trial
+                    </ButtonLink>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Closing band */}
+      <section className="bg-foreground text-background">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-8 px-4 py-16 sm:px-6 md:flex-row md:items-center">
+          <h2 className="max-w-xl font-heading text-4xl leading-tight font-semibold sm:text-5xl">
+            Your next skill is one search away.
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-primary-foreground/85">
-            Browse for free, or share what you teach with learners who want it.
-          </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <ButtonLink variant="clay" size="xl" href="/directory">
               Find a course
             </ButtonLink>
             <ButtonLink
               variant="outline"
               size="xl"
-              className="border-white/40 bg-white/10 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground"
+              className="border-background/50 bg-transparent text-background hover:bg-background hover:text-foreground"
               href="/signup"
             >
               Become a trainer

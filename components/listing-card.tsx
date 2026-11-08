@@ -46,12 +46,10 @@ export function ListingCard({
   return (
     <Card
       className={cn(
-        "group relative flex h-full flex-col gap-4 overflow-hidden border border-border/60 p-5 ring-0 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10",
+        "hard-sm hard-hover group relative flex h-full flex-col gap-4 overflow-hidden rounded-xl p-5 ring-0",
         className,
       )}
     >
-      {/* accent edge */}
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary/60 to-clay opacity-70 transition-opacity group-hover:opacity-100" />
 
       <div className="flex flex-wrap items-center gap-2 pt-1">
         <FormatBadge format={listing.format} />
@@ -102,7 +100,7 @@ export function ListingCard({
       </div>
 
       <div className="flex items-center justify-between border-t border-border/70 pt-3">
-        <span className="rounded-full bg-primary/10 px-3 py-1 font-heading text-sm font-semibold text-primary">
+        <span className="rounded-md border-2 border-foreground bg-clay px-2.5 py-0.5 font-heading text-sm font-bold text-clay-foreground">
           {formatPrice(listing.price)}
         </span>
         <div className="flex items-center gap-3">
