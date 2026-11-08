@@ -22,7 +22,7 @@ const COLORS = {
   border: "#DCE0D7",
   text: "#374446", // iron grey
   muted: "#5E6E70",
-  primary: "#9D6858", // terracotta clay CTA button
+  primary: "#0F766E", // teal CTA button
   quote: "#EAEDE5",
   successBg: "#E8F3EB",
   successText: "#2D6A3F",

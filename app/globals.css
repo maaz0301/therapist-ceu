@@ -57,94 +57,94 @@
 }
 
 /*
- * Skillhive brand palette — confident indigo with a warm amber accent.
+ * Skillhive brand palette — fresh teal with a coral accent.
  * Token names (clay/sage) are kept so existing components keep working:
- *   clay  -> amber accent / CTA     sage -> soft indigo tint
+ *   clay  -> coral accent / CTA     sage -> soft teal tint
  * Text-bearing fills are checked for WCAG AA against white.
  */
 :root {
-  --background: #FAFAFD;
-  --foreground: #1B1B2F;
+  --background: #F7FBFA;
+  --foreground: #10231F;
   --card: #FFFFFF;
-  --card-foreground: #1B1B2F;
+  --card-foreground: #10231F;
   --popover: #FFFFFF;
-  --popover-foreground: #1B1B2F;
-  --primary: #4F46E5;
+  --popover-foreground: #10231F;
+  --primary: #0F766E;
   --primary-foreground: #FFFFFF;
-  --secondary: #EEEEF8;
-  --secondary-foreground: #1B1B2F;
-  --muted: #ECECF6;
-  --muted-foreground: #5B5B78;
-  --accent: #E8E7FB;
-  --accent-foreground: #1B1B2F;
+  --secondary: #EAF3F1;
+  --secondary-foreground: #10231F;
+  --muted: #E8F1EF;
+  --muted-foreground: #4A625D;
+  --accent: #D9F0EB;
+  --accent-foreground: #10231F;
   --destructive: #B3261E;
-  --clay: #B45309;
+  --clay: #BE123C;
   --clay-foreground: #FFFFFF;
-  --clay-deep: #7C3A06;
-  --sage: #8B85F0;
+  --clay-deep: #881337;
+  --sage: #5EC4B6;
   --success: #1F7A54;
   --success-foreground: #FFFFFF;
   --warning: #92610A;
   --warning-foreground: #FFFFFF;
-  --border: #DFDFEE;
-  --input: #DFDFEE;
-  --ring: #6C63F0;
-  --chart-1: #4F46E5;
-  --chart-2: #B45309;
-  --chart-3: #1B1B2F;
-  --chart-4: #8B85F0;
+  --border: #D5E3E0;
+  --input: #D5E3E0;
+  --ring: #14B8A6;
+  --chart-1: #0F766E;
+  --chart-2: #BE123C;
+  --chart-3: #10231F;
+  --chart-4: #5EC4B6;
   --chart-5: #1F7A54;
   --radius: 1rem;
-  --sidebar: #F3F3FB;
-  --sidebar-foreground: #1B1B2F;
-  --sidebar-primary: #4F46E5;
+  --sidebar: #EFF7F5;
+  --sidebar-foreground: #10231F;
+  --sidebar-primary: #0F766E;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #E3E2F7;
-  --sidebar-accent-foreground: #1B1B2F;
-  --sidebar-border: #DFDFEE;
-  --sidebar-ring: #6C63F0;
+  --sidebar-accent: #D3ECE6;
+  --sidebar-accent-foreground: #10231F;
+  --sidebar-border: #D5E3E0;
+  --sidebar-ring: #14B8A6;
 }
 
 .dark {
-  --background: #12121F;
-  --foreground: #F4F4FB;
-  --card: #1B1B2E;
-  --card-foreground: #F4F4FB;
-  --popover: #1B1B2E;
-  --popover-foreground: #F4F4FB;
-  --primary: #9A94FF;
-  --primary-foreground: #14142A;
-  --secondary: #1B1B2E;
-  --secondary-foreground: #F4F4FB;
-  --muted: #1B1B2E;
-  --muted-foreground: #A9A9C6;
-  --accent: #26264A;
-  --accent-foreground: #F4F4FB;
+  --background: #0B1715;
+  --foreground: #EEF8F6;
+  --card: #122421;
+  --card-foreground: #EEF8F6;
+  --popover: #122421;
+  --popover-foreground: #EEF8F6;
+  --primary: #2DD4BF;
+  --primary-foreground: #04211E;
+  --secondary: #122421;
+  --secondary-foreground: #EEF8F6;
+  --muted: #122421;
+  --muted-foreground: #9DB8B3;
+  --accent: #17403A;
+  --accent-foreground: #EEF8F6;
   --destructive: #F28B82;
-  --clay: #F0A04B;
-  --clay-foreground: #2A1604;
-  --clay-deep: #F0A04B;
-  --sage: #9A94FF;
+  --clay: #FB7185;
+  --clay-foreground: #3B0613;
+  --clay-deep: #FB7185;
+  --sage: #2DD4BF;
   --success: #6FD3A4;
   --success-foreground: #0E2A1D;
   --warning: #E6B85C;
   --warning-foreground: #2A1F04;
-  --border: #2E2E4D;
-  --input: #2E2E4D;
-  --ring: #9A94FF;
-  --chart-1: #9A94FF;
-  --chart-2: #F0A04B;
-  --chart-3: #F4F4FB;
-  --chart-4: #6C63F0;
+  --border: #21423D;
+  --input: #21423D;
+  --ring: #2DD4BF;
+  --chart-1: #2DD4BF;
+  --chart-2: #FB7185;
+  --chart-3: #EEF8F6;
+  --chart-4: #14B8A6;
   --chart-5: #6FD3A4;
-  --sidebar: #0E0E1A;
-  --sidebar-foreground: #F4F4FB;
-  --sidebar-primary: #9A94FF;
-  --sidebar-primary-foreground: #14142A;
-  --sidebar-accent: #1B1B2E;
-  --sidebar-accent-foreground: #F4F4FB;
-  --sidebar-border: #2E2E4D;
-  --sidebar-ring: #9A94FF;
+  --sidebar: #08110F;
+  --sidebar-foreground: #EEF8F6;
+  --sidebar-primary: #2DD4BF;
+  --sidebar-primary-foreground: #04211E;
+  --sidebar-accent: #122421;
+  --sidebar-accent-foreground: #EEF8F6;
+  --sidebar-border: #21423D;
+  --sidebar-ring: #2DD4BF;
 }
 
 @layer base {
