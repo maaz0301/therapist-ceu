@@ -11,6 +11,14 @@ import {
   Star,
   ShieldCheck,
   MousePointerClick,
+  Briefcase,
+  Code2,
+  HeartPulse,
+  Scale,
+  Megaphone,
+  Palette,
+  Clock,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -24,59 +32,74 @@ import { SUBSCRIPTION_TIERS } from "@/lib/constants";
 import { brand } from "@/lib/brand";
 
 const QUICK_FILTERS = [
-  { label: "Live virtual", href: "/directory?format=Live%20Virtual" },
+  { label: "Live online", href: "/directory?format=Live%20Virtual" },
   { label: "In person", href: "/directory?format=In-Person" },
-  { label: "On demand", href: "/directory?format=On-Demand" },
+  { label: "Self-paced", href: "/directory?format=On-Demand" },
   { label: "Hybrid", href: "/directory?format=Hybrid" },
+];
+
+const CATEGORIES = [
+  { icon: Briefcase, label: "Leadership & management", q: "leadership" },
+  { icon: Code2, label: "Tech & data", q: "data" },
+  { icon: HeartPulse, label: "Health & wellbeing", q: "health" },
+  { icon: Scale, label: "Compliance & ethics", q: "ethics" },
+  { icon: Megaphone, label: "Sales & marketing", q: "marketing" },
+  { icon: Palette, label: "Design & creative", q: "design" },
+];
+
+const STATS = [
+  { icon: Clock, value: "60 sec", label: "to a shortlist" },
+  { icon: Users, value: "Free", label: "for every learner" },
+  { icon: ShieldCheck, value: "0", label: "middlemen or booking fees" },
 ];
 
 const HOW_IT_WORKS = [
   {
     icon: Search,
-    title: "Search by what matters",
+    title: "Tell us what you need",
     description:
-      "Filter by topic, format, location, price and accreditation to find trainings that fit your goals — in seconds.",
+      "Type a skill or pick a topic, then narrow by format, location, price and credits.",
   },
   {
     icon: ListChecks,
-    title: "Compare at a glance",
+    title: "Shortlist and compare",
     description:
-      "Clean cards show format, credits, price and dates so you can weigh options without the guesswork.",
+      "Save the ones you like and line up to three side by side: price, dates, format and credits.",
   },
   {
     icon: CalendarCheck,
-    title: "Register directly",
+    title: "Sign up with the trainer",
     description:
-      "Click straight through to the trainer's registration page. No middleman, no extra fees.",
+      "Go straight to their registration page. You pay the trainer, never us.",
   },
 ];
 
 const FEATURES = [
   {
     icon: GitCompareArrows,
-    title: "Compare side by side",
-    description: "Pick up to three courses and see price, dates, format and credits in one table.",
-    href: "/directory",
-    cta: "Start comparing",
+    title: "Side-by-side compare",
+    description: "Put three courses in one table and see the real differences.",
+    href: "/compare",
+    cta: "Open compare",
   },
   {
     icon: CalendarDays,
-    title: "Browse by calendar",
-    description: "See every live session laid out by month, so you can plan around your schedule.",
+    title: "Month-view calendar",
+    description: "See every upcoming session by date and plan around your week.",
     href: "/calendar",
-    cta: "Open calendar",
+    cta: "View calendar",
   },
   {
     icon: BellRing,
-    title: "Saved lists & alerts",
-    description: "Bookmark favorites and get an email the moment a course matches your keywords.",
+    title: "Keyword alerts",
+    description: "Tell us what you are after and we email you when a match appears.",
     href: "/saved",
-    cta: "Set up alerts",
+    cta: "Create an alert",
   },
   {
     icon: Star,
-    title: "Real learner reviews",
-    description: "Read honest ratings, and see how trainers respond, before you commit.",
+    title: "Reviews that reply",
+    description: "Ratings from past learners, with answers from the trainers themselves.",
     href: "/directory",
     cta: "Read reviews",
   },
@@ -105,75 +128,110 @@ const PRICING = [
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const featured = await getFeaturedListings(4);
+  // The home page must still render if the database is briefly unreachable.
+  const featured = await getFeaturedListings(4).catch(() => []);
 
   return (
     <>
       {/* Hero */}
       <section className="relative isolate overflow-hidden">
         <div className="bg-grid pointer-events-none absolute inset-0 -z-10" />
-        <div className="pointer-events-none absolute -top-32 left-1/2 -z-10 h-[28rem] w-[46rem] -translate-x-1/2 rounded-full bg-primary/15 blur-[110px]" />
-        <div className="pointer-events-none absolute top-24 -right-24 -z-10 h-80 w-80 rounded-full bg-clay/15 blur-[100px]" />
+        <div className="pointer-events-none absolute -top-32 -left-24 -z-10 h-[28rem] w-[34rem] rounded-full bg-primary/15 blur-[110px]" />
+        <div className="pointer-events-none absolute top-20 -right-24 -z-10 h-80 w-80 rounded-full bg-clay/20 blur-[100px]" />
 
-        <div className="mx-auto w-full max-w-6xl px-4 pt-20 pb-20 text-center sm:px-6 sm:pt-28 sm:pb-24">
-          <Badge className="rise-in mx-auto gap-1.5 border border-primary/25 bg-primary/10 px-3 py-1 text-primary hover:bg-primary/15">
-            <Sparkles className="size-3.5" />
-            Courses for every kind of professional
-          </Badge>
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pt-16 pb-20 sm:px-6 sm:pt-24 lg:grid-cols-[1.15fr_0.85fr]">
+          <div>
+            <Badge className="rise-in gap-1.5 border border-primary/25 bg-primary/10 px-3 py-1 text-primary hover:bg-primary/15">
+              <Sparkles className="size-3.5" />
+              Training for every profession
+            </Badge>
 
-          <h1 className="rise-in mx-auto mt-6 max-w-4xl font-heading text-5xl leading-[1.05] font-bold tracking-tight text-foreground [animation-delay:60ms] sm:text-6xl lg:text-7xl">
-            Find the right training,{" "}
-            <span className="gradient-text">without the endless search.</span>
-          </h1>
+            <h1 className="rise-in mt-6 font-heading text-4xl leading-[1.05] font-bold tracking-tight text-foreground [animation-delay:60ms] sm:text-6xl">
+              Learn the next thing{" "}
+              <span className="gradient-text">in minutes, not hours.</span>
+            </h1>
 
-          <p className="rise-in mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground [animation-delay:120ms] sm:text-xl">
-            One clean, searchable directory of professional courses — filter by
-            topic, format, location, price and accreditation to find exactly
-            what your career needs.
-          </p>
+            <p className="rise-in mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground [animation-delay:120ms]">
+              {brand.name} gathers courses and workshops from independent
+              trainers into one place. Search, compare and sign up, all without
+              creating an account.
+            </p>
 
-          <form
-            action="/directory"
-            className="rise-in glass mx-auto mt-10 flex w-full max-w-2xl items-center gap-2 rounded-2xl border border-border p-2 shadow-xl shadow-primary/10 transition-shadow [animation-delay:180ms] focus-within:shadow-2xl focus-within:shadow-primary/20"
-          >
-            <div className="flex flex-1 items-center gap-3 pl-3">
-              <Search className="size-5 shrink-0 text-muted-foreground" />
-              <input
-                name="q"
-                type="search"
-                placeholder="Try “leadership”, “data analysis”, “ethics”…"
-                className="h-12 w-full bg-transparent text-base outline-none placeholder:text-muted-foreground"
-                aria-label="Search trainings"
-              />
+            <form
+              action="/directory"
+              className="rise-in glass mt-8 flex w-full max-w-xl items-center gap-2 rounded-2xl border border-border p-2 shadow-xl shadow-primary/10 transition-shadow [animation-delay:180ms] focus-within:shadow-2xl focus-within:shadow-primary/20"
+            >
+              <div className="flex flex-1 items-center gap-3 pl-3">
+                <Search className="size-5 shrink-0 text-muted-foreground" />
+                <input
+                  name="q"
+                  type="search"
+                  placeholder="What do you want to learn?"
+                  className="h-12 w-full bg-transparent text-base outline-none placeholder:text-muted-foreground"
+                  aria-label="Search courses"
+                />
+              </div>
+              <Button type="submit" variant="clay" size="xl">
+                Find courses
+              </Button>
+            </form>
+
+            <div className="rise-in mt-5 flex flex-wrap items-center gap-2 [animation-delay:240ms]">
+              <span className="mr-1 text-sm text-muted-foreground">Browse:</span>
+              {QUICK_FILTERS.map((f) => (
+                <Link
+                  key={f.label}
+                  href={f.href}
+                  className="rounded-full border border-border bg-card/70 px-3.5 py-1.5 text-sm text-foreground/80 backdrop-blur transition-colors hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
+                >
+                  {f.label}
+                </Link>
+              ))}
             </div>
-            <Button type="submit" variant="clay" size="xl">
-              Search
-            </Button>
-          </form>
-
-          <div className="rise-in mt-6 flex flex-wrap items-center justify-center gap-2 [animation-delay:240ms]">
-            <span className="mr-1 text-sm text-muted-foreground">Popular:</span>
-            {QUICK_FILTERS.map((f) => (
-              <Link
-                key={f.label}
-                href={f.href}
-                className="rounded-full border border-border bg-card/70 px-3.5 py-1.5 text-sm text-foreground/80 backdrop-blur transition-colors hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
-              >
-                {f.label}
-              </Link>
-            ))}
           </div>
 
-          <div className="rise-in mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-muted-foreground [animation-delay:300ms]">
-            <span className="inline-flex items-center gap-2">
-              <ShieldCheck className="size-4 text-success" /> Free for learners
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <ShieldCheck className="size-4 text-success" /> No account required
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <ShieldCheck className="size-4 text-success" /> Credit &amp; non-credit courses
-            </span>
+          {/* Stat stack */}
+          <div className="rise-in grid gap-4 [animation-delay:200ms]">
+            {STATS.map((s, i) => (
+              <div
+                key={s.label}
+                className={
+                  "glass flex items-center gap-4 rounded-2xl border border-border p-5 shadow-lg shadow-primary/5 " +
+                  (i % 2 === 1 ? "lg:ml-6" : "")
+                }
+              >
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-md shadow-primary/25">
+                  <s.icon className="size-6" />
+                </span>
+                <div>
+                  <p className="font-heading text-2xl font-bold text-foreground">{s.value}</p>
+                  <p className="text-sm text-muted-foreground">{s.label}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Categories */}
+      <section className="border-y border-border bg-card/60">
+        <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6">
+          <h2 className="font-heading text-2xl font-bold text-foreground sm:text-3xl">
+            Start with a topic
+          </h2>
+          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+            {CATEGORIES.map((c) => (
+              <Link
+                key={c.label}
+                href={`/directory?q=${encodeURIComponent(c.q)}`}
+                className="group flex flex-col items-start gap-3 rounded-2xl border border-border bg-background p-4 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10"
+              >
+                <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                  <c.icon className="size-5" />
+                </span>
+                <span className="text-sm font-medium text-foreground">{c.label}</span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -186,11 +244,10 @@ export default async function HomePage() {
               How it works
             </p>
             <h2 className="mt-2 font-heading text-3xl font-bold text-foreground sm:text-4xl">
-              From search to signed up in three steps
+              Three steps from curious to enrolled
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Finding the right training shouldn&apos;t take an hour of
-              Googling. Here&apos;s the whole flow.
+              No more twenty open tabs. Here is the whole journey.
             </p>
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
@@ -226,7 +283,7 @@ export default async function HomePage() {
                 Featured
               </p>
               <h2 className="mt-2 font-heading text-3xl font-bold text-foreground sm:text-4xl">
-                Trainings learners are discovering
+                Fresh from our trainers
               </h2>
             </div>
             <ButtonLink
@@ -252,10 +309,10 @@ export default async function HomePage() {
         <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-sm font-semibold tracking-wide text-primary uppercase">
-              Built for learners
+              Why learners stay
             </p>
             <h2 className="mt-2 font-heading text-3xl font-bold text-foreground sm:text-4xl">
-              Everything you need to choose with confidence
+              Tools that make choosing easy
             </h2>
           </div>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -296,11 +353,10 @@ export default async function HomePage() {
               id="pricing"
               className="mt-4 font-heading text-3xl font-bold text-foreground sm:text-4xl"
             >
-              Get your trainings in front of the right learners
+              Reach people who are ready to enrol
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Stop relying on a social following. List your courses where
-              learners are already searching.
+              Skip the ad spend. Put your courses where learners are already looking.
             </p>
           </div>
 
@@ -367,15 +423,14 @@ export default async function HomePage() {
           <div className="pointer-events-none absolute -top-20 -right-16 -z-10 size-72 rounded-full bg-white/15 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-24 -left-10 -z-10 size-72 rounded-full bg-clay/40 blur-3xl" />
           <h2 className="mx-auto max-w-2xl font-heading text-3xl font-bold sm:text-4xl">
-            Ready to find your next training?
+            Your next skill is a search away
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-primary-foreground/85">
-            Search the directory free — or list your own courses and reach
-            learners actively looking to grow.
+            Browse for free, or share what you teach with learners who want it.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <ButtonLink variant="clay" size="xl" href="/directory">
-              Browse courses
+              Find a course
             </ButtonLink>
             <ButtonLink
               variant="outline"
@@ -383,7 +438,7 @@ export default async function HomePage() {
               className="border-white/40 bg-white/10 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground"
               href="/signup"
             >
-              List your training
+              Become a trainer
             </ButtonLink>
           </div>
         </div>
