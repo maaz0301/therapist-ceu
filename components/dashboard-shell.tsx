@@ -7,6 +7,7 @@ import {
   ClipboardCheck,
   Users,
   Tags,
+  Settings,
 } from "lucide-react";
 
 import { Logo } from "@/components/logo";
@@ -41,6 +42,8 @@ export function getDashboardIcon(iconName: string) {
       return ClipboardCheck;
     case "trainers":
       return Users;
+    case "settings":
+      return Settings;
     case "tags":
       return Tags;
     default:

@@ -6,6 +6,7 @@ const TRAINER_NAV: DashboardNavItem[] = [
   { href: "/listings", label: "My listings", iconName: "listings" },
   { href: "/analytics", label: "Analytics", iconName: "analytics" },
   { href: "/billing", label: "Billing", iconName: "billing" },
+  { href: "/settings", label: "Settings", iconName: "settings" },
 ];
 
 export default async function TrainerLayout({
