@@ -1,6 +1,7 @@
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { CompareBar } from "@/components/compare/compare-store";
+import { ChatWidget } from "@/components/chat-widget";
 
 export default function PublicLayout({
   children,
@@ -13,6 +14,7 @@ export default function PublicLayout({
       <main className="flex-1">{children}</main>
       <SiteFooter />
       <CompareBar />
+      <ChatWidget />
     </>
   );
 }
