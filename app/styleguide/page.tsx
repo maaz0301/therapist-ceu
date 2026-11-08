@@ -69,7 +69,7 @@ export default function StyleguidePage() {
             Design system
           </h1>
           <p className="text-sm text-muted-foreground">
-            TherapyDen-inspired tokens and components for Skillhive.
+            Design tokens and components for Skillhive.
           </p>
         </div>
       </header>
@@ -161,14 +161,14 @@ export default function StyleguidePage() {
           </div>
           <div className="flex items-center gap-2">
             <Checkbox id="ceu" defaultChecked />
-            <Label htmlFor="ceu">Offers CEU credit</Label>
+            <Label htmlFor="ceu">Offers credit</Label>
           </div>
           <div className="flex items-center gap-2">
             <Switch id="ondemand" />
             <Label htmlFor="ondemand">Available on demand</Label>
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label>CEU accreditation</Label>
+            <Label>Credit accreditation</Label>
             <RadioGroup defaultValue="either" className="flex gap-6">
               {["either", "yes", "no"].map((v) => (
                 <label key={v} className="flex items-center gap-2 text-sm capitalize">

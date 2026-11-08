@@ -1,29 +1,23 @@
-# TherapistCEU
+# Skillhive
 
-A paid, searchable directory where trainers list continuing-education (CE) courses for therapists, with an admin area to control what gets published.
+A searchable directory of professional courses and trainings. Learners search, compare, save and get keyword alerts; trainers list courses on a subscription and respond to reviews; admins moderate what is published.
 
-**Live:** https://therapistceu.com
-
-## What it does
-
-- Public directory with full-text search, filters and listing pages
-- Trainer dashboard: create and manage listings, billing and analytics
-- Stripe subscription tiers (Basic / Pro) that cap how many listings a trainer can publish; webhooks keep billing in sync
-- Admin area for trainers, listings and tags
-- Scheduled jobs (Vercel cron) that expire listings and send renewal reminders
-- Transactional email through SendGrid
+**Live:** https://skillhive-courses.vercel.app
 
 ## Stack
 
-Next.js (App Router) · TypeScript · Supabase (auth, storage, Postgres with row-level security) · Drizzle ORM · Stripe · SendGrid · Tailwind CSS · Vercel
+Next.js 16 (App Router), React 19, TypeScript, Tailwind v4, Supabase (Auth, Postgres, Storage), Drizzle ORM, Stripe subscriptions, Nodemailer SMTP.
 
-## Running locally
+## Run locally
 
 ```bash
 npm install
-# create .env with your Supabase, Stripe and SendGrid values
-npm run db:push        # create the schema
+cp .env.example .env.local   # fill in Supabase, Stripe and SMTP values
 npm run dev
 ```
 
-Environment variables (Supabase, Stripe, SendGrid, app URL) are required and are never committed; `.env*` is git-ignored.
+Useful scripts: `npm run db:sync-tags` (sync the tag list), `npx tsx db/seed-demo.mts` (demo courses), `GET /api/health` (deployment self-check).
+
+## Branding
+
+Names and wording live in `lib/brand.ts`; colours are tokens in `app/globals.css`.

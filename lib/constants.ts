@@ -31,12 +31,12 @@ export const LISTING_FORMATS = [
 export type ListingFormat = (typeof LISTING_FORMATS)[number];
 
 export const CEU_PROVIDERS = [
-  "APA",
-  "NBCC",
-  "ACE/NASW",
-  "APT (Association for Play Therapy)",
-  "State Board Approved",
-  "Non-CE",
+  "CPD Certified",
+  "PMI (PDU)",
+  "AICPA (CPE)",
+  "SHRM (PDC)",
+  "Industry Certification",
+  "Non-credit",
 ] as const;
 export type CeuProvider = (typeof CEU_PROVIDERS)[number];
 
@@ -49,10 +49,10 @@ export const PRICE_RANGES = [
 export type PriceRangeId = (typeof PRICE_RANGES)[number]["id"];
 
 export const TAG_CATEGORIES = [
-  { id: "modality", label: "Modality" },
-  { id: "population", label: "Population" },
-  { id: "topic", label: "Topic / Presenting Problem" },
-  { id: "business", label: "Business / Practice" },
+  { id: "modality", label: "Skills & methods" },
+  { id: "population", label: "Audience" },
+  { id: "topic", label: "Topic" },
+  { id: "business", label: "Career & business" },
 ] as const;
 export type TagCategory = (typeof TAG_CATEGORIES)[number]["id"];
 
@@ -65,7 +65,7 @@ export type SubscriptionTier = keyof typeof SUBSCRIPTION_TIERS;
 /**
  * Location options. "ONLINE" is a pseudo-location (matches every listing that
  * is online); "INTL" is a real, selectable location stored in listing_states
- * like any state code, for trainings held outside the US (e.g. CEU retreats).
+ * like any state code, for trainings held outside the US (e.g. overseas retreats).
  */
 export const US_STATES = [
   { code: "ONLINE", name: "Online / Any State" },
@@ -126,56 +126,54 @@ export const US_STATES = [
 /** The full Phase 1 tag taxonomy (seed source of truth). */
 export const TAG_TAXONOMY: Record<TagCategory, string[]> = {
   modality: [
-    "CBT",
-    "DBT",
-    "ACT",
-    "EMDR",
-    "IFS/Parts work/Ego states",
-    "Somatic & body-based (Somatic Experiencing, sensorimotor, Brainspotting)",
-    "Play therapy (CCPT, sand tray)",
-    "Attachment based",
-    "Exposure Therapies",
-    "Mindfulness-based (MBSR, MBCT)",
-    "Motivational Interviewing",
-    "Expressive arts (art, music, drama)",
+    "Project Management",
+    "Agile & Scrum",
+    "Data Analysis",
+    "Python & SQL",
+    "Public Speaking",
+    "Negotiation",
+    "Coaching & Mentoring",
+    "Design Thinking",
+    "Spreadsheets & Modeling",
+    "Writing & Communication",
+    "Facilitation",
+    "Sales Techniques",
   ],
   population: [
-    "Children (under 12)",
-    "Adolescents",
-    "Adults",
-    "Older Adults",
-    "Couples",
-    "Families",
-    "Perinatal / Postpartum",
-    "LGBTQ+ Clients",
-    "First Responders",
-    "Neurodivergent Clients",
+    "Beginners",
+    "Early Career",
+    "Mid-level Professionals",
+    "Managers",
+    "Executives",
+    "Freelancers",
+    "Small Business Owners",
+    "Teams & Groups",
+    "Educators",
+    "Career Changers",
   ],
   topic: [
-    "Trauma",
-    "Anxiety",
-    "Depression",
-    "Grief and Loss",
-    "Attachment",
-    "Autism / Developmental",
-    "Eating Disorders",
-    "Addiction / Substance Use",
-    "Perinatal Mental Health",
-    "Parenting",
-    "School-Based Issues",
-    "Chronic Illness",
-    "Suicide Prevention",
-    "Cultural Competence / Diversity",
-    "ADHD / Executive Functioning",
+    "Leadership",
+    "Productivity",
+    "Artificial Intelligence",
+    "Cybersecurity",
+    "Finance & Accounting",
+    "Marketing",
+    "Product & UX",
+    "Human Resources",
+    "Health & Wellbeing",
+    "Customer Service",
+    "Diversity & Inclusion",
+    "Sustainability",
+    "Remote Work",
   ],
   business: [
-    "Private Practice Building",
-    "Ethics and Law",
-    "Documentation and Notes",
-    "Clinical Supervision",
-    "Telehealth",
-    "Marketing Your Practice",
-    "Insurance and Billing",
-    "Clinician Burnout / Wellness",
+    "Starting a Business",
+    "Ethics & Compliance",
+    "Contracts & Legal Basics",
+    "Personal Branding",
+    "Pricing & Proposals",
+    "Time Management",
+    "Burnout Prevention",
+    "Networking",
   ],
 };

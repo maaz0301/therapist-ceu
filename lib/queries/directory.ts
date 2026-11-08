@@ -84,23 +84,7 @@ export function buildWhere(filters: DirectoryFilters): SQL | undefined {
     const providerConds: SQL[] = [];
     let hasNonCeu = false;
     for (const p of filters.providers) {
-      if (p === "ACE/NASW") {
-        providerConds.push(
-          ilike(listings.accreditingBody, "%ACE%"),
-          ilike(listings.accreditingBody, "%NASW%"),
-          ilike(listings.accreditingBody, "%ASWB%")
-        );
-      } else if (p === "State Board Approved") {
-        providerConds.push(ilike(listings.accreditingBody, "%State Board%"));
-      } else if (p.startsWith("APT")) {
-        // Trainers type this field freehand ("APT", "APT Approved Provider",
-        // "Association for Play Therapy"), so match the acronym on word
-        // boundaries — a bare %APT% would also hit "adapted" and "chapter".
-        providerConds.push(
-          sql`${listings.accreditingBody} ~* '\\mAPT\\M'`,
-          ilike(listings.accreditingBody, "%Association for Play Therapy%"),
-        );
-      } else if (p === "Non-CE") {
+      if (p === "Non-credit") {
         hasNonCeu = true;
       } else {
         providerConds.push(ilike(listings.accreditingBody, `%${p}%`));
