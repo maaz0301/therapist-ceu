@@ -8,8 +8,8 @@ const FOOTER_SECTIONS = [
     title: "Learners",
     links: [
       { href: "/directory", label: "Browse trainings" },
-      { href: "/directory?ceu=Yes", label: "Credit-eligible courses" },
-      { href: "/directory?format=On-Demand", label: "On-demand" },
+      { href: "/directory?price=under-100", label: "Under $100" },
+      { href: "/directory?formats=On-Demand", label: "On-demand" },
       { href: "/calendar", label: "Calendar" },
       { href: "/saved", label: "Saved & alerts" },
     ],

@@ -32,10 +32,10 @@ import { SUBSCRIPTION_TIERS } from "@/lib/constants";
 import { brand } from "@/lib/brand";
 
 const QUICK_FILTERS = [
-  { label: "Live online", href: "/directory?format=Live%20Virtual" },
-  { label: "In person", href: "/directory?format=In-Person" },
-  { label: "Self-paced", href: "/directory?format=On-Demand" },
-  { label: "Hybrid", href: "/directory?format=Hybrid" },
+  { label: "Live online", href: "/directory?formats=Live%20Virtual" },
+  { label: "In person", href: "/directory?formats=In-Person" },
+  { label: "Self-paced", href: "/directory?formats=On-Demand" },
+  { label: "Hybrid", href: "/directory?formats=Hybrid" },
 ];
 
 const CATEGORIES = [
